@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "eval": "tsx scripts/eval.ts",
     "catalog:ingest": "tsx scripts/ingest-manifest.ts",
-    "catalog:met": "tsx scripts/import-met.ts"
+    "catalog:met": "tsx scripts/import-met.ts",
+    "catalog:met:hf": "tsx scripts/import-met-hf.ts"
   },
   "dependencies": {
     "@huggingface/transformers": "4.2.0",
