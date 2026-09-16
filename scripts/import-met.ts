@@ -12,6 +12,8 @@ import {
 } from "../src/lib/catalog/met";
 
 const API_ROOT = "https://collectionapi.metmuseum.org/public/collection/v1";
+const SEARCH_API_ROOT =
+  "https://collectionapi.metmuseum.org/public/collection/v1.1";
 const REQUEST_DELAY_MS = 500;
 const MAX_RETRIES = 3;
 const OBJECT_CONCURRENCY = 2;
@@ -97,7 +99,8 @@ async function main() {
   const searchIDGroups: unknown[] = [];
   for (const query of queries) {
     const search = await fetchJson<SearchResponse>(
-      `${API_ROOT}/search?hasImages=true&isPublicDomain=true&q=${encodeURIComponent(query)}`,
+      `${SEARCH_API_ROOT}/search?hasImages=true&isPublicDomain=true` +
+        `&q=${encodeURIComponent(query)}&offset=0&limit=${candidateCap}`,
     );
     searchIDGroups.push(search.objectIDs);
   }
