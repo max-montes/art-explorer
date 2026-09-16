@@ -12,6 +12,10 @@ Art Explorer is an artwork-only semantic catalog. Describe a mood, idea, subject
 
 The catalog contains explicitly reviewed still images. Animated and playable files are not part of the collection.
 
+## Provenance and scope
+
+For hackathon publication, this project incorporates pre-existing work and concepts, including semantic text retrieval, embedding and vector indexing, artwork curation/review and metadata/licensing workflows, local media handling, drag-to-collect interaction, and idea/script passage analysis. This branch adds the Art Explorer rebrand, The Met catalog integration, and CLIP image retrieval on top of that foundation. This is a factual project-history statement, not legal advice, and not all code in the repository was newly created for this publication.
+
 ## Run the app
 
 Requires Node.js 20+.
