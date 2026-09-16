@@ -1,0 +1,12 @@
+[
+  {
+    "query": "Plato",
+    "expectedFirst": "curated-school-of-athens",
+    "reason": "Plato is an explicit curated association of The School of Athens."
+  },
+  {
+    "query": "societal decay",
+    "expectedFirst": "curated-course-of-empire-destruction",
+    "reason": "The work is explicitly associated with societal decay and civilizational collapse."
+  }
+]

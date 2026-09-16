@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: art_explorer
+      POSTGRES_USER: art_explorer
+      POSTGRES_PASSWORD: art_explorer
+    ports:
+      - "5432:5432"
+    volumes:
+      - art_explorer_postgres:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U art_explorer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  art_explorer_postgres:

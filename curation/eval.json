@@ -1,0 +1,48 @@
+[
+  {
+    "_comment": "Curator evaluation: what someone exploring artwork might type, and which work should come first. Titles match the curated record's title. Write the expectation BEFORE running the query. Run with: npm run eval"
+  },
+
+  { "group": "literal",  "query": "death",                   "expect": ["Saint Jerome"] },
+  { "group": "literal",  "query": "love",                    "expect": ["The Lover Crowned", "Reluctant Courtship", "The Rejected Poet"] },
+  { "group": "literal",  "query": "madness",                 "expect": ["Le Désespéré"] },
+
+  { "group": "synonym",  "query": "mortality",               "expect": ["Saint Jerome"] },
+  { "group": "synonym",  "query": "despair",                 "expect": ["Le Désespéré"] },
+  { "group": "synonym",  "query": "heartbreak",              "expect": ["Reluctant Courtship", "The Rejected Poet"], "note": "both carry Rejection + Love; Lover Crowned (Love only) should be third" },
+  { "group": "synonym",  "query": "labor",                   "expect": ["The Sower"] },
+  { "group": "synonym",  "query": "wilderness",              "expect": ["Among the Sierra Nevada, California", "Westward the Course of Empire Takes Its Way"] },
+  { "group": "synonym",  "query": "contemplation",           "expect": ["The Thinker", "Saint Jerome"] },
+
+  { "group": "concept",  "query": "the examined life",       "expect": ["Alcibiades Receiving the Lessons of Socrates", "Socrates Tears Alcibiades from the Embrace of Sensual Pleasure", "The School of Athens"], "note": "idiomatic; near MiniLM's ceiling even with good labels" },
+  { "group": "concept",  "query": "reason versus passion",   "expect": ["Socrates Tears Alcibiades from the Embrace of Sensual Pleasure"] },
+  { "group": "concept",  "query": "manifest destiny",        "expect": ["Westward the Course of Empire Takes Its Way"] },
+  { "group": "concept",  "query": "science versus religion", "expect": ["Galileo before the Holy Office"] },
+  { "group": "concept",  "query": "the sublime",             "expect": ["Among the Sierra Nevada, California", "The Colossus"] },
+  { "group": "concept",  "query": "memento mori",            "expect": ["Saint Jerome"] },
+  { "group": "concept",  "query": "apotheosis",              "expect": ["The Apotheosis of Hercules", "Apotheosis of Homer"] },
+  { "group": "concept",  "query": "censorship",              "expect": ["Galileo before the Holy Office"] },
+  { "group": "concept",  "query": "honest to a fault",       "expect": ["Truth Leaving the Well"] },
+
+  { "group": "entity",   "query": "Plato",                   "expect": ["The School of Athens"] },
+  { "group": "entity",   "query": "Socrates",                "expect": ["Alcibiades Receiving the Lessons of Socrates", "Socrates Tears Alcibiades from the Embrace of Sensual Pleasure"] },
+  { "group": "entity",   "query": "Caravaggio",              "expect": ["Saint Jerome"] },
+  { "group": "entity",   "query": "Van Gogh",                "expect": ["The Sower"] },
+  { "group": "entity",   "query": "Aristotle",               "expect": ["The School of Athens"] },
+  { "group": "entity",   "query": "Rodin",                   "expect": ["The Thinker"] },
+
+  { "group": "period",   "query": "18th century",            "expect": ["Alcibiades Receiving the Lessons of Socrates", "The Lover Crowned", "Socrates Tears Alcibiades from the Embrace of Sensual Pleasure", "The Apotheosis of Hercules"] },
+  { "group": "period",   "query": "renaissance",             "expect": ["The School of Athens"] },
+  { "group": "period",   "query": "ancient greece",          "expect": ["The School of Athens", "Apotheosis of Homer", "The Apotheosis of Hercules"] },
+
+  { "group": "mood",     "query": "gloomy",                  "expect": ["The Colossus", "Saint Jerome", "Le Désespéré"] },
+  { "group": "mood",     "query": "awe",                     "expect": ["Among the Sierra Nevada, California"] },
+  { "group": "mood",     "query": "serenity",                "expect": ["The Lover Crowned", "Among the Sierra Nevada, California"] },
+  { "group": "mood",     "query": "terror",                  "expect": ["The Colossus"] },
+
+  { "group": "hard",     "query": "hubris",                  "expect": ["The Apotheosis of Hercules", "Alcibiades Receiving the Lessons of Socrates"] },
+  { "group": "hard",     "query": "the fall of man",         "expect": ["Socrates Tears Alcibiades from the Embrace of Sensual Pleasure"] },
+  { "group": "hard",     "query": "rural life",              "expect": ["The Sower"] },
+  { "group": "hard",     "query": "heresy",                  "expect": ["Galileo before the Holy Office"] },
+  { "group": "hard",     "query": "colonialism",             "expect": ["Westward the Course of Empire Takes Its Way"] }
+]

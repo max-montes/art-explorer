@@ -1,0 +1,108 @@
+source_path,decision,curation_reason,metadata_status,license_review_status
+A-Clockwork-Orange-Hero.png,exclude,film still,incomplete,pending
+AlcibiadesBeingTaughtBySocrates.jpg,include,identified artwork,incomplete,pending
+ApotheosisOfHercules.jpg,include,identified artwork,incomplete,pending
+ApotheosisOfHomer.jpg,include,identified artwork,incomplete,pending
+AristotleWriting.png,exclude,Midjourney source metadata,incomplete,rejected
+BatailleDarbelle.jpg,include,identified artwork,incomplete,pending
+Battle_poitiers.jpg,include,identified artwork,incomplete,pending
+Beatles-GettyImages-73874278.webp,exclude,press photograph,incomplete,pending
+BeatlesIndia.webp,exclude,photograph,incomplete,pending
+BeyondGoodAndEvil.jpg,exclude,book cover,incomplete,pending
+BhagavadGita.jpg,include,non-AI artwork sourced from Wikimedia Commons,incomplete,pending
+BlueVelvet.jpg,exclude,film still,incomplete,pending
+Byung chul Han.jpg,exclude,photograph,incomplete,pending
+CatchingTheBigFishCover.jpg,exclude,book cover,incomplete,pending
+ChargingGericault.jpg,include,identified artwork,incomplete,pending
+"ChatGPT Image Apr 3, 2025, 04_12_21 PM.jpg",exclude,AI-generated editorial image,incomplete,pending
+CombatOfDiomedes.jpg,include,identified artwork,incomplete,pending
+CourseOfEmpireConsummation.jpg,include,identified artwork,incomplete,pending
+CourseOfEmpireConsummationSmaller.jpeg,exclude,duplicate lower-resolution copy,incomplete,pending
+CourseOfEmpireDestruction.jpg,include,identified artwork,incomplete,pending
+CourseOfEmpireSavageState.jpg,include,identified artwork,incomplete,pending
+Courtship.jpg,include,identified artwork,incomplete,pending
+CowardiceGoya.jpg,include,identified artwork,incomplete,pending
+CreationOfAdam.jpg,include,identified artwork,incomplete,pending
+CreationOfAdamCropped.jpeg,exclude,duplicate cropped copy,incomplete,pending
+DavidLynch.jpg,exclude,photograph,incomplete,pending
+DeathOfArchimedes.png,include,identified artwork,incomplete,pending
+DeathOfCaesar.jpg,include,identified artwork,incomplete,pending
+DeathOfCaesarWalters.jpg,include,identified artwork,incomplete,pending
+DeathOfSocrates.jpg,include,identified artwork,incomplete,pending
+EmbarcationOfTheQueenOfSheba.jpg,include,identified artwork,incomplete,pending
+EmperorCharlesV.jpg,include,identified artwork,incomplete,pending
+EntryOfAlexander.jpeg,include,identified artwork,incomplete,pending
+EntryOfTheAnimalsIntoNoahsArk.jpg,include,identified artwork,incomplete,pending
+eraserhead.avif,exclude,film still,incomplete,pending
+ExecutionOfMaximilian.jpg,include,identified artwork,incomplete,pending
+FallenAngel.jpg,include,identified artwork,incomplete,pending
+Fish.jpeg,exclude,Pexels photograph rather than an artwork,incomplete,rejected
+flak jacket.jpg,exclude,film still,incomplete,pending
+FlakJacket.jpeg,exclude,historical photograph,incomplete,pending
+GardenOfEden.jpg,include,identified artwork,incomplete,pending
+Genghis Khan.webp,include,non-AI sculpture image,incomplete,pending
+GeorgeBataille.png,exclude,photograph,incomplete,pending
+GiordanoBruno.jpg,include,historical engraving,incomplete,pending
+Goethe.jpg,include,identified portrait artwork,incomplete,pending
+Handshake.webp,exclude,editorial or meme image,incomplete,pending
+Heidegger.avif,exclude,photograph,incomplete,pending
+HerculesAndTheHydra.jpg,include,identified artwork,incomplete,pending
+Hypnose_(Schneider).jpeg,include,identified artwork,incomplete,pending
+IMG_0899.jpg,exclude,phone screenshot,incomplete,pending
+IMG_0900.jpg,exclude,personal photograph,incomplete,pending
+Immanuel_Kant_(portrait).jpg,include,historical portrait artwork,incomplete,pending
+JacobWrestlesWithTheAngel.jpg,include,identified artwork,incomplete,pending
+Kant.jpg,include,historical portrait artwork,incomplete,pending
+Lady Gaga.jpg,exclude,press photograph,incomplete,pending
+LaMortD'Alcibiade.jpg,include,identified artwork,incomplete,pending
+LeonidasAtThermopylae.jpg,include,identified artwork,incomplete,pending
+Lila.jpg,include,non-AI artwork,incomplete,pending
+LordByron.jpg,include,historical portrait artwork,incomplete,pending
+Metallica.jpg,exclude,press photograph,incomplete,pending
+MetamorphosisofNarcissus.jpg,include,identified artwork subject to rights review,incomplete,pending
+MulhollandDrive.jpeg,exclude,film still,incomplete,pending
+Napoleon.jpg,include,identified artwork,incomplete,pending
+NapoleonOnTheBattlefield.jpg,include,identified artwork,incomplete,pending
+NapoleonPortrait.jpg,include,historical portrait artwork,incomplete,pending
+Nietzsche.jpg,exclude,photograph,incomplete,pending
+OathOfTheHoratii.jpg,include,identified artwork,incomplete,pending
+Paradise_Lost_12.jpg,include,historical illustration,incomplete,pending
+Paradiso31.jpg,include,historical illustration,incomplete,pending
+Plato's_Symposium_-_Anselm_Feuerbach_-_Google_Cultural_Institute.jpg,include,identified artwork,incomplete,pending
+poignantParting.jpg,include,identified artwork,incomplete,pending
+RaftOfMedusa.jpg,include,identified artwork,incomplete,pending
+Rats.png,exclude,AI-generated or editorial image,incomplete,pending
+Regnault_Socrates_Tears_Alcibiades_from_the_Embrace_of_Sensual_Pleasure.jpg,include,identified artwork,incomplete,pending
+ReluctantCourtship.jpeg,include,identified artwork,incomplete,pending
+ReluctantCourtship.webp,exclude,duplicate copy,incomplete,pending
+RickRubin.jpg,exclude,photograph,incomplete,pending
+RickRubin.webp,exclude,duplicate photograph,incomplete,pending
+RickRubin2.jpg,exclude,duplicate photograph,incomplete,pending
+RosaLuxemburg.jpg,exclude,photograph,incomplete,pending
+SaintJeromeWriting.jpg,include,identified artwork,incomplete,pending
+SchoolOfAthens.jpg,include,identified artwork,incomplete,pending
+Screenshot 2025-09-29 at 8.43.49 PM.png,exclude,screenshot or editorial graphic,incomplete,pending
+SocratesEating.png,exclude,AI-generated or unidentified image,incomplete,pending
+SocratesPondering.png,exclude,AI-generated or unidentified image,incomplete,pending
+Sublime.jpeg,include,identified artwork,incomplete,pending
+Sublime.webp,exclude,duplicate copy,incomplete,pending
+TheChariot.png,exclude,Midjourney source metadata,incomplete,rejected
+TheColossusGoya.jpg,include,identified artwork,incomplete,pending
+TheDesperateMan.jpg,include,identified artwork,incomplete,pending
+TheProgressOfLove.jpg,include,identified artwork,incomplete,pending
+TheRejectedPoet.jpg,include,identified artwork,incomplete,pending
+TheSowerVanGogh.jpg,include,identified artwork,incomplete,pending
+TheThinkerRodin.jpg,include,identified sculpture,incomplete,pending
+TreeSeedsGhibli.png,exclude,AI-generated or copyrighted-style illustration,incomplete,pending
+TrialOfGalileo.png,include,identified artwork,incomplete,pending
+TruthLeavingTheWell.jpg,include,identified artwork,incomplete,pending
+Tvs.png,exclude,photograph or editorial image,incomplete,pending
+Westward.png,include,identified artwork,incomplete,pending
+WingedHorse.png,exclude,Midjourney source metadata,incomplete,rejected
+Wizard.png,exclude,Midjourney source metadata,incomplete,rejected
+You're not seeing (31).jpeg,exclude,editorial graphic,incomplete,pending
+You're not seeing (32).jpeg,exclude,duplicate editorial graphic,incomplete,pending
+Relativity_files/,exclude,web-page support assets and thumbnails,incomplete,pending
+HypnoseRainbow*.jpg/,exclude,edited derivative working folders pending provenance and duplicate review,incomplete,pending
+*.mp4,exclude,media files are outside the initial artwork catalog,incomplete,pending
+non-image files,exclude,non-image files are outside the initial artwork catalog,incomplete,pending

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source_root": "/absolute/path/to/read-only/source",
+  "entries": [
+    {
+      "id": "approved-artwork-example",
+      "source_path": "approved/example-artwork.jpg",
+      "decision": "include",
+      "exclusion_reason": null,
+      "metadata_status": "complete",
+      "license_review_status": "approved",
+      "asset": {
+        "id": "approved-artwork-example",
+        "type": "artwork",
+        "title": "Example Artwork",
+        "creator": "Creator name",
+        "year": "Year",
+        "source": {
+          "provider": "User-curated local source",
+          "sourceUrl": "https://source-or-rights-record.example/artwork",
+          "license": "Verified license statement",
+          "licenseUrl": "https://license-record.example"
+        },
+        "semantics": {
+          "concepts": ["approved-concept-id"],
+          "moods": ["contemplative"],
+          "subjects": ["explicit subject"],
+          "description": "Curator-authored semantic description.",
+          "narrative": "How this asset functions in an edit.",
+          "curatorNotes": "Why this asset belongs in the catalog."
+        },
+        "aspectRatio": 1.5,
+        "dominantColor": "#554433",
+        "ownerId": null
+      }
+    },
+    {
+      "id": "excluded-non-artwork-example",
+      "source_path": "screenshots/not-an-artwork.png",
+      "decision": "exclude",
+      "exclusion_reason": "UI screenshot; not a catalog artwork.",
+      "metadata_status": "incomplete",
+      "license_review_status": "pending"
+    }
+  ]
+}
