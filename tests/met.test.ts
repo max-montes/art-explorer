@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isArtworkObject,
+  isPaintingObject,
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
@@ -39,6 +40,25 @@ describe("Met importer", () => {
     ).toBe(false);
     expect(isArtworkObject({ ...baseObject, primaryImage: "" })).toBe(false);
     expect(isArtworkObject({ ...baseObject, isPublicDomain: false })).toBe(false);
+  });
+
+  it("accepts painting classifications but rejects vase-like art objects", () => {
+    expect(
+      isPaintingObject({ ...baseObject, classification: "Paintings" }),
+    ).toBe(true);
+    expect(
+      isPaintingObject({
+        ...baseObject,
+        classification: "Vases",
+        department: "European Decorative Arts",
+      }),
+    ).toBe(false);
+    expect(
+      isPaintingObject({
+        ...baseObject,
+        classification: "Decorative Arts",
+      }),
+    ).toBe(false);
   });
 
   it("maps metadata and searchable associations into a MediaAsset", () => {

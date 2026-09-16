@@ -38,10 +38,6 @@ export function normalizeMetObjectIDs(value: unknown): number[] {
 
 export const DEFAULT_MET_QUERIES = [
   "painting",
-  "sculpture",
-  "drawing",
-  "print",
-  "photograph",
 ] as const;
 
 export function normalizeMetQueries(values: string[]): string[] {
@@ -126,6 +122,11 @@ export function isArtworkObject(object: MetObject): boolean {
     classification.includes(name),
   );
   return hasArtDepartment && !isExcludedClassification;
+}
+
+export function isPaintingObject(object: MetObject): boolean {
+  if (!isArtworkObject(object)) return false;
+  return /\bpaintings?\b/i.test(text(object.classification));
 }
 
 export function mapMetObject(object: MetObject): MediaAsset {

@@ -72,12 +72,15 @@ npm run catalog:ingest -- curation/met-open-access.json
 
 `--limit` defaults to `25`. The importer uses polite delays between requests and exponential retries for transient API failures. The generated manifest contains CC0/public-domain source metadata and searchable associations derived from the Met department, classification, culture, and medium. Run it from a networked environment; the Met API is queried live and no API key is required.
 
-The importer uses a balanced default search across `painting`, `sculpture`,
-`drawing`, `print`, and `photograph`. Repeat `--query` to provide a custom
-search mix; IDs are deduplicated before `--limit` is applied:
+The importer is intentionally painting-only by default: it searches `painting`
+and requires a classification containing `painting` or `paintings`. This
+excludes vases and other decorative objects even when their department is an
+art department. Repeat `--query` only to broaden candidate discovery; the
+painting classification filter still applies. IDs are deduplicated before
+`--limit` is applied:
 
 ```bash
-npm run catalog:met -- --query painting --query sculpture --query photograph \
+npm run catalog:met -- --query painting \
   --output curation/met-open-access.json --limit 25
 ```
 

@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  isArtworkObject,
+  isPaintingObject,
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
@@ -108,7 +108,7 @@ async function main() {
       }
       throw error;
     }
-    if (isArtworkObject(object)) {
+    if (isPaintingObject(object)) {
       const asset = mapMetObject(object);
       entries.push({
         id: asset.id,
