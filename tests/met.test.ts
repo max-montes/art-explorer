@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { isArtworkObject, mapMetObject, type MetObject } from "@/lib/catalog/met";
+import {
+  isArtworkObject,
+  mapMetObject,
+  MetObjectNotFoundError,
+  type MetObject,
+} from "@/lib/catalog/met";
 
 const baseObject: MetObject = {
   objectID: 1,
@@ -66,5 +71,12 @@ describe("Met importer", () => {
     expect(asset.creator).toBe("Unknown Creator");
     expect(asset.year).toBe("Unknown");
     expect(asset.title).toBe("Untitled");
+  });
+
+  it("identifies missing Met objects so an importer can skip them", () => {
+    const error = new MetObjectNotFoundError(936281);
+    expect(error).toBeInstanceOf(MetObjectNotFoundError);
+    expect(error.objectID).toBe(936281);
+    expect(error.message).toContain("936281");
   });
 });

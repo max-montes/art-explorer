@@ -1,5 +1,12 @@
 import type { MediaAsset } from "./types";
 
+export class MetObjectNotFoundError extends Error {
+  constructor(public readonly objectID: number) {
+    super(`Met object ${objectID} was not found.`);
+    this.name = "MetObjectNotFoundError";
+  }
+}
+
 export interface MetObject {
   objectID: number;
   isPublicDomain: boolean;

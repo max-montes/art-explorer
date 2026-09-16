@@ -3,6 +3,7 @@ import path from "node:path";
 import {
   isArtworkObject,
   mapMetObject,
+  MetObjectNotFoundError,
   type MetObject,
 } from "../src/lib/catalog/met";
 
@@ -36,16 +37,22 @@ if (!Number.isInteger(limit) || limit < 1) {
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-async function fetchJson<T>(url: string): Promise<T> {
+async function fetchJson<T>(url: string, objectID?: number): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
     try {
       const response = await fetch(url);
+      if (response.status === 404 && objectID !== undefined) {
+        throw new MetObjectNotFoundError(objectID);
+      }
       if (!response.ok) {
         throw new Error(`Met API returned HTTP ${response.status} for ${url}`);
       }
       return (await response.json()) as T;
     } catch (error) {
+      if (error instanceof MetObjectNotFoundError) {
+        throw error;
+      }
       lastError = error;
       if (attempt === MAX_RETRIES - 1) break;
       await sleep(REQUEST_DELAY_MS * 2 ** attempt);
@@ -67,9 +74,19 @@ async function main() {
     ) {
       break;
     }
-    const object = await fetchJson<MetObject>(
-      `${API_ROOT}/objects/${objectID}`,
-    );
+    let object: MetObject;
+    try {
+      object = await fetchJson<MetObject>(
+        `${API_ROOT}/objects/${objectID}`,
+        objectID,
+      );
+    } catch (error) {
+      if (error instanceof MetObjectNotFoundError) {
+        await sleep(REQUEST_DELAY_MS);
+        continue;
+      }
+      throw error;
+    }
     if (isArtworkObject(object)) {
       const asset = mapMetObject(object);
       entries.push({
