@@ -22,6 +22,8 @@ export interface VectorQuery {
    * where the overall character of the source asset is the signal.
    */
   mode?: "labels" | "whole";
+  imageVector?: number[];
+  imageWeight?: number;
 }
 
 export interface CatalogIndexEntry {

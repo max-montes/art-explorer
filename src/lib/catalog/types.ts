@@ -179,6 +179,8 @@ export interface AssetVectors {
    * before this existed; they fall back to `semantic` until re-embedded.
    */
   labels?: number[][];
+  /** Optional CLIP/SigLIP image-space vector (shared with image-aware text queries). */
+  image?: number[];
 }
 
 export interface SearchWeights {

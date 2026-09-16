@@ -4,6 +4,12 @@ export interface EmbeddingProvider {
   embed(documents: string[]): Promise<number[][]>;
 }
 
+export interface ImageEmbeddingProvider {
+  readonly imageDimensions: number;
+  embedImages(images: string[]): Promise<number[][]>;
+  embedImageText(texts: string[]): Promise<number[][]>;
+}
+
 const SEMANTIC_EXPANSIONS: Record<string, string[]> = {
   plato: ["classical philosophy", "reason", "philosopher"],
   aristotle: ["classical philosophy", "reason", "philosopher"],
@@ -88,6 +94,12 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       options: { pooling: "mean"; normalize: true },
     ) => Promise<unknown>
   >;
+  private imageExtractor?: Promise<(input: string | string[]) => Promise<unknown>>;
+  private clipText?: Promise<{
+    tokenizer: (input: string[]) => Promise<{ input_ids: unknown }>;
+    model: (input: { input_ids: unknown }) => Promise<unknown>;
+  }>;
+  readonly imageDimensions = 512;
 
   constructor(
     private readonly model = "Xenova/all-MiniLM-L6-v2",
@@ -99,6 +111,7 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     if (!this.extractor) {
       this.extractor = this.createExtractor();
     }
+
     const extractor = await this.extractor;
     const output = await extractor(documents, {
       pooling: "mean",
@@ -112,6 +125,21 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     return values;
   }
 
+  async embedImages(images: string[]): Promise<number[][]> {
+    if (!this.imageExtractor) this.imageExtractor = this.createImageExtractor();
+    const output = await (await this.imageExtractor)(images);
+    return this.tensorRows(output, "image");
+  }
+
+  async embedImageText(texts: string[]): Promise<number[][]> {
+    if (!this.clipText) this.clipText = this.createClipText();
+    const { tokenizer, model } = await this.clipText;
+    const { input_ids } = await tokenizer(texts);
+    const output = await model({ input_ids });
+    const values = (output as { text_embeds?: unknown }).text_embeds ?? output;
+    return this.tensorRows(values, "text");
+  }
+
   private async createExtractor() {
     const { pipeline } = await import("@huggingface/transformers");
     const extractor = await pipeline("feature-extraction", this.model);
@@ -119,6 +147,40 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       input: string[],
       options: { pooling: "mean"; normalize: true },
     ): Promise<unknown> => extractor(input, options);
+  }
+
+  private async createImageExtractor() {
+    const { pipeline } = await import("@huggingface/transformers");
+    const extractor = await pipeline(
+      "image-feature-extraction",
+      process.env.IMAGE_EMBEDDING_MODEL ?? "Xenova/clip-vit-base-patch32",
+    );
+    return async (input: string | string[]) => extractor(input);
+  }
+
+  private async createClipText() {
+    const {
+      AutoTokenizer,
+      CLIPTextModelWithProjection,
+    } = await import("@huggingface/transformers");
+    const modelName =
+      process.env.IMAGE_EMBEDDING_MODEL ?? "Xenova/clip-vit-base-patch32";
+    const [tokenizer, model] = await Promise.all([
+      AutoTokenizer.from_pretrained(modelName),
+      CLIPTextModelWithProjection.from_pretrained(modelName),
+    ]);
+    return {
+      tokenizer: async (input: string[]) => tokenizer(input),
+      model: async (input: { input_ids: unknown }) => model(input),
+    };
+  }
+
+  private tensorRows(value: unknown, kind: string): number[][] {
+    const values = isTensorLike(value) ? value.tolist() : value;
+    if (!isNumberMatrix(values)) {
+      throw new Error(`CLIP ${kind} model returned an invalid tensor.`);
+    }
+    return values;
   }
 }
 

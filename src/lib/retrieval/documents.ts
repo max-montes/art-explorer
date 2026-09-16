@@ -4,7 +4,7 @@ import {
   type EmbeddingDocuments,
   type MediaAsset,
 } from "@/lib/catalog/types";
-import type { EmbeddingProvider } from "./providers";
+import type { EmbeddingProvider, ImageEmbeddingProvider } from "./providers";
 
 const canonicalList = (values: string[]) =>
   [...new Set(values.map((value) => value.trim()).filter(Boolean))]
@@ -58,8 +58,17 @@ export async function embedAsset(
     documents.metadata,
     ...labels,
   ]);
+  const image =
+    process.env.IMAGE_EMBEDDINGS === "true" &&
+    "embedImages" in provider &&
+    asset.source.mediaUrl &&
+    /^(https?:|data:)/i.test(asset.source.mediaUrl)
+      ? (await (provider as EmbeddingProvider & ImageEmbeddingProvider).embedImages([
+          asset.source.mediaUrl,
+        ]))[0]
+      : undefined;
   return {
     documents,
-    vectors: { semantic, metadata, labels: labelVectors },
+    vectors: { semantic, metadata, labels: labelVectors, ...(image ? { image } : {}) },
   };
 }

@@ -10,7 +10,7 @@ import {
   type SearchWeights,
 } from "@/lib/catalog/types";
 import { buildQueryDocuments } from "./documents";
-import type { EmbeddingProvider } from "./providers";
+import type { EmbeddingProvider, ImageEmbeddingProvider } from "./providers";
 import type { CatalogRepository } from "./repository";
 import { stemLabel } from "./stem";
 
@@ -95,11 +95,22 @@ export class RetrievalService {
       this.provider,
       buildQueryDocuments(normalized),
     );
+    const imageVector =
+      process.env.IMAGE_EMBEDDINGS === "true" &&
+      "embedImageText" in this.provider
+        ? (
+            await (
+              this.provider as EmbeddingProvider & ImageEmbeddingProvider
+            ).embedImageText([normalized])
+          )[0]
+        : undefined;
     const results = await this.repository.search({
       vectors,
       weights,
       limit,
       channel,
+      imageVector,
+      imageWeight: imageVector ? 0.2 : 0,
     });
     const pills = await this.pillsFor(normalized, results);
 

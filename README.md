@@ -28,6 +28,21 @@ Open `http://localhost:3000`. The default Transformers.js embedding model runs l
 EMBEDDING_PROVIDER=deterministic npm run dev
 ```
 
+### Image-aware retrieval
+
+Transformers.js 4.2.0 includes an image-feature pipeline and CLIP model
+projections. Set `IMAGE_EMBEDDINGS=true` to opt in to the compatible
+`Xenova/clip-vit-base-patch32` path. During ingestion, absolute HTTP(S) image
+URLs receive a 512-dimensional CLIP image vector in `media_embeddings`; text
+queries also get a CLIP text vector and blend image similarity with the
+existing 384-dimensional MiniLM association search. The original text vectors
+and ranking remain intact when the flag is unset. Relative local-media URLs
+are intentionally skipped until a server-side file-input adapter is added.
+
+PostgreSQL applies the nullable `image_embedding vector(512)` migration from
+`db/schema.sql`; no FAISS index is required. HNSW can be added after the image
+catalog is large enough to justify it.
+
 ## PostgreSQL + pgvector
 
 ```bash

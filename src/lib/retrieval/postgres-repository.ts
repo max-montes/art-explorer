@@ -47,9 +47,10 @@ export class PostgresCatalogRepository implements CatalogRepository {
 
   async findAssetVectors(id: string): Promise<AssetVectors | null> {
     const [embedding, labels] = await Promise.all([
-      this.pool.query<{ semantic: string; metadata: string }>(
+      this.pool.query<{ semantic: string; metadata: string; image: string | null }>(
         `SELECT semantic_embedding::text AS semantic,
-                metadata_embedding::text AS metadata
+                metadata_embedding::text AS metadata,
+                image_embedding::text AS image
            FROM media_embeddings
           WHERE asset_id = $1`,
         [id],
@@ -67,6 +68,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
     return {
       semantic: this.parseVector(row.semantic),
       metadata: this.parseVector(row.metadata),
+      ...(row.image ? { image: this.parseVector(row.image) } : {}),
       ...(labels.rows.length
         ? { labels: labels.rows.map((r) => this.parseVector(r.embedding)) }
         : {}),
@@ -100,7 +102,11 @@ export class PostgresCatalogRepository implements CatalogRepository {
               ${semanticExpression} AS semantic_score,
               1 - (embedding.metadata_embedding <=> $2::vector) AS metadata_score,
               (${semanticExpression}) * $3
-                + (1 - (embedding.metadata_embedding <=> $2::vector)) * $4 AS score,
+                + (1 - (embedding.metadata_embedding <=> $2::vector)) * $4
+                + CASE WHEN $8::vector IS NULL OR embedding.image_embedding IS NULL
+                       THEN 0
+                       ELSE (1 - (embedding.image_embedding <=> $8::vector)) * $9
+                  END AS score,
               (SELECT l.label FROM asset_label_embeddings l
                 WHERE l.asset_id = asset.id
                 ORDER BY l.embedding <=> $1::vector
@@ -119,6 +125,8 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.excludeAssetId ?? null,
         query.limit,
         query.channel,
+        query.imageVector ? toVector(query.imageVector) : null,
+        query.imageWeight ?? 0,
       ],
     );
     return result.rows.map((row) => ({
@@ -225,8 +233,8 @@ export class PostgresCatalogRepository implements CatalogRepository {
       await client.query(
         `INSERT INTO media_embeddings (
            asset_id, model_name, document_version, semantic_document,
-           metadata_document, semantic_embedding, metadata_embedding
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+           metadata_document, semantic_embedding, metadata_embedding, image_embedding
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (asset_id) DO UPDATE SET
            model_name = EXCLUDED.model_name,
            document_version = EXCLUDED.document_version,
@@ -234,6 +242,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
            metadata_document = EXCLUDED.metadata_document,
            semantic_embedding = EXCLUDED.semantic_embedding,
            metadata_embedding = EXCLUDED.metadata_embedding,
+           image_embedding = EXCLUDED.image_embedding,
            embedded_at = now()`,
         [
           asset.id,
@@ -243,6 +252,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
           documents.metadata,
           toVector(vectors.semantic),
           toVector(vectors.metadata),
+          vectors.image ? toVector(vectors.image) : null,
         ],
       );
       await client.query(

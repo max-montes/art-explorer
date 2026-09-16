@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS media_embeddings (
   metadata_document text NOT NULL,
   semantic_embedding vector(384) NOT NULL,
   metadata_embedding vector(384) NOT NULL,
+  image_embedding vector(512),
   embedded_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -114,15 +115,21 @@ DO $$ BEGIN
       metadata_document text NOT NULL,
       semantic_embedding vector(384) NOT NULL,
       metadata_embedding vector(384) NOT NULL,
+      image_embedding vector(512),
       embedded_at timestamptz NOT NULL DEFAULT now()
     );
   END IF;
 END $$;
 
+ALTER TABLE media_embeddings
+  ADD COLUMN IF NOT EXISTS image_embedding vector(512);
+
 CREATE INDEX IF NOT EXISTS media_embeddings_semantic_hnsw_idx
   ON media_embeddings USING hnsw (semantic_embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS media_embeddings_metadata_hnsw_idx
   ON media_embeddings USING hnsw (metadata_embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS media_embeddings_image_hnsw_idx
+  ON media_embeddings USING hnsw (image_embedding vector_cosine_ops);
 
 -- One row per association so search can score by best-matching label rather
 -- than a whole-list vector that dilutes literal matches.
