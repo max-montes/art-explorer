@@ -5,7 +5,8 @@ import {
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
-  normalizeMetObjectIDs,
+  normalizeMetQueries,
+  mergeMetObjectIDs,
   type MetObject,
 } from "../src/lib/catalog/met";
 
@@ -22,7 +23,13 @@ const argument = (name: string) => {
   return index >= 0 ? process.argv[index + 1] : undefined;
 };
 
+const repeatedArgument = (name: string) =>
+  process.argv.flatMap((value, index) =>
+    value === name && process.argv[index + 1] ? [process.argv[index + 1]] : [],
+  );
+
 const outputPath = argument("--output");
+const queries = normalizeMetQueries(repeatedArgument("--query"));
 const limitValue = argument("--limit");
 const limit = limitValue === undefined ? 25 : Number(limitValue);
 
@@ -64,10 +71,14 @@ async function fetchJson<T>(url: string, objectID?: number): Promise<T> {
 }
 
 async function main() {
-  const search = await fetchJson<SearchResponse>(
-    `${API_ROOT}/search?hasImages=true&isPublicDomain=true&q=art`,
-  );
-  const candidateIds = normalizeMetObjectIDs(search.objectIDs);
+  const searchIDGroups: unknown[] = [];
+  for (const query of queries) {
+    const search = await fetchJson<SearchResponse>(
+      `${API_ROOT}/search?hasImages=true&isPublicDomain=true&q=${encodeURIComponent(query)}`,
+    );
+    searchIDGroups.push(search.objectIDs);
+  }
+  const candidateIds = mergeMetObjectIDs(searchIDGroups);
   const entries = [];
   let skippedNotFound = 0;
   let skippedInvalid = 0;
@@ -129,7 +140,8 @@ async function main() {
   );
   console.log(
     `Wrote ${entries.length} Met artwork entries to ${resolvedOutput} ` +
-      `(skipped ${skippedNotFound} retired, ${skippedInvalid} malformed objects).`,
+      `(queries: ${queries.join(", ")}, skipped ${skippedNotFound} retired, ` +
+      `${skippedInvalid} malformed objects).`,
   );
 }
 

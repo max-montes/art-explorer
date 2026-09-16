@@ -36,6 +36,35 @@ export function normalizeMetObjectIDs(value: unknown): number[] {
   ];
 }
 
+export const DEFAULT_MET_QUERIES = [
+  "painting",
+  "sculpture",
+  "drawing",
+  "print",
+  "photograph",
+] as const;
+
+export function normalizeMetQueries(values: string[]): string[] {
+  const queries = values
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return [...new Set(queries.length ? queries : DEFAULT_MET_QUERIES)];
+}
+
+export function mergeMetObjectIDs(groups: unknown[]): number[] {
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  for (const group of groups) {
+    for (const objectID of normalizeMetObjectIDs(group)) {
+      if (!seen.has(objectID)) {
+        seen.add(objectID);
+        ids.push(objectID);
+      }
+    }
+  }
+  return ids;
+}
+
 export function isMetObject(value: unknown): value is MetObject {
   if (!value || typeof value !== "object") return false;
   const object = value as Partial<MetObject>;

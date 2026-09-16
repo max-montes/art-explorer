@@ -4,7 +4,10 @@ import {
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
+  DEFAULT_MET_QUERIES,
+  normalizeMetQueries,
   normalizeMetObjectIDs,
+  mergeMetObjectIDs,
   type MetObject,
 } from "@/lib/catalog/met";
 
@@ -87,6 +90,14 @@ describe("Met importer", () => {
     expect(normalizeMetObjectIDs(null)).toEqual([]);
     expect(isMetObject({ objectID: 9, isPublicDomain: true })).toBe(true);
     expect(isMetObject({ objectID: null, isPublicDomain: true })).toBe(false);
+  });
+
+  it("provides a balanced default and deduplicates repeatable queries", () => {
+    expect(normalizeMetQueries([])).toEqual([...DEFAULT_MET_QUERIES]);
+    expect(
+      normalizeMetQueries([" painting ", "sculpture", "painting", ""]),
+    ).toEqual(["painting", "sculpture"]);
+    expect(mergeMetObjectIDs([[1, 2, null], [2, 3, "4"]])).toEqual([1, 2, 3]);
   });
 
   it("accepts sparse object responses when required identity fields exist", () => {
