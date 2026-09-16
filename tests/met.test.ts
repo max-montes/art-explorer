@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isArtworkObject,
-  isPaintingObject,
+  isPaintingOrSculptureObject,
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
@@ -42,21 +42,27 @@ describe("Met importer", () => {
     expect(isArtworkObject({ ...baseObject, isPublicDomain: false })).toBe(false);
   });
 
-  it("accepts painting classifications but rejects vase-like art objects", () => {
+  it("accepts painting and sculpture classifications but rejects decorative objects", () => {
     expect(
-      isPaintingObject({ ...baseObject, classification: "Paintings" }),
+    isPaintingOrSculptureObject({ ...baseObject, classification: "Paintings" }),
     ).toBe(true);
     expect(
-      isPaintingObject({
+    isPaintingOrSculptureObject({
         ...baseObject,
-        classification: "Vases",
-        department: "European Decorative Arts",
-      }),
+      classification: "Sculptures",
+    }),
+    ).toBe(true);
+    expect(
+    isPaintingOrSculptureObject({
+      ...baseObject,
+      classification: "Vases",
+      department: "European Decorative Arts",
+    }),
     ).toBe(false);
     expect(
-      isPaintingObject({
-        ...baseObject,
-        classification: "Decorative Arts",
+    isPaintingOrSculptureObject({
+      ...baseObject,
+      classification: "Decorative Arts",
       }),
     ).toBe(false);
   });
