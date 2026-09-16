@@ -3,6 +3,8 @@ import {
   isArtworkObject,
   mapMetObject,
   MetObjectNotFoundError,
+  isMetObject,
+  normalizeMetObjectIDs,
   type MetObject,
 } from "@/lib/catalog/met";
 
@@ -78,5 +80,26 @@ describe("Met importer", () => {
     expect(error).toBeInstanceOf(MetObjectNotFoundError);
     expect(error.objectID).toBe(936281);
     expect(error.message).toContain("936281");
+  });
+
+  it("normalizes search IDs and ignores null or malformed values", () => {
+    expect(normalizeMetObjectIDs([1, null, 2.5, "3", 1, 0, -4])).toEqual([1]);
+    expect(normalizeMetObjectIDs(null)).toEqual([]);
+    expect(isMetObject({ objectID: 9, isPublicDomain: true })).toBe(true);
+    expect(isMetObject({ objectID: null, isPublicDomain: true })).toBe(false);
+  });
+
+  it("accepts sparse object responses when required identity fields exist", () => {
+    const sparse = {
+      objectID: 2,
+      isPublicDomain: true,
+      objectURL: "https://www.metmuseum.org/art/collection/search/2",
+      primaryImage: "https://images.example/2.jpg",
+      department: "European Paintings",
+      classification: null,
+    };
+    expect(isMetObject(sparse)).toBe(true);
+    expect(isArtworkObject(sparse)).toBe(true);
+    expect(mapMetObject(sparse).title).toBe("Untitled");
   });
 });

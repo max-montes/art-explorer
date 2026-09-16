@@ -13,15 +13,38 @@ export interface MetObject {
   objectURL: string | null;
   primaryImage: string | null;
   primaryImageSmall?: string | null;
-  title: string | null;
-  objectName: string | null;
-  department: string | null;
-  classification: string | null;
-  artistDisplayName: string | null;
-  artistDisplayBio: string | null;
-  objectDate: string | null;
-  culture: string | null;
-  medium: string | null;
+  title?: string | null;
+  objectName?: string | null;
+  department?: string | null;
+  classification?: string | null;
+  artistDisplayName?: string | null;
+  artistDisplayBio?: string | null;
+  objectDate?: string | null;
+  culture?: string | null;
+  medium?: string | null;
+}
+
+export function normalizeMetObjectIDs(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return [
+    ...new Set(
+      value.filter(
+        (id): id is number =>
+          typeof id === "number" && Number.isInteger(id) && id > 0,
+      ),
+    ),
+  ];
+}
+
+export function isMetObject(value: unknown): value is MetObject {
+  if (!value || typeof value !== "object") return false;
+  const object = value as Partial<MetObject>;
+  return (
+    typeof object.objectID === "number" &&
+    Number.isInteger(object.objectID) &&
+    object.objectID > 0 &&
+    typeof object.isPublicDomain === "boolean"
+  );
 }
 
 const ART_DEPARTMENTS = [

@@ -4,6 +4,8 @@ import {
   isArtworkObject,
   mapMetObject,
   MetObjectNotFoundError,
+  isMetObject,
+  normalizeMetObjectIDs,
   type MetObject,
 } from "../src/lib/catalog/met";
 
@@ -12,7 +14,7 @@ const REQUEST_DELAY_MS = 200;
 const MAX_RETRIES = 3;
 
 interface SearchResponse {
-  objectIDs?: number[];
+  objectIDs?: unknown;
 }
 
 const argument = (name: string) => {
@@ -65,8 +67,10 @@ async function main() {
   const search = await fetchJson<SearchResponse>(
     `${API_ROOT}/search?hasImages=true&isPublicDomain=true&q=art`,
   );
-  const candidateIds = [...new Set(search.objectIDs ?? [])];
+  const candidateIds = normalizeMetObjectIDs(search.objectIDs);
   const entries = [];
+  let skippedNotFound = 0;
+  let skippedInvalid = 0;
 
   for (const objectID of candidateIds) {
     if (
@@ -74,7 +78,7 @@ async function main() {
     ) {
       break;
     }
-    let object: MetObject;
+    let object: MetObject | undefined;
     try {
       object = await fetchJson<MetObject>(
         `${API_ROOT}/objects/${objectID}`,
@@ -82,6 +86,12 @@ async function main() {
       );
     } catch (error) {
       if (error instanceof MetObjectNotFoundError) {
+        skippedNotFound += 1;
+        await sleep(REQUEST_DELAY_MS);
+        continue;
+      }
+      if (!object || !isMetObject(object)) {
+        skippedInvalid += 1;
         await sleep(REQUEST_DELAY_MS);
         continue;
       }
@@ -117,7 +127,10 @@ async function main() {
     )}\n`,
     "utf8",
   );
-  console.log(`Wrote ${entries.length} Met artwork entries to ${resolvedOutput}.`);
+  console.log(
+    `Wrote ${entries.length} Met artwork entries to ${resolvedOutput} ` +
+      `(skipped ${skippedNotFound} retired, ${skippedInvalid} malformed objects).`,
+  );
 }
 
 main().catch((error: unknown) => {
