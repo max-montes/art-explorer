@@ -12,9 +12,9 @@ import {
 } from "../src/lib/catalog/met";
 
 const API_ROOT = "https://collectionapi.metmuseum.org/public/collection/v1";
-const REQUEST_DELAY_MS = 200;
+const REQUEST_DELAY_MS = 500;
 const MAX_RETRIES = 3;
-const OBJECT_CONCURRENCY = 4;
+const OBJECT_CONCURRENCY = 2;
 
 interface SearchResponse {
   objectIDs?: unknown;
@@ -53,6 +53,13 @@ if (!Number.isInteger(candidateCap) || candidateCap < 1) {
   throw new Error("--candidate-cap must be a positive integer.");
 }
 
+class MetAPIBannedError extends Error {
+  constructor() {
+    super("Met API returned HTTP 403; the current IP may be temporarily banned.");
+    this.name = "MetAPIBannedError";
+  }
+}
+
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -64,12 +71,18 @@ async function fetchJson<T>(url: string, objectID?: number): Promise<T> {
       if (response.status === 404 && objectID !== undefined) {
         throw new MetObjectNotFoundError(objectID);
       }
+      if (response.status === 403) {
+        throw new MetAPIBannedError();
+      }
       if (!response.ok) {
         throw new Error(`Met API returned HTTP ${response.status} for ${url}`);
       }
       return (await response.json()) as T;
     } catch (error) {
-      if (error instanceof MetObjectNotFoundError) {
+      if (
+        error instanceof MetObjectNotFoundError ||
+        error instanceof MetAPIBannedError
+      ) {
         throw error;
       }
       lastError = error;
