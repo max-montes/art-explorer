@@ -23,7 +23,6 @@ export interface VectorQuery {
    */
   mode?: "labels" | "whole";
   imageVector?: number[];
-  imageWeight?: number;
 }
 
 export interface CatalogIndexEntry {

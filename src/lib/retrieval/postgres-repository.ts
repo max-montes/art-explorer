@@ -20,6 +20,7 @@ interface SearchRow {
   score: number;
   semantic_score: number;
   metadata_score: number;
+  image_score: number | null;
   matched_label: string | null;
 }
 
@@ -101,6 +102,10 @@ export class PostgresCatalogRepository implements CatalogRepository {
       `SELECT asset.catalog_payload,
               ${semanticExpression} AS semantic_score,
               1 - (embedding.metadata_embedding <=> $2::vector) AS metadata_score,
+              CASE WHEN $8::vector IS NULL OR embedding.image_embedding IS NULL
+                       THEN 0
+                       ELSE 1 - (embedding.image_embedding <=> $8::vector)
+                  END AS image_score,
               (${semanticExpression}) * $3
                 + (1 - (embedding.metadata_embedding <=> $2::vector)) * $4
                 + CASE WHEN $8::vector IS NULL OR embedding.image_embedding IS NULL
@@ -126,7 +131,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.limit,
         query.channel,
         query.imageVector ? toVector(query.imageVector) : null,
-        query.imageWeight ?? 0,
+        query.weights.image ?? 0,
       ],
     );
     return result.rows.map((row) => ({
@@ -135,6 +140,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
       scores: {
         semantic: Number(row.semantic_score),
         metadata: Number(row.metadata_score),
+        ...(row.image_score !== null ? { image: Number(row.image_score) } : {}),
       },
       ...(mode === "labels" && row.matched_label
         ? { matchedLabel: row.matched_label }

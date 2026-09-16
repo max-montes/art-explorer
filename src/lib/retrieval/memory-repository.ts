@@ -68,16 +68,13 @@ export class MemoryCatalogRepository implements CatalogRepository {
         const scores = {
           semantic,
           metadata: cosine(query.vectors.metadata, vectors.metadata),
+          ...(query.imageVector && vectors.image
+            ? { image: cosine(query.imageVector, vectors.image) }
+            : {}),
         };
-        const image =
-          query.imageVector && vectors.image
-            ? cosine(query.imageVector, vectors.image)
-            : 0;
         return {
           asset,
-          score:
-            combinedScore(scores, query.weights) +
-            image * (query.imageWeight ?? 0),
+          score: combinedScore(scores, query.weights),
           scores,
           ...(matchedLabel ? { matchedLabel } : {}),
         };

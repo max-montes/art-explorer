@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { embedAsset } from "@/lib/retrieval/documents";
 import { DeterministicEmbeddingProvider } from "@/lib/retrieval/providers";
+import { MemoryCatalogRepository } from "@/lib/retrieval/memory-repository";
+import { RetrievalService } from "@/lib/retrieval/service";
 import { curatedFixtures } from "./fixtures/curated-catalog";
 
 describe("image-aware embedding safety", () => {
@@ -28,5 +30,43 @@ describe("image-aware embedding safety", () => {
     );
 
     expect(vectors.image).toBeUndefined();
+  });
+
+  it("uses explicit CLIP, association, and metadata weights", async () => {
+    process.env.IMAGE_EMBEDDINGS = "true";
+    const base = new DeterministicEmbeddingProvider();
+    const provider = Object.assign(base, {
+      embedImageText: async () => [Array.from({ length: 512 }, () => 1)],
+    });
+    const service = new RetrievalService(
+      new MemoryCatalogRepository(curatedFixtures, [], [], provider),
+      provider,
+    );
+
+    const response = await service.search("melancholy");
+
+    expect(response.weights).toEqual({
+      image: 0.65,
+      semantic: 0.25,
+      metadata: 0.1,
+    });
+  });
+
+  it("keeps the existing text-only weighting when CLIP is unavailable", async () => {
+    process.env.IMAGE_EMBEDDINGS = "true";
+    const base = new DeterministicEmbeddingProvider();
+    const provider = Object.assign(base, {
+      embedImageText: async () => {
+        throw new Error("model unavailable");
+      },
+    });
+    const service = new RetrievalService(
+      new MemoryCatalogRepository(curatedFixtures, [], [], provider),
+      provider,
+    );
+
+    const response = await service.search("melancholy");
+
+    expect(response.weights).toEqual({ semantic: 1, metadata: 0 });
   });
 });

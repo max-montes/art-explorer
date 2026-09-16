@@ -20,10 +20,15 @@ import { stemLabel } from "./stem";
  * channel alone. The metadata document's fixed "Title:/Creator:/Year:" frame
  * scores a steady 0.3–0.45 against almost any query, so at any positive
  * weight it reorders semantic near-ties by title wording. Search therefore
- * ignores it; Similar keeps a sliver, where shared title/creator text is a
- * weak but legitimate signal of kinship.
+ * ignores it in text-only search; image-aware search uses an explicit
+ * CLIP/association/metadata blend.
  */
 const SEARCH_WEIGHTS: SearchWeights = { semantic: 1, metadata: 0 };
+const HYBRID_SEARCH_WEIGHTS: SearchWeights = {
+  semantic: 0.25,
+  metadata: 0.1,
+  image: 0.65,
+};
 const SIMILAR_WEIGHTS: SearchWeights = { semantic: 0.92, metadata: 0.08 };
 /** A artwork recommendation is chosen on associations alone; titles are irrelevant. */
 const SCRIPT_RECOMMENDATION_WEIGHTS: SearchWeights = {
@@ -90,31 +95,33 @@ export class RetrievalService {
     if (!normalized) {
       throw new Error("A search query is required.");
     }
-    const weights = SEARCH_WEIGHTS;
     const vectors = await vectorBundle(
       this.provider,
       buildQueryDocuments(normalized),
     );
-    const imageVector =
-      process.env.IMAGE_EMBEDDINGS === "true" &&
-      "embedImageText" in this.provider
-        ? (
-            await (
-              this.provider as EmbeddingProvider & ImageEmbeddingProvider
-            ).embedImageText([normalized])
-          )[0]
-        : undefined;
+    let imageVector: number[] | undefined;
+    if (process.env.IMAGE_EMBEDDINGS === "true" && "embedImageText" in this.provider) {
+      try {
+        imageVector = (
+          await (
+            this.provider as EmbeddingProvider & ImageEmbeddingProvider
+          ).embedImageText([normalized])
+        )[0];
+      } catch {
+        imageVector = undefined;
+      }
+    }
+    const activeWeights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
     const results = await this.repository.search({
       vectors,
-      weights,
+      weights: activeWeights,
       limit,
       channel,
       imageVector,
-      imageWeight: imageVector ? 0.2 : 0,
     });
     const pills = await this.pillsFor(normalized, results);
 
-    return { query: normalized, channel, weights, results, pills };
+    return { query: normalized, channel, weights: activeWeights, results, pills };
   }
 
   /**

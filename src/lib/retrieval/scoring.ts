@@ -70,4 +70,7 @@ export const semanticScore = (
 export const combinedScore = (
   scores: SearchWeights,
   weights: SearchWeights,
-) => scores.semantic * weights.semantic + scores.metadata * weights.metadata;
+) =>
+  scores.semantic * weights.semantic +
+  scores.metadata * weights.metadata +
+  (scores.image ?? 0) * (weights.image ?? 0);

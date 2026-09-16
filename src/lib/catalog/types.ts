@@ -186,6 +186,7 @@ export interface AssetVectors {
 export interface SearchWeights {
   semantic: number;
   metadata: number;
+  image?: number;
 }
 
 export interface ScoredAsset {
