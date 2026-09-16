@@ -43,6 +43,17 @@ Open `http://localhost:3000/admin/curation`. Drag still image files or folders i
 
 Approved records are published under the `Artwork/` category and become searchable immediately. Draft records are not searchable. SHA-256 duplicate checks, safe local-media URLs, thumbnails, and deletion are handled by the curator service.
 
+### Import a small Met Open Access slice
+
+The first external catalog slice can be generated as a version-1 curation manifest. The importer only keeps public-domain Met records with an image and a conservative artwork department/classification match:
+
+```bash
+npm run catalog:met -- --output curation/met-open-access.json --limit 25
+npm run catalog:ingest -- curation/met-open-access.json
+```
+
+`--limit` defaults to `25`. The importer uses polite delays between requests and exponential retries for transient API failures. The generated manifest contains CC0/public-domain source metadata and searchable associations derived from the Met department, classification, culture, and medium. Run it from a networked environment; the Met API is queried live and no API key is required.
+
 ## Retrieval design
 
 Each artwork produces a semantic document from its associations and a metadata document from its title, creator, and year. Search emphasizes semantic similarity; similar-artwork search uses a small metadata component to recognize shared creator/title context. Follow-up pills come from strong matching associations.

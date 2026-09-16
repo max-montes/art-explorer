@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "eval": "tsx scripts/eval.ts",
-    "catalog:ingest": "tsx scripts/ingest-manifest.ts"
+    "catalog:ingest": "tsx scripts/ingest-manifest.ts",
+    "catalog:met": "tsx scripts/import-met.ts"
   },
   "dependencies": {
     "@huggingface/transformers": "4.2.0",
