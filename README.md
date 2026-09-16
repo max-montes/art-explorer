@@ -35,8 +35,9 @@ projections. Set `IMAGE_EMBEDDINGS=true` to opt in to the compatible
 `Xenova/clip-vit-base-patch32` path. During ingestion, absolute HTTP(S) image
 URLs receive a 512-dimensional CLIP image vector in `media_embeddings`; text
 queries also get a CLIP text vector. Hybrid search uses explicit normalized
-weights: 0.65 CLIP text-to-image similarity, 0.25 existing association
-similarity, and 0.10 metadata similarity. Metadata is a low-weight reranker,
+weights: 0.90 CLIP text-to-image similarity, 0.05 existing association
+similarity, and 0.05 metadata similarity. Together, the existing label and
+metadata scores are the 10% text-side reranker. Metadata is a low-weight reranker,
 not the primary meaning signal. The original text-only ranking remains intact
 when the flag is unset or the CLIP model is unavailable. Relative local-media URLs
 are intentionally skipped until a server-side file-input adapter is added.

@@ -46,9 +46,9 @@ describe("image-aware embedding safety", () => {
     const response = await service.search("melancholy");
 
     expect(response.weights).toEqual({
-      image: 0.65,
-      semantic: 0.25,
-      metadata: 0.1,
+      image: 0.9,
+      semantic: 0.05,
+      metadata: 0.05,
     });
   });
 

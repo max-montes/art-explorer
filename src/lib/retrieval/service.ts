@@ -25,9 +25,9 @@ import { stemLabel } from "./stem";
  */
 const SEARCH_WEIGHTS: SearchWeights = { semantic: 1, metadata: 0 };
 const HYBRID_SEARCH_WEIGHTS: SearchWeights = {
-  semantic: 0.25,
-  metadata: 0.1,
-  image: 0.65,
+  semantic: 0.05,
+  metadata: 0.05,
+  image: 0.9,
 };
 const SIMILAR_WEIGHTS: SearchWeights = { semantic: 0.92, metadata: 0.08 };
 /** A artwork recommendation is chosen on associations alone; titles are irrelevant. */
