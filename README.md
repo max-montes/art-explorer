@@ -88,11 +88,16 @@ npm run catalog:met -- --query painting --query sculpture \
   --output curation/met-open-access.json --limit 25
 ```
 
-Object lookups run with bounded concurrency (four workers), print progress and
+Object lookups run with bounded concurrency (two workers), print progress and
 accepted/filtered/retired counts, and are capped at `max(100, limit * 10)`
 candidate IDs by default. Use `--candidate-cap N` to choose a smaller or
 larger bounded walk when scaling the import; `--limit` still controls the
 number of accepted records.
+
+If the local network is temporarily blocked by the Met API, run the manual
+`Generate Met catalog` GitHub Actions workflow instead. It uploads the
+generated manifest as an artifact from a separate runner; download that file
+and pass it to `catalog:ingest` locally.
 
 ## Retrieval design
 
