@@ -62,6 +62,10 @@ export function mergeMetObjectIDs(groups: unknown[]): number[] {
   return ids;
 }
 
+export function capMetObjectIDs(ids: number[], cap: number): number[] {
+  return ids.slice(0, Math.max(0, Math.floor(cap)));
+}
+
 export function isMetObject(value: unknown): value is MetObject {
   if (!value || typeof value !== "object") return false;
   const object = value as Partial<MetObject>;

@@ -9,6 +9,7 @@ import {
   normalizeMetQueries,
   normalizeMetObjectIDs,
   mergeMetObjectIDs,
+  capMetObjectIDs,
   type MetObject,
 } from "@/lib/catalog/met";
 
@@ -124,6 +125,7 @@ describe("Met importer", () => {
       normalizeMetQueries([" painting ", "sculpture", "painting", ""]),
     ).toEqual(["painting", "sculpture"]);
     expect(mergeMetObjectIDs([[1, 2, null], [2, 3, "4"]])).toEqual([1, 2, 3]);
+    expect(capMetObjectIDs([1, 2, 3], 2)).toEqual([1, 2]);
   });
 
   it("accepts sparse object responses when required identity fields exist", () => {

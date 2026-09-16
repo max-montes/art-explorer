@@ -7,12 +7,14 @@ import {
   isMetObject,
   normalizeMetQueries,
   mergeMetObjectIDs,
+  capMetObjectIDs,
   type MetObject,
 } from "../src/lib/catalog/met";
 
 const API_ROOT = "https://collectionapi.metmuseum.org/public/collection/v1";
 const REQUEST_DELAY_MS = 200;
 const MAX_RETRIES = 3;
+const OBJECT_CONCURRENCY = 4;
 
 interface SearchResponse {
   objectIDs?: unknown;
@@ -32,6 +34,7 @@ const outputPath = argument("--output");
 const queries = normalizeMetQueries(repeatedArgument("--query"));
 const limitValue = argument("--limit");
 const limit = limitValue === undefined ? 25 : Number(limitValue);
+const candidateCapValue = argument("--candidate-cap");
 
 if (!outputPath) {
   throw new Error(
@@ -41,6 +44,13 @@ if (!outputPath) {
 const requiredOutputPath = outputPath;
 if (!Number.isInteger(limit) || limit < 1) {
   throw new Error("--limit must be a positive integer.");
+}
+const candidateCap =
+  candidateCapValue === undefined
+    ? Math.max(100, limit * 10)
+    : Number(candidateCapValue);
+if (!Number.isInteger(candidateCap) || candidateCap < 1) {
+  throw new Error("--candidate-cap must be a positive integer.");
 }
 
 const sleep = (milliseconds: number) =>
@@ -78,50 +88,70 @@ async function main() {
     );
     searchIDGroups.push(search.objectIDs);
   }
-  const candidateIds = mergeMetObjectIDs(searchIDGroups);
-  const entries = [];
+  const allCandidateIds = mergeMetObjectIDs(searchIDGroups);
+  const candidateIds = capMetObjectIDs(allCandidateIds, candidateCap);
+  const entries: unknown[] = [];
   let skippedNotFound = 0;
   let skippedInvalid = 0;
-
-  for (const objectID of candidateIds) {
-    if (
-      entries.filter((entry) => entry.decision === "include").length >= limit
-    ) {
-      break;
-    }
-    let object: MetObject | undefined;
-    try {
-      object = await fetchJson<MetObject>(
-        `${API_ROOT}/objects/${objectID}`,
-        objectID,
-      );
-    } catch (error) {
-      if (error instanceof MetObjectNotFoundError) {
-        skippedNotFound += 1;
-        await sleep(REQUEST_DELAY_MS);
-        continue;
+  let processed = 0;
+  let rejected = 0;
+  let nextIndex = 0;
+  const processCandidate = async () => {
+    while (true) {
+      const index = nextIndex++;
+      if (index >= candidateIds.length || entries.length >= limit) return;
+      const objectID = candidateIds[index];
+      let object: MetObject;
+      try {
+        object = await fetchJson<MetObject>(
+          `${API_ROOT}/objects/${objectID}`,
+          objectID,
+        );
+      } catch (error) {
+        if (error instanceof MetObjectNotFoundError) {
+          skippedNotFound += 1;
+          processed += 1;
+          console.log(
+            `[Met] ${processed}/${candidateIds.length}: ${objectID} retired`,
+          );
+          await sleep(REQUEST_DELAY_MS);
+          continue;
+        }
+        throw error;
       }
-      if (!object || !isMetObject(object)) {
+      processed += 1;
+      if (!isMetObject(object)) {
         skippedInvalid += 1;
-        await sleep(REQUEST_DELAY_MS);
-        continue;
+      } else if (isPaintingOrSculptureObject(object) && entries.length < limit) {
+        const asset = mapMetObject(object);
+        entries.push({
+          id: asset.id,
+          source_path: `met/${object.objectID}.jpg`,
+          decision: "include" as const,
+          exclusion_reason: null,
+          metadata_status: "complete" as const,
+          license_review_status: "approved" as const,
+          asset,
+        });
+      } else {
+        rejected += 1;
       }
-      throw error;
+      if (processed === 1 || processed % 10 === 0 || entries.length >= limit) {
+        console.log(
+          `[Met] ${processed}/${candidateIds.length} candidates; ` +
+            `${entries.length} accepted, ${rejected} filtered, ` +
+            `${skippedNotFound} retired, ${skippedInvalid} malformed`,
+        );
+      }
+      await sleep(REQUEST_DELAY_MS);
     }
-    if (isPaintingOrSculptureObject(object)) {
-      const asset = mapMetObject(object);
-      entries.push({
-        id: asset.id,
-        source_path: `met/${object.objectID}.jpg`,
-        decision: "include" as const,
-        exclusion_reason: null,
-        metadata_status: "complete" as const,
-        license_review_status: "approved" as const,
-        asset,
-      });
-    }
-    await sleep(REQUEST_DELAY_MS);
-  }
+  };
+  await Promise.all(
+    Array.from(
+      { length: Math.min(OBJECT_CONCURRENCY, candidateIds.length) },
+      processCandidate,
+    ),
+  );
 
   const resolvedOutput = path.resolve(requiredOutputPath);
   await mkdir(path.dirname(resolvedOutput), { recursive: true });
@@ -140,8 +170,9 @@ async function main() {
   );
   console.log(
     `Wrote ${entries.length} Met artwork entries to ${resolvedOutput} ` +
-      `(queries: ${queries.join(", ")}, skipped ${skippedNotFound} retired, ` +
-      `${skippedInvalid} malformed objects).`,
+      `(queries: ${queries.join(", ")}, candidates: ${candidateIds.length}/` +
+      `${allCandidateIds.length}, accepted: ${entries.length}, filtered: ` +
+      `${rejected}, retired: ${skippedNotFound}, malformed: ${skippedInvalid}).`,
   );
 }
 
