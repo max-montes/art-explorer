@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS media_embeddings (
   metadata_document text NOT NULL,
   semantic_embedding vector(384) NOT NULL,
   metadata_embedding vector(384) NOT NULL,
-  image_embedding vector(512),
+  image_embedding vector(768),
   embedded_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -115,14 +115,28 @@ DO $$ BEGIN
       metadata_document text NOT NULL,
       semantic_embedding vector(384) NOT NULL,
       metadata_embedding vector(384) NOT NULL,
-      image_embedding vector(512),
+      image_embedding vector(768),
       embedded_at timestamptz NOT NULL DEFAULT now()
     );
   END IF;
 END $$;
 
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1
+      FROM pg_attribute attribute
+      JOIN pg_class table_definition
+        ON table_definition.oid = attribute.attrelid
+     WHERE table_definition.relname = 'media_embeddings'
+       AND attribute.attname = 'image_embedding'
+       AND format_type(attribute.atttypid, attribute.atttypmod) <> 'vector(768)'
+  ) THEN
+    ALTER TABLE media_embeddings DROP COLUMN image_embedding;
+  END IF;
+END $$;
+
 ALTER TABLE media_embeddings
-  ADD COLUMN IF NOT EXISTS image_embedding vector(512);
+  ADD COLUMN IF NOT EXISTS image_embedding vector(768);
 
 CREATE INDEX IF NOT EXISTS media_embeddings_semantic_hnsw_idx
   ON media_embeddings USING hnsw (semantic_embedding vector_cosine_ops);

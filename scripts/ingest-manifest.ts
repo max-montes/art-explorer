@@ -6,8 +6,7 @@ import {
   parseCurationManifest,
   type CurationManifestEntry,
 } from "../src/lib/catalog/manifest";
-import type { MediaAsset } from "../src/lib/catalog/types";
-import { embedAsset } from "../src/lib/retrieval/documents";
+import { embedAssets } from "../src/lib/retrieval/documents";
 import { PostgresCatalogRepository } from "../src/lib/retrieval/postgres-repository";
 import { createEmbeddingProvider } from "../src/lib/retrieval/providers";
 
@@ -31,6 +30,12 @@ async function main() {
   const repository = new PostgresCatalogRepository(pool);
   await repository.prepare();
   const client = await pool.connect();
+  const startedAt = Date.now();
+  const embeddingBatchSize = Math.max(
+    1,
+    Number(process.env.EMBEDDING_BATCH_SIZE ?? 16),
+  );
+  const resumeSkipExisting = process.env.RESUME_SKIP_EXISTING === "true";
 
   async function recordDecision(
     database: PoolClient,
@@ -67,28 +72,65 @@ async function main() {
     );
   }
 
-  async function upsertAsset(asset: MediaAsset) {
-    const { documents, vectors } = await embedAsset(asset, provider);
-    if (vectors.semantic.length !== 384) {
-      throw new Error("The catalog schema requires 384-dimensional embeddings.");
-    }
-    await repository.upsertIndexedAsset({
-      asset,
-      documents,
-      vectors,
-      provider: provider.name,
-      documentVersion: 1,
-    });
-  }
-
   try {
     await client.query("BEGIN");
     const approvedByEntryId = new Map(
       approved.map((entry) => [entry.id, entry.asset]),
     );
+    const existingIds = resumeSkipExisting
+      ? new Set(
+          (
+            await client.query<{ asset_id: string }>(
+              `SELECT asset_id
+                 FROM media_embeddings
+                WHERE ($1::boolean = false OR image_embedding IS NOT NULL)`,
+              [process.env.IMAGE_EMBEDDINGS === "true"],
+            )
+          ).rows.map(row => row.asset_id),
+        )
+      : new Set<string>();
+    const pendingApproved = approved.filter(
+      entry => !existingIds.has(entry.asset.id),
+    );
+    if (resumeSkipExisting) {
+      console.log(
+        `[Catalog] resume: skipping ${approved.length - pendingApproved.length} ` +
+          `existing assets; ${pendingApproved.length} remaining`,
+      );
+    }
+    for (
+      let start = 0;
+      start < pendingApproved.length;
+      start += embeddingBatchSize
+    ) {
+      const assets = pendingApproved
+        .slice(start, start + embeddingBatchSize)
+        .map((entry) => entry.asset);
+      const embedded = await embedAssets(assets, provider);
+      if (embedded.some(({ vectors }) => vectors.semantic.length !== 384)) {
+        throw new Error("The catalog schema requires 384-dimensional embeddings.");
+      }
+      await repository.upsertIndexedAssets(
+        embedded.map(({ documents, vectors }, index) => ({
+          asset: assets[index],
+          documents,
+          vectors,
+          provider: provider.name,
+          documentVersion: 1,
+        })),
+      );
+      console.log(
+        `[Catalog] embedded and persisted ${Math.min(
+          start + embeddingBatchSize,
+        pendingApproved.length,
+        )}/${pendingApproved.length}; ${(
+        Math.min(start + embeddingBatchSize, pendingApproved.length) /
+          Math.max(0.001, (Date.now() - startedAt) / 1000)
+        ).toFixed(2)} paintings/s`,
+      );
+    }
     for (const entry of manifest.entries) {
       const asset = approvedByEntryId.get(entry.id);
-      if (asset) await upsertAsset(asset);
       await recordDecision(client, entry, asset?.id ?? null);
     }
     await client.query("COMMIT");

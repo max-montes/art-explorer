@@ -7,7 +7,9 @@ import {
 import {
   buildEmbeddingDocuments,
   buildQueryDocuments,
+  embedAssets,
 } from "@/lib/retrieval/documents";
+import { DeterministicEmbeddingProvider } from "@/lib/retrieval/providers";
 
 const fixture: MediaAsset = {
   id: "document-fixture",
@@ -64,6 +66,21 @@ describe("buildEmbeddingDocuments", () => {
     expect(documents.semantic).toBe("societal decay");
     expect(documents.metadata).toBe(
       "Title, creator, or named subject: societal decay",
+    );
+  });
+
+  it("embeds multiple assets in one ordered batch", async () => {
+    const results = await embedAssets(
+      [fixture, { ...fixture, id: "document-fixture-2", title: "Another Study" }],
+      new DeterministicEmbeddingProvider(),
+    );
+
+    expect(results).toHaveLength(2);
+    expect(results[0].documents.semantic).toContain("A Study");
+    expect(results[1].documents.semantic).toContain("Another Study");
+    expect(results[0].vectors.semantic).toHaveLength(384);
+    expect(results[0].vectors.labels).toHaveLength(
+      assetAssociations(fixture).length,
     );
   });
 

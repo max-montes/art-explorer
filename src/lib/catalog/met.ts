@@ -38,7 +38,6 @@ export function normalizeMetObjectIDs(value: unknown): number[] {
 
 export const DEFAULT_MET_QUERIES = [
   "painting",
-  "sculpture",
 ] as const;
 
 export function normalizeMetQueries(values: string[]): string[] {
@@ -134,6 +133,11 @@ export function isPaintingOrSculptureObject(object: MetObject): boolean {
   const classification = text(object.classification);
   if (/\bvases?\b|decorative/i.test(classification)) return false;
   return /\bpaintings?\b|\bsculptures?\b/i.test(classification);
+}
+
+export function isPaintingObject(object: MetObject): boolean {
+  if (!isArtworkObject(object)) return false;
+  return /\bpaintings?\b/i.test(text(object.classification));
 }
 
 export function mapMetObject(object: MetObject): MediaAsset {

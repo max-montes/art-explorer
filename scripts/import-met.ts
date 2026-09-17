@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  isPaintingOrSculptureObject,
+  isPaintingObject,
   mapMetObject,
   MetObjectNotFoundError,
   isMetObject,
@@ -138,7 +138,7 @@ async function main() {
       processed += 1;
       if (!isMetObject(object)) {
         skippedInvalid += 1;
-      } else if (isPaintingOrSculptureObject(object) && entries.length < limit) {
+      } else if (isPaintingObject(object) && entries.length < limit) {
         const asset = mapMetObject(object);
         entries.push({
           id: asset.id,

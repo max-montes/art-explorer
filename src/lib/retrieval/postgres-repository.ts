@@ -169,11 +169,17 @@ export class PostgresCatalogRepository implements CatalogRepository {
   }
 
   async upsertIndexedAsset(entry: CatalogIndexEntry): Promise<void> {
+    await this.upsertIndexedAssets([entry]);
+  }
+
+  async upsertIndexedAssets(entries: CatalogIndexEntry[]): Promise<void> {
+    if (!entries.length) return;
     const client = await this.pool.connect();
-    const { asset, documents, vectors } = entry;
     try {
       await client.query("BEGIN");
-      await client.query(
+      for (const entry of entries) {
+        const { asset, documents, vectors } = entry;
+        await client.query(
         `INSERT INTO media_assets (
           id, media_type, library_category, title, creator, year_display, description, narrative,
            curator_notes, source_provider, source_url, media_url, license,
@@ -216,27 +222,27 @@ export class PostgresCatalogRepository implements CatalogRepository {
           asset.ownerId ?? null,
           asset,
         ],
-      );
-      await client.query("DELETE FROM asset_labels WHERE asset_id = $1", [
-        asset.id,
-      ]);
-      const labels = [
-        ...(asset.semantics.associations ?? []).map((label) => [
-          "association",
-          label,
-        ]),
-        ...asset.semantics.concepts.map((label) => ["concept", label]),
-        ...asset.semantics.moods.map((label) => ["mood", label]),
-        ...asset.semantics.subjects.map((label) => ["subject", label]),
-      ];
-      for (const [type, label] of labels) {
-        await client.query(
-          `INSERT INTO asset_labels (asset_id, label_type, label)
-           VALUES ($1, $2, $3)`,
-          [asset.id, type, label],
         );
-      }
-      await client.query(
+        await client.query("DELETE FROM asset_labels WHERE asset_id = $1", [
+          asset.id,
+        ]);
+        const labels = [
+          ...(asset.semantics.associations ?? []).map((label) => [
+            "association",
+            label,
+          ]),
+          ...asset.semantics.concepts.map((label) => ["concept", label]),
+          ...asset.semantics.moods.map((label) => ["mood", label]),
+          ...asset.semantics.subjects.map((label) => ["subject", label]),
+        ];
+        for (const [type, label] of labels) {
+          await client.query(
+            `INSERT INTO asset_labels (asset_id, label_type, label)
+             VALUES ($1, $2, $3)`,
+            [asset.id, type, label],
+          );
+        }
+        await client.query(
         `INSERT INTO media_embeddings (
            asset_id, model_name, document_version, semantic_document,
            metadata_document, semantic_embedding, metadata_embedding, image_embedding
@@ -260,19 +266,24 @@ export class PostgresCatalogRepository implements CatalogRepository {
           toVector(vectors.metadata),
           vectors.image ? toVector(vectors.image) : null,
         ],
-      );
-      await client.query(
-        "DELETE FROM asset_label_embeddings WHERE asset_id = $1",
-        [asset.id],
-      );
-      if (vectors.labels?.length) {
-        const labels = assetAssociations(asset);
-        for (let i = 0; i < vectors.labels.length && i < labels.length; i++) {
-          await client.query(
-            `INSERT INTO asset_label_embeddings (asset_id, position, label, embedding)
-             VALUES ($1, $2, $3, $4)`,
-            [asset.id, i, labels[i], toVector(vectors.labels[i])],
-          );
+        );
+        await client.query(
+          "DELETE FROM asset_label_embeddings WHERE asset_id = $1",
+          [asset.id],
+        );
+        if (vectors.labels?.length) {
+          const associationLabels = assetAssociations(asset);
+          for (
+            let i = 0;
+            i < vectors.labels.length && i < associationLabels.length;
+            i++
+          ) {
+            await client.query(
+              `INSERT INTO asset_label_embeddings (asset_id, position, label, embedding)
+               VALUES ($1, $2, $3, $4)`,
+              [asset.id, i, associationLabels[i], toVector(vectors.labels[i])],
+            );
+          }
         }
       }
       await client.query("COMMIT");

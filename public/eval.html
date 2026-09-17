@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Art Explorer evaluation</title>
+    <style>
+      :root { color-scheme: light; --ink:#1d1b18; --muted:#716b61; --paper:#f1eee7; --card:#fffdf8; --rule:#d5cec1; --accent:#a5452b; }
+      * { box-sizing:border-box; }
+      body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.4 Arial,sans-serif; }
+      main { max-width:1200px; margin:0 auto; padding:32px 22px 64px; }
+      h1 { font:400 42px/1 Georgia,serif; margin:0 0 8px; }
+      h2 { font:400 24px Georgia,serif; margin:0; }
+      p { color:var(--muted); }
+      .intro { max-width:720px; margin-top:0; }
+      .panel { background:rgba(255,255,255,.5); border:1px solid var(--rule); padding:18px; margin:22px 0; }
+      label { display:block; font-weight:700; margin-bottom:6px; }
+      textarea, select, button { font:inherit; }
+      textarea { width:100%; min-height:92px; padding:10px; border:1px solid var(--rule); background:var(--card); resize:vertical; }
+      .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+      .field { min-width:180px; flex:1; }
+      select { width:100%; padding:10px; border:1px solid var(--rule); background:var(--card); }
+      button { border:1px solid var(--ink); background:var(--card); color:var(--ink); cursor:pointer; padding:9px 12px; }
+      button:hover { background:#eee7dc; }
+      button.primary { background:var(--ink); color:white; }
+      button.primary:hover { background:#403b35; }
+      .status { color:var(--muted); min-height:22px; }
+      .results { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+      .card { background:var(--card); border:1px solid var(--rule); overflow:hidden; }
+      .card img { display:block; width:100%; height:245px; object-fit:cover; background:#e5ded3; }
+      .card-body { padding:12px; }
+      .rank { color:var(--accent); font-size:12px; font-weight:700; }
+      .title { font:19px Georgia,serif; margin:4px 0; }
+      .meta { color:var(--muted); font-size:13px; min-height:38px; }
+      .score { color:var(--muted); font-size:11px; margin:8px 0; }
+      .labels { display:flex; gap:5px; }
+      .labels button { flex:1; padding:7px 4px; font-size:12px; }
+      .labels button.selected { color:white; border-color:var(--ink); background:var(--accent); }
+      .empty { color:var(--muted); padding:28px 0; }
+      @media (max-width:600px) { h1 { font-size:34px; } .card img { height:210px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Search evaluation</h1>
+      <p class="intro">Label the ranked results for a small, fixed query set. Labels are saved in this browser and can be exported as JSON for evaluation. Use <b>relevant</b> for a clear match, <b>unsure</b> for a borderline match, and <b>not relevant</b> for a clear miss.</p>
+
+      <section class="panel">
+        <label for="queries">Queries (one per line)</label>
+        <textarea id="queries">water
+melancholy
+portrait
+landscape
+light and shadow
+solitude
+power
+ritual
+American art
+blue</textarea>
+        <div class="controls" style="margin-top:12px">
+          <div class="field">
+            <label for="limit">Results per query</label>
+            <select id="limit"><option>10</option><option selected>12</option><option>20</option></select>
+          </div>
+          <button class="primary" id="start">Start / reload query</button>
+          <button id="export">Export labels</button>
+          <button id="clear">Clear saved labels</button>
+        </div>
+        <p class="status" id="status">Enter queries and start labeling.</p>
+      </section>
+
+      <section>
+        <div class="controls" style="justify-content:space-between; margin-bottom:12px">
+          <h2 id="heading">Results</h2>
+          <button id="next" disabled>Next query →</button>
+        </div>
+        <div class="results" id="results"><div class="empty">Results will appear here.</div></div>
+      </section>
+    </main>
+    <script>
+      const state = { queries: [], queryIndex: 0, results: [], labels: JSON.parse(localStorage.getItem("art-explorer-eval-labels") || "{}") };
+      const $ = id => document.getElementById(id);
+      const key = (query, result) => `${query}::${result.asset.id}`;
+      const save = () => localStorage.setItem("art-explorer-eval-labels", JSON.stringify(state.labels));
+      const setStatus = text => $("status").textContent = text;
+      const render = () => {
+        $("heading").textContent = state.queries[state.queryIndex] ? `“${state.queries[state.queryIndex]}”` : "Results";
+        $("results").innerHTML = "";
+        if (!state.results.length) {
+          $("results").innerHTML = '<div class="empty">No results returned.</div>';
+          return;
+        }
+        state.results.forEach((result, index) => {
+          const asset = result.asset;
+          const card = document.createElement("article");
+          card.className = "card";
+          const image = document.createElement("img");
+          image.src = asset.source.mediaUrl || "";
+          image.alt = asset.title;
+          image.loading = "lazy";
+          card.appendChild(image);
+          const body = document.createElement("div");
+          body.className = "card-body";
+          body.innerHTML = `<div class="rank">RANK ${index + 1}</div><div class="title"></div><div class="meta"></div><div class="score"></div><div class="labels"></div>`;
+          body.querySelector(".title").textContent = asset.title;
+          body.querySelector(".meta").textContent = `${asset.creator} · ${asset.year}`;
+          body.querySelector(".score").textContent = `score ${Number(result.score).toFixed(3)}`;
+          const choices = [["relevant", "Relevant"], ["unsure", "Unsure"], ["not_relevant", "Not relevant"]];
+          const labelKey = key(state.queries[state.queryIndex], result);
+          choices.forEach(([value, text]) => {
+            const button = document.createElement("button");
+            button.textContent = text;
+            if (state.labels[labelKey]?.label === value) button.className = "selected";
+            button.onclick = () => {
+              state.labels[labelKey] = { query: state.queries[state.queryIndex], assetId: asset.id, rank: index + 1, label: value, title: asset.title, timestamp: new Date().toISOString() };
+              save();
+              render();
+              setStatus(`${Object.keys(state.labels).length} labels saved locally.`);
+            };
+            body.querySelector(".labels").appendChild(button);
+          });
+          card.appendChild(body);
+          $("results").appendChild(card);
+        });
+      };
+      const loadQuery = async () => {
+        const query = state.queries[state.queryIndex];
+        if (!query) return;
+        setStatus(`Loading “${query}”…`);
+        $("next").disabled = true;
+        try {
+          const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${$("limit").value}`);
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Search failed.");
+          state.results = data.results || [];
+          render();
+          $("next").disabled = state.queryIndex >= state.queries.length - 1;
+          setStatus(`${state.results.length} results. ${Object.keys(state.labels).length} labels saved locally.`);
+        } catch (error) {
+          state.results = [];
+          render();
+          setStatus(error.message);
+        }
+      };
+      $("start").onclick = () => {
+        state.queries = $("queries").value.split(/\n/).map(q => q.trim()).filter(Boolean);
+        state.queryIndex = 0;
+        loadQuery();
+      };
+      $("next").onclick = () => { if (state.queryIndex < state.queries.length - 1) { state.queryIndex++; loadQuery(); } };
+      $("export").onclick = () => {
+        const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), labels: Object.values(state.labels) }, null, 2)], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "art-explorer-eval-labels.json";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      };
+      $("clear").onclick = () => { if (confirm("Clear all labels saved in this browser?")) { state.labels = {}; save(); render(); setStatus("Saved labels cleared."); } };
+    </script>
+  </body>
+</html>

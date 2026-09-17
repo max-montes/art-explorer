@@ -20,9 +20,14 @@ export async function GET(request: Request) {
       { status: 400 },
     );
   }
+  const requestedLimit = Number(params.get("limit") ?? 12);
+  const limit =
+    Number.isInteger(requestedLimit) && requestedLimit >= 1 && requestedLimit <= 50
+      ? requestedLimit
+      : 12;
   try {
     const service = await getRetrievalService();
-    return NextResponse.json(await service.search(query, channelParam));
+    return NextResponse.json(await service.search(query, channelParam, limit));
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Semantic search failed.";

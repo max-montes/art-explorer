@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isArtworkObject,
+  isPaintingObject,
   isPaintingOrSculptureObject,
   mapMetObject,
   MetObjectNotFoundError,
@@ -68,6 +69,21 @@ describe("Met importer", () => {
     ).toBe(false);
   });
 
+  it("accepts paintings only for the production importer", () => {
+    expect(isPaintingObject({ ...baseObject, classification: "Paintings" })).toBe(
+      true,
+    );
+    expect(isPaintingObject({ ...baseObject, classification: "Sculptures" })).toBe(
+      false,
+    );
+    expect(isPaintingObject({ ...baseObject, classification: "Ceramics" })).toBe(
+      false,
+    );
+    expect(isPaintingObject({ ...baseObject, classification: "Vases" })).toBe(
+      false,
+    );
+  });
+
   it("maps metadata and searchable associations into a MediaAsset", () => {
     const asset = mapMetObject(baseObject);
     expect(asset).toMatchObject({
@@ -119,11 +135,11 @@ describe("Met importer", () => {
     expect(isMetObject({ objectID: null, isPublicDomain: true })).toBe(false);
   });
 
-  it("provides a balanced default and deduplicates repeatable queries", () => {
+  it("provides a painting default and deduplicates repeatable queries", () => {
     expect(normalizeMetQueries([])).toEqual([...DEFAULT_MET_QUERIES]);
     expect(
-      normalizeMetQueries([" painting ", "sculpture", "painting", ""]),
-    ).toEqual(["painting", "sculpture"]);
+      normalizeMetQueries([" painting ", "painting", ""]),
+    ).toEqual(["painting"]);
     expect(mergeMetObjectIDs([[1, 2, null], [2, 3, "4"]])).toEqual([1, 2, 3]);
     expect(capMetObjectIDs([1, 2, 3], 2)).toEqual([1, 2]);
   });

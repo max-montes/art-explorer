@@ -1,7 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  isPaintingOrSculptureObject,
+  isPaintingObject,
   mapMetObject,
   type MetObject,
 } from "../src/lib/catalog/met";
@@ -100,6 +100,28 @@ async function main() {
   let offset = initialOffset;
   let scanned = 0;
   let total = Number.POSITIVE_INFINITY;
+  const startedAt = Date.now();
+  const resolvedOutput = path.resolve(requiredOutputPath);
+  const partialOutput = `${resolvedOutput}.partial.json`;
+
+  const writeCheckpoint = async () => {
+    await mkdir(path.dirname(partialOutput), { recursive: true });
+    await writeFile(
+      partialOutput,
+      `${JSON.stringify(
+        {
+          version: 1,
+          source_root: path.dirname(resolvedOutput),
+          offset,
+          scanned,
+          entries,
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+  };
 
   while (entries.length < limit && offset < total) {
     let page: HuggingFaceResponse;
@@ -110,6 +132,7 @@ async function main() {
         `[Met HF] skipping unavailable page at offset ${offset}:`,
         error,
       );
+      await writeCheckpoint();
       offset += PAGE_SIZE;
       continue;
     }
@@ -120,7 +143,7 @@ async function main() {
     for (const { row } of rows) {
       scanned += 1;
       const object = toMetObject(row);
-      if (!object || !isPaintingOrSculptureObject(object)) continue;
+      if (!object || !isPaintingObject(object)) continue;
       const asset = mapMetObject(object);
       entries.push({
         id: asset.id,
@@ -135,8 +158,15 @@ async function main() {
     }
 
     offset += rows.length;
+    await writeCheckpoint();
+    const elapsedSeconds = Math.max(0.001, (Date.now() - startedAt) / 1000);
+    const rowsPerSecond = scanned / elapsedSeconds;
+    const remainingRows = Math.max(0, total - offset);
+    const etaSeconds =
+      rowsPerSecond > 0 ? remainingRows / rowsPerSecond : Number.POSITIVE_INFINITY;
     console.log(
-      `[Met HF] scanned ${scanned}/${total}; accepted ${entries.length}`,
+      `[Met HF] scanned ${scanned}/${total}; accepted ${entries.length}; ` +
+        `${rowsPerSecond.toFixed(1)} rows/s; ETA ${Number.isFinite(etaSeconds) ? `${Math.ceil(etaSeconds)}s` : "unknown"}`,
     );
   }
 
@@ -146,7 +176,6 @@ async function main() {
     );
   }
 
-  const resolvedOutput = path.resolve(requiredOutputPath);
   await mkdir(path.dirname(resolvedOutput), { recursive: true });
   await writeFile(
     resolvedOutput,
@@ -157,6 +186,7 @@ async function main() {
     )}\n`,
     "utf8",
   );
+  await unlink(partialOutput).catch(() => undefined);
   console.log(`Wrote ${entries.length} Met HF entries to ${resolvedOutput}.`);
 }
 

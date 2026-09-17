@@ -88,6 +88,8 @@ const isNumberMatrix = (value: unknown): value is number[][] =>
 export class TransformersEmbeddingProvider implements EmbeddingProvider {
   readonly name: string;
   readonly dimensions = 384;
+  readonly imageDimensions: number;
+  private readonly imageModel: string;
   private extractor?: Promise<
     (
       input: string[],
@@ -95,16 +97,19 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     ) => Promise<unknown>
   >;
   private imageExtractor?: Promise<(input: string | string[]) => Promise<unknown>>;
-  private clipText?: Promise<{
-    tokenizer: (input: string[]) => Promise<{ input_ids: unknown }>;
-    model: (input: { input_ids: unknown }) => Promise<unknown>;
+  private imageText?: Promise<{
+    tokenizer: (input: string[]) => Promise<Record<string, unknown>>;
+    model: (input: Record<string, unknown>) => Promise<unknown>;
   }>;
-  readonly imageDimensions = 512;
 
   constructor(
     private readonly model = "Xenova/all-MiniLM-L6-v2",
   ) {
-    this.name = `transformers:${model}`;
+    this.imageModel =
+      process.env.IMAGE_EMBEDDING_MODEL ??
+      "Xenova/siglip-base-patch16-224";
+    this.imageDimensions = /siglip/i.test(this.imageModel) ? 768 : 512;
+    this.name = `transformers:${model}+${this.imageModel}`;
   }
 
   async embed(documents: string[]): Promise<number[][]> {
@@ -128,16 +133,19 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   async embedImages(images: string[]): Promise<number[][]> {
     if (!this.imageExtractor) this.imageExtractor = this.createImageExtractor();
     const output = await (await this.imageExtractor)(images);
-    return this.tensorRows(output, "image");
+    return this.tensorRows(output, "image").map(normalize);
   }
 
   async embedImageText(texts: string[]): Promise<number[][]> {
-    if (!this.clipText) this.clipText = this.createClipText();
-    const { tokenizer, model } = await this.clipText;
-    const { input_ids } = await tokenizer(texts);
-    const output = await model({ input_ids });
-    const values = (output as { text_embeds?: unknown }).text_embeds ?? output;
-    return this.tensorRows(values, "text");
+    if (!this.imageText) this.imageText = this.createImageText();
+    const { tokenizer, model } = await this.imageText;
+    const output = await model(await tokenizer(texts));
+    const values =
+      (output as { text_embeds?: unknown; pooler_output?: unknown })
+        .text_embeds ??
+      (output as { pooler_output?: unknown }).pooler_output ??
+      output;
+    return this.tensorRows(values, "text").map(normalize);
   }
 
   private async createExtractor() {
@@ -153,32 +161,38 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     const { pipeline } = await import("@huggingface/transformers");
     const extractor = await pipeline(
       "image-feature-extraction",
-      process.env.IMAGE_EMBEDDING_MODEL ?? "Xenova/clip-vit-base-patch32",
+      this.imageModel,
     );
-    return async (input: string | string[]) => extractor(input);
+    return async (input: string | string[]) =>
+      /siglip/i.test(this.imageModel)
+        ? extractor(input, { pool: true })
+        : extractor(input);
   }
 
-  private async createClipText() {
-    const {
-      AutoTokenizer,
-      CLIPTextModelWithProjection,
-    } = await import("@huggingface/transformers");
-    const modelName =
-      process.env.IMAGE_EMBEDDING_MODEL ?? "Xenova/clip-vit-base-patch32";
-    const [tokenizer, model] = await Promise.all([
-      AutoTokenizer.from_pretrained(modelName),
-      CLIPTextModelWithProjection.from_pretrained(modelName),
-    ]);
+  private async createImageText() {
+    const transformers = await import("@huggingface/transformers");
+    const tokenizer = await transformers.AutoTokenizer.from_pretrained(
+      this.imageModel,
+    );
+    const model = /siglip/i.test(this.imageModel)
+      ? await transformers.SiglipTextModel.from_pretrained(this.imageModel)
+      : await transformers.CLIPTextModelWithProjection.from_pretrained(
+          this.imageModel,
+        );
     return {
-      tokenizer: async (input: string[]) => tokenizer(input),
-      model: async (input: { input_ids: unknown }) => model(input),
+      tokenizer: async (input: string[]) =>
+        tokenizer(input, { padding: "max_length", truncation: true }) as Record<
+          string,
+          unknown
+        >,
+      model: async (input: Record<string, unknown>) => model(input),
     };
   }
 
   private tensorRows(value: unknown, kind: string): number[][] {
     const values = isTensorLike(value) ? value.tolist() : value;
     if (!isNumberMatrix(values)) {
-      throw new Error(`CLIP ${kind} model returned an invalid tensor.`);
+      throw new Error(`Image-text ${kind} model returned an invalid tensor.`);
     }
     return values;
   }

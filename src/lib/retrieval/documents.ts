@@ -51,24 +51,90 @@ export async function embedAsset(
   asset: MediaAsset,
   provider: EmbeddingProvider,
 ): Promise<{ documents: EmbeddingDocuments; vectors: AssetVectors }> {
-  const documents = buildEmbeddingDocuments(asset);
-  const labels = assetAssociations(asset);
-  const [semantic, metadata, ...labelVectors] = await provider.embed([
-    documents.semantic,
-    documents.metadata,
-    ...labels,
+  return (await embedAssets([asset], provider))[0];
+}
+
+export async function embedAssets(
+  assets: MediaAsset[],
+  provider: EmbeddingProvider,
+): Promise<Array<{ documents: EmbeddingDocuments; vectors: AssetVectors }>> {
+  if (!assets.length) return [];
+  const documents = assets.map(buildEmbeddingDocuments);
+  const embeddedDocuments = await provider.embed([
+    ...assets.flatMap((asset, index) => [
+      documents[index].semantic,
+      documents[index].metadata,
+      ...assetAssociations(asset),
+    ]),
   ]);
-  const image =
+  let documentIndex = 0;
+  const results: Array<{
+    documents: EmbeddingDocuments;
+    vectors: AssetVectors;
+  }> = assets.map((asset, index) => {
+    const assetDocuments = documents[index];
+    const semantic = embeddedDocuments[documentIndex++];
+    const metadata = embeddedDocuments[documentIndex++];
+    const labels = assetAssociations(asset).map(
+      () => embeddedDocuments[documentIndex++],
+    );
+    return {
+      documents: assetDocuments,
+      vectors: { semantic, metadata, labels },
+    };
+  });
+
+  if (
     process.env.IMAGE_EMBEDDINGS === "true" &&
-    "embedImages" in provider &&
-    asset.source.mediaUrl &&
-    /^(https?:|data:)/i.test(asset.source.mediaUrl)
-      ? (await (provider as EmbeddingProvider & ImageEmbeddingProvider).embedImages([
-          asset.source.mediaUrl,
-        ]))[0]
-      : undefined;
-  return {
-    documents,
-    vectors: { semantic, metadata, labels: labelVectors, ...(image ? { image } : {}) },
-  };
+    "embedImages" in provider
+  ) {
+    const imageProvider = provider as EmbeddingProvider & ImageEmbeddingProvider;
+    const imageAssets = assets.filter(
+      asset =>
+        asset.source.mediaUrl &&
+        /^(https?:|data:)/i.test(asset.source.mediaUrl),
+    );
+    if (imageAssets.length) {
+      const imageVectors = await embedImagesWithFailureIsolation(
+        imageAssets,
+        imageProvider,
+      );
+      for (const [assetIndex, result] of results.entries()) {
+        const image = imageVectors.get(assets[assetIndex].id);
+        if (image) result.vectors.image = image;
+      }
+    }
+  }
+  return results;
+}
+
+async function embedImagesWithFailureIsolation(
+  assets: MediaAsset[],
+  provider: ImageEmbeddingProvider,
+): Promise<Map<string, number[]>> {
+  try {
+    const vectors = await provider.embedImages(
+      assets.map(asset => asset.source.mediaUrl as string),
+    );
+    if (vectors.length !== assets.length) {
+      throw new Error(
+        `CLIP returned ${vectors.length} vectors for ${assets.length} images.`,
+      );
+    }
+    return new Map(assets.map((asset, index) => [asset.id, vectors[index]]));
+  } catch (error) {
+    if (assets.length === 1) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `[Catalog] skipped image embedding for ${assets[0].id}: ${message}`,
+      );
+      return new Map();
+    }
+    const middle = Math.ceil(assets.length / 2);
+    const [left, right] = await Promise.all([
+      embedImagesWithFailureIsolation(assets.slice(0, middle), provider),
+      embedImagesWithFailureIsolation(assets.slice(middle), provider),
+    ]);
+    return new Map([...left, ...right]);
+  }
 }
