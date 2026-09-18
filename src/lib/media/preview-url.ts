@@ -12,6 +12,11 @@ export function mediaPreviewUrl(mediaUrl: string, width = 960): string {
 
   try {
     const url = new URL(mediaUrl);
+    if (url.hostname === "images.metmuseum.org") {
+      url.pathname = url.pathname.replace("/original/", "/web-large/");
+      return url.toString();
+    }
+
     if (url.hostname !== "upload.wikimedia.org") return mediaUrl;
 
     const match = url.pathname.match(WIKIMEDIA_IMAGE_PATH);

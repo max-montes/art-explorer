@@ -22,17 +22,16 @@ describe("association-based retrieval", () => {
     expect(response.results[0].asset.semantics.associations).toContain(
       "Melancholic",
     );
-    // Search is decided by associations alone; metadata never reorders.
-    expect(response.weights).toEqual({ semantic: 1, metadata: 0 });
+    expect(response.weights).toEqual({ semantic: 0.8, metadata: 0.2 });
   });
 
-  it("resolves a creator name through the creator association, not metadata", async () => {
+  it("resolves a creator name through metadata, not subject associations", async () => {
     const response = await createService().search("Caspar David Friedrich");
 
     expect(response.results[0].asset.id).toBe(
       "curated-wanderer-above-sea-of-fog",
     );
-    expect(response.results[0].matchedLabel).toBe("Caspar David Friedrich");
+    expect(response.results[0].matchedLabel).not.toBe("Caspar David Friedrich");
   });
 
   it("offers the creator as a follow-up search", async () => {

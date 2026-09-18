@@ -254,7 +254,10 @@ export class PostgresCatalogRepository implements CatalogRepository {
            metadata_document = EXCLUDED.metadata_document,
            semantic_embedding = EXCLUDED.semantic_embedding,
            metadata_embedding = EXCLUDED.metadata_embedding,
-           image_embedding = EXCLUDED.image_embedding,
+           image_embedding = COALESCE(
+             EXCLUDED.image_embedding,
+             media_embeddings.image_embedding
+           ),
            embedded_at = now()`,
         [
           asset.id,

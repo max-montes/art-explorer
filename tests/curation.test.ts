@@ -424,7 +424,12 @@ describe("curator catalog lifecycle", () => {
     expect(persisted).toEqual([approved.draft.id]);
     const healed = await index.findById(approved.draft.id);
     expect(healed?.embedding.version).toBe(approved.embedding.version + 1);
-    expect(healed?.embedding.documents?.semantic).toContain("François-André Vincent;");
+    expect(healed?.embedding.documents?.semantic).not.toContain(
+      "François-André Vincent",
+    );
+    expect(healed?.embedding.documents?.metadata).toContain(
+      "François-André Vincent",
+    );
     const retrieval = new RetrievalService(restarted, provider);
     expect(
       (await retrieval.search("François-André Vincent")).results[0].asset.id,

@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 import { mediaPreviewUrl } from "@/lib/media/preview-url";
 
 describe("media preview URLs", () => {
+  it("uses the Met's smaller web image instead of the original", () => {
+    expect(
+      mediaPreviewUrl(
+        "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+      ),
+    ).toBe(
+      "https://images.metmuseum.org/CRDImages/as/web-large/DP205538.jpg",
+    );
+  });
+
   it("uses a bounded Wikimedia thumbnail instead of the original image", () => {
     expect(
       mediaPreviewUrl(

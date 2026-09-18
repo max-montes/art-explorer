@@ -2,6 +2,7 @@ import {
   assetAssociations,
   type AssetVectors,
   type MediaAsset,
+  type ScoredAsset,
   type SearchWeights,
 } from "@/lib/catalog/types";
 
@@ -74,3 +75,47 @@ export const combinedScore = (
   scores.semantic * weights.semantic +
   scores.metadata * weights.metadata +
   (scores.image ?? 0) * (weights.image ?? 0);
+
+export const reciprocalRankFusion = (
+  rankings: ScoredAsset[][],
+  limit: number,
+  rankConstant = 60,
+): ScoredAsset[] => {
+  if (rankings.length === 0) return [];
+  const fused = new Map<
+    string,
+    { result: ScoredAsset; score: number; firstSeen: number }
+  >();
+  let firstSeen = 0;
+
+  for (const ranking of rankings) {
+    ranking.forEach((result, index) => {
+      const current = fused.get(result.asset.id);
+      const contribution = 1 / (rankConstant + index + 1);
+      if (current) {
+        current.score += contribution;
+        if (!current.result.matchedLabel && result.matchedLabel) {
+          current.result = result;
+        }
+      } else {
+        fused.set(result.asset.id, {
+          result,
+          score: contribution,
+          firstSeen: firstSeen++,
+        });
+      }
+    });
+  }
+
+  const maximum = rankings.length / (rankConstant + 1);
+  return [...fused.values()]
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.firstSeen - right.firstSeen,
+    )
+    .slice(0, limit)
+    .map(({ result, score }) => ({
+      ...result,
+      score: score / maximum,
+    }));
+};

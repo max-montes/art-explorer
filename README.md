@@ -9,8 +9,8 @@ or artist.
 ## What it does
 
 - Searches roughly 5,500 public-domain paintings from The Met.
-- Understands visual and conceptual queries with SigLIP.
-- Combines image similarity with titles, artists, dates, and associations.
+- Uses SigLIP for visual meaning and Met subject tags for depicted concepts.
+- Keeps title, artist, date, culture, and medium in a separate metadata channel.
 - Suggests related ideas and visually similar paintings.
 - Includes a small human-evaluation tool for tuning search quality.
 
@@ -18,8 +18,9 @@ or artist.
 
 Art Explorer embeds each painting and each natural-language query with
 `Xenova/siglip-base-patch16-224`. PostgreSQL and pgvector rank the resulting
-768-dimensional image vectors, then blend that score with semantic associations
-and metadata.
+768-dimensional image vectors, then combine that signal with separate subject
+and metadata channels. Subject semantics come from The Met's Getty
+AAT/Wikidata-linked tags rather than generic department or medium labels.
 
 The catalog is paintings only. Sculptures, ceramics, vases, and decorative
 objects are excluded.
@@ -59,8 +60,8 @@ stopping the job.
 ## Evaluate search
 
 Open [http://localhost:3000/eval.html](http://localhost:3000/eval.html) to label
-the top results as relevant, unsure, or not relevant. Judgments are saved in the
-browser and can be exported as JSON.
+weighted, reciprocal-rank-fusion, or pooled candidates as relevant, unsure, or
+not relevant. Judgments are saved in the browser and can be exported as JSON.
 
 ## Provenance
 

@@ -6,24 +6,22 @@ import {
   type Channel,
   type ConceptPill,
   type ScoredAsset,
+  type SearchRanking,
   type SearchResult,
   type SearchWeights,
 } from "@/lib/catalog/types";
 import { buildQueryDocuments } from "./documents";
 import type { EmbeddingProvider, ImageEmbeddingProvider } from "./providers";
 import type { CatalogRepository } from "./repository";
+import { reciprocalRankFusion } from "./scoring";
 import { stemLabel } from "./stem";
 
 /**
- * Associations carry the meaning, and since the creator is itself an
- * association, every creator name in the catalog resolves on the semantic
- * channel alone. The metadata document's fixed "Title:/Creator:/Year:" frame
- * scores a steady 0.3–0.45 against almost any query, so at any positive
- * weight it reorders semantic near-ties by title wording. Search therefore
- * ignores it in text-only search; image-aware search uses an explicit
- * CLIP/association/metadata blend.
+ * Text-only search favors subject semantics while retaining enough metadata
+ * weight for explicit title and creator queries. Image-aware search uses an
+ * explicit SigLIP/subject/metadata blend.
  */
-const SEARCH_WEIGHTS: SearchWeights = { semantic: 1, metadata: 0 };
+const SEARCH_WEIGHTS: SearchWeights = { semantic: 0.8, metadata: 0.2 };
 const HYBRID_SEARCH_WEIGHTS: SearchWeights = {
   semantic: 0.05,
   metadata: 0.05,
@@ -42,6 +40,7 @@ const SCRIPT_RECOMMENDATION_WEIGHTS: SearchWeights = {
  */
 const PILL_SOURCE_FLOOR = 0.3;
 const PILL_SOURCE_RELATIVE = 0.5;
+const RRF_MIN_CANDIDATES_PER_CHANNEL = 30;
 
 const vectorBundle = async (
   provider: EmbeddingProvider,
@@ -90,6 +89,7 @@ export class RetrievalService {
     query: string,
     channel: Channel = DEFAULT_CHANNEL,
     limit = 12,
+    ranking: SearchRanking = "weighted",
   ): Promise<SearchResult> {
     const normalized = query.trim();
     if (!normalized) {
@@ -112,16 +112,44 @@ export class RetrievalService {
       }
     }
     const activeWeights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
-    const results = await this.repository.search({
-      vectors,
-      weights: activeWeights,
-      limit,
-      channel,
-      imageVector,
-    });
+    const effectiveRanking = ranking === "rrf" && imageVector ? "rrf" : "weighted";
+    const results =
+      effectiveRanking === "rrf"
+        ? reciprocalRankFusion(
+            await Promise.all(
+              [
+                { semantic: 1, metadata: 0 },
+                { semantic: 0, metadata: 1 },
+                { semantic: 0, metadata: 0, image: 1 },
+              ].map((weights) =>
+                this.repository.search({
+                  vectors,
+                  weights,
+                  limit: Math.max(RRF_MIN_CANDIDATES_PER_CHANNEL, limit * 3),
+                  channel,
+                  imageVector,
+                }),
+              ),
+            ),
+            limit,
+          )
+        : await this.repository.search({
+            vectors,
+            weights: activeWeights,
+            limit,
+            channel,
+            imageVector,
+          });
     const pills = await this.pillsFor(normalized, results);
 
-    return { query: normalized, channel, weights: activeWeights, results, pills };
+    return {
+      query: normalized,
+      channel,
+      ranking: effectiveRanking,
+      weights: activeWeights,
+      results,
+      pills,
+    };
   }
 
   /**
@@ -185,6 +213,7 @@ export class RetrievalService {
     return {
       query: `Similar to ${asset.title}`,
       channel,
+      ranking: "weighted",
       weights,
       results,
       pills,

@@ -50,6 +50,24 @@ describe("image-aware embedding safety", () => {
       semantic: 0.05,
       metadata: 0.05,
     });
+    expect(response.ranking).toBe("weighted");
+  });
+
+  it("can fuse independently retrieved channel rankings", async () => {
+    process.env.IMAGE_EMBEDDINGS = "true";
+    const base = new DeterministicEmbeddingProvider();
+    const provider = Object.assign(base, {
+      embedImageText: async () => [Array.from({ length: 512 }, () => 1)],
+    });
+    const service = new RetrievalService(
+      new MemoryCatalogRepository(curatedFixtures, [], [], provider),
+      provider,
+    );
+
+    const response = await service.search("melancholy", "artwork", 12, "rrf");
+
+    expect(response.ranking).toBe("rrf");
+    expect(response.results.length).toBeGreaterThan(0);
   });
 
   it("keeps the existing text-only weighting when CLIP is unavailable", async () => {
@@ -67,6 +85,6 @@ describe("image-aware embedding safety", () => {
 
     const response = await service.search("melancholy");
 
-    expect(response.weights).toEqual({ semantic: 1, metadata: 0 });
+    expect(response.weights).toEqual({ semantic: 0.8, metadata: 0.2 });
   });
 });

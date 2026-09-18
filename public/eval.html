@@ -27,7 +27,9 @@
       .status { color:var(--muted); min-height:22px; }
       .results { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
       .card { background:var(--card); border:1px solid var(--rule); overflow:hidden; }
-      .card img { display:block; width:100%; height:245px; object-fit:cover; background:#e5ded3; }
+      .image-wrap { height:245px; position:relative; background:#e5ded3; }
+      .image-wrap img { cursor:zoom-in; display:block; width:100%; height:100%; object-fit:contain; }
+      .fullscreen { position:absolute; right:8px; top:8px; padding:7px 9px; background:rgba(255,253,248,.94); font-size:11px; }
       .card-body { padding:12px; }
       .rank { color:var(--accent); font-size:12px; font-weight:700; }
       .title { font:19px Georgia,serif; margin:4px 0; }
@@ -37,7 +39,11 @@
       .labels button { flex:1; padding:7px 4px; font-size:12px; }
       .labels button.selected { color:white; border-color:var(--ink); background:var(--accent); }
       .empty { color:var(--muted); padding:28px 0; }
-      @media (max-width:600px) { h1 { font-size:34px; } .card img { height:210px; } }
+      .lightbox { align-items:center; background:rgba(17,17,15,.94); display:flex; inset:0; justify-content:center; padding:40px; position:fixed; z-index:20; }
+      .lightbox[hidden] { display:none; }
+      .lightbox img { max-height:calc(100vh - 80px); max-width:calc(100vw - 80px); object-fit:contain; }
+      .lightbox-close { background:transparent; border:0; color:white; font-size:34px; position:absolute; right:18px; top:10px; }
+      @media (max-width:600px) { h1 { font-size:34px; } .image-wrap { height:210px; } }
     </style>
   </head>
   <body>
@@ -62,6 +68,14 @@ blue</textarea>
             <label for="limit">Results per query</label>
             <select id="limit"><option>10</option><option selected>12</option><option>20</option></select>
           </div>
+          <div class="field">
+            <label for="ranking">Ranking strategy</label>
+            <select id="ranking">
+              <option value="weighted">Current weighted ranking</option>
+              <option value="rrf">RRF candidate pool</option>
+              <option value="pooled" selected>Weighted + RRF pooled</option>
+            </select>
+          </div>
           <button class="primary" id="start">Start / reload query</button>
           <button id="export">Export labels</button>
           <button id="clear">Clear saved labels</button>
@@ -77,10 +91,24 @@ blue</textarea>
         <div class="results" id="results"><div class="empty">Results will appear here.</div></div>
       </section>
     </main>
+    <div class="lightbox" id="lightbox" hidden>
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close full-size view">&times;</button>
+      <img id="lightbox-image" alt="" />
+    </div>
     <script>
-      const state = { queries: [], queryIndex: 0, results: [], labels: JSON.parse(localStorage.getItem("art-explorer-eval-labels") || "{}") };
+      const state = { queries: [], queryIndex: 0, results: [], ranking: "pooled", labels: JSON.parse(localStorage.getItem("art-explorer-eval-labels") || "{}") };
       const $ = id => document.getElementById(id);
       const key = (query, result) => `${query}::${result.asset.id}`;
+      const previewUrl = url => url?.replace("/original/", "/web-large/") || "";
+      const closeLightbox = () => {
+        $("lightbox").hidden = true;
+        $("lightbox-image").src = "";
+      };
+      const openLightbox = asset => {
+        $("lightbox-image").src = asset.source.mediaUrl || "";
+        $("lightbox-image").alt = `${asset.title} by ${asset.creator}`;
+        $("lightbox").hidden = false;
+      };
       const save = () => localStorage.setItem("art-explorer-eval-labels", JSON.stringify(state.labels));
       const setStatus = text => $("status").textContent = text;
       const render = () => {
@@ -94,17 +122,27 @@ blue</textarea>
           const asset = result.asset;
           const card = document.createElement("article");
           card.className = "card";
+          const imageWrap = document.createElement("div");
+          imageWrap.className = "image-wrap";
           const image = document.createElement("img");
-          image.src = asset.source.mediaUrl || "";
+          image.src = previewUrl(asset.source.mediaUrl);
           image.alt = asset.title;
           image.loading = "lazy";
-          card.appendChild(image);
+          image.onclick = () => openLightbox(asset);
+          imageWrap.appendChild(image);
+          const fullscreen = document.createElement("button");
+          fullscreen.className = "fullscreen";
+          fullscreen.textContent = "Full screen";
+          fullscreen.onclick = () => openLightbox(asset);
+          imageWrap.appendChild(fullscreen);
+          card.appendChild(imageWrap);
           const body = document.createElement("div");
           body.className = "card-body";
-          body.innerHTML = `<div class="rank">RANK ${index + 1}</div><div class="title"></div><div class="meta"></div><div class="score"></div><div class="labels"></div>`;
+          body.innerHTML = `<div class="rank">${state.ranking === "pooled" ? "CANDIDATE" : "RANK"} ${index + 1}</div><div class="title"></div><div class="meta"></div><div class="score"></div><div class="labels"></div>`;
           body.querySelector(".title").textContent = asset.title;
           body.querySelector(".meta").textContent = `${asset.creator} · ${asset.year}`;
-          body.querySelector(".score").textContent = `score ${Number(result.score).toFixed(3)}`;
+          body.querySelector(".score").textContent =
+            state.ranking === "pooled" ? "" : `score ${Number(result.score).toFixed(3)}`;
           const choices = [["relevant", "Relevant"], ["unsure", "Unsure"], ["not_relevant", "Not relevant"]];
           const labelKey = key(state.queries[state.queryIndex], result);
           choices.forEach(([value, text]) => {
@@ -123,19 +161,47 @@ blue</textarea>
           $("results").appendChild(card);
         });
       };
+      $("lightbox-close").onclick = closeLightbox;
+      $("lightbox").onclick = event => {
+        if (event.target === $("lightbox")) closeLightbox();
+      };
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeLightbox();
+      });
       const loadQuery = async () => {
         const query = state.queries[state.queryIndex];
         if (!query) return;
         setStatus(`Loading “${query}”…`);
         $("next").disabled = true;
         try {
-          const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${$("limit").value}`);
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || "Search failed.");
-          state.results = data.results || [];
+          state.ranking = $("ranking").value;
+          const strategies =
+            state.ranking === "pooled" ? ["weighted", "rrf"] : [state.ranking];
+          const responses = await Promise.all(
+            strategies.map(strategy =>
+              fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${$("limit").value}&ranking=${strategy}`),
+            ),
+          );
+          const payloads = await Promise.all(responses.map(response => response.json()));
+          const failed = responses.findIndex(response => !response.ok);
+          if (failed >= 0) throw new Error(payloads[failed].error || "Search failed.");
+          const merged = new Map();
+          const longest = Math.max(...payloads.map(data => data.results?.length || 0));
+          for (let rank = 0; rank < longest; rank++) {
+            for (const data of payloads) {
+              const result = data.results?.[rank];
+              if (result && !merged.has(result.asset.id)) {
+                merged.set(result.asset.id, result);
+              }
+            }
+          }
+          state.results = [...merged.values()];
           render();
-          $("next").disabled = state.queryIndex >= state.queries.length - 1;
-          setStatus(`${state.results.length} results. ${Object.keys(state.labels).length} labels saved locally.`);
+          const isLastQuery = state.queryIndex >= state.queries.length - 1;
+          const unlabeled = state.results.filter(result => !state.labels[key(query, result)]).length;
+          $("next").disabled = false;
+          $("next").textContent = isLastQuery ? "Finish & export" : "Next query →";
+          setStatus(`${state.results.length} results, ${unlabeled} new. ${Object.keys(state.labels).length} labels saved locally.`);
         } catch (error) {
           state.results = [];
           render();
@@ -147,8 +213,7 @@ blue</textarea>
         state.queryIndex = 0;
         loadQuery();
       };
-      $("next").onclick = () => { if (state.queryIndex < state.queries.length - 1) { state.queryIndex++; loadQuery(); } };
-      $("export").onclick = () => {
+      const exportLabels = () => {
         const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), labels: Object.values(state.labels) }, null, 2)], { type: "application/json" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -156,6 +221,16 @@ blue</textarea>
         link.click();
         URL.revokeObjectURL(link.href);
       };
+      $("next").onclick = () => {
+        if (state.queryIndex < state.queries.length - 1) {
+          state.queryIndex++;
+          loadQuery();
+          return;
+        }
+        exportLabels();
+        setStatus(`Evaluation complete. ${Object.keys(state.labels).length} labels exported.`);
+      };
+      $("export").onclick = exportLabels;
       $("clear").onclick = () => { if (confirm("Clear all labels saved in this browser?")) { state.labels = {}; save(); render(); setStatus("Saved labels cleared."); } };
     </script>
   </body>

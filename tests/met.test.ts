@@ -28,6 +28,11 @@ const baseObject: MetObject = {
   objectDate: "1920",
   culture: "French",
   medium: "Graphite on paper",
+  tags: [
+    { term: "Figures" },
+    { term: "Studies" },
+    { term: "Figures" },
+  ],
 };
 
 describe("Met importer", () => {
@@ -100,10 +105,8 @@ describe("Met importer", () => {
       },
     });
     expect(asset.semantics.associations).toEqual([
-      "Drawings and Prints",
-      "Drawings",
-      "French",
-      "Graphite on paper",
+      "Figures",
+      "Studies",
     ]);
     expect(asset.semantics.subjects).toEqual(asset.semantics.associations);
   });

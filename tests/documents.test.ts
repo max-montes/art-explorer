@@ -37,7 +37,7 @@ describe("buildEmbeddingDocuments", () => {
     const documents = buildEmbeddingDocuments(fixture);
 
     expect(documents.semantic).toBe(
-      "A Study by A Curator\nAssociations: 21st century; A Curator; Burning city; Dread; Societal decay",
+      "Subjects: Burning city; Dread; Societal decay",
     );
     expect(documents.semantic.match(/Societal decay/g)).toHaveLength(1);
   });
@@ -76,30 +76,17 @@ describe("buildEmbeddingDocuments", () => {
     );
 
     expect(results).toHaveLength(2);
-    expect(results[0].documents.semantic).toContain("A Study");
-    expect(results[1].documents.semantic).toContain("Another Study");
+    expect(results[0].documents.semantic).toBe(results[1].documents.semantic);
     expect(results[0].vectors.semantic).toHaveLength(384);
     expect(results[0].vectors.labels).toHaveLength(
       assetAssociations(fixture).length,
     );
   });
 
-  it("treats a known creator as an association, without duplicating it", () => {
-    expect(buildEmbeddingDocuments(fixture).semantic).toContain("A Curator");
-    expect(
-      assetAssociations({ creator: "Raphael", semantics: fixture.semantics }),
-    ).toEqual(["Societal decay", "Dread", "Societal decay", "Burning city", "Raphael"]);
-    expect(
-      assetAssociations({
-        creator: "raphael",
-        semantics: { ...fixture.semantics, associations: ["Raphael", "Reason"] },
-      }),
-    ).toEqual(["Raphael", "Reason"]);
-    for (const creator of ["Unknown creator", "unknown", "Anonymous", "", undefined]) {
-      expect(
-        assetAssociations({ creator, semantics: fixture.semantics }),
-      ).toEqual(fixture.semantics.associations);
-    }
+  it("keeps creator and date metadata out of subject associations", () => {
+    expect(buildEmbeddingDocuments(fixture).semantic).not.toContain("A Curator");
+    expect(buildEmbeddingDocuments(fixture).semantic).not.toContain("2026");
+    expect(assetAssociations(fixture)).toEqual(fixture.semantics.associations);
   });
 
   it("derives one canonical century association from the year", () => {
@@ -118,19 +105,5 @@ describe("buildEmbeddingDocuments", () => {
     expect(centuryLabels("")).toEqual([]);
     expect(centuryLabels(undefined)).toEqual([]);
 
-    expect(
-      assetAssociations({
-        creator: "Raphael",
-        year: "1509–1511",
-        semantics: { ...fixture.semantics, associations: ["Reason"] },
-      }),
-    ).toEqual(["Reason", "Raphael", "16th century"]);
-    // A curator who already typed the century is not doubled.
-    expect(
-      assetAssociations({
-        year: "1776",
-        semantics: { ...fixture.semantics, associations: ["18th Century", "Enlightenment"] },
-      }),
-    ).toEqual(["18th Century", "Enlightenment"]);
   });
 });

@@ -20,15 +20,14 @@ export function buildEmbeddingDocuments(
   asset: MediaAsset,
 ): EmbeddingDocuments {
   return {
-    semantic: [
-      `${asset.title} by ${asset.creator}`,
-      `Associations: ${canonicalList(assetAssociations(asset))}`,
-    ].join("\n"),
+    semantic: `Subjects: ${canonicalList(assetAssociations(asset))}`,
     metadata: [
       `Title: ${asset.title}`,
       `Creator: ${asset.creator}`,
       `Media type: ${asset.type}`,
       `Year: ${asset.year}`,
+      `Description: ${asset.semantics.description}`,
+      `Context: ${asset.semantics.narrative}`,
     ].join("\n"),
   };
 }

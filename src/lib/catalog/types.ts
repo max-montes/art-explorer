@@ -46,12 +46,6 @@ export interface CuratedSemantics {
   curatorNotes?: string;
 }
 
-/** Placeholder creators are not associations. */
-const UNKNOWN_CREATORS = new Set(["", "unknown", "unknown creator", "anonymous"]);
-
-export const isKnownCreator = (creator: string | undefined) =>
-  !!creator && !UNKNOWN_CREATORS.has(creator.trim().toLowerCase());
-
 /**
  * Century label derived from a catalog year string, in one canonical form so
  * every work from the same period shares an association:
@@ -95,32 +89,17 @@ export const centuryLabels = (year: string | undefined): string[] => {
 };
 
 /**
- * Everything an asset is associated with: the curator's labels plus, when
- * known, its creator and century. "Raphael" and "16th century" are as
- * searchable as "Humanism", so both feed the semantic embedding, suggestion
- * pills, and card tags without the curator having to retype them.
+ * Subject and concept labels intentionally exclude title, creator, date, and
+ * other metadata so retrieval channels remain independent.
  */
 export const assetAssociations = (asset: {
-  creator?: string;
-  year?: string;
   semantics: CuratedSemantics;
 }): string[] => {
-  const curated = asset.semantics.associations ?? [
+  return asset.semantics.associations ?? [
     ...asset.semantics.concepts,
     ...asset.semantics.moods,
     ...asset.semantics.subjects,
   ];
-  const have = new Set(curated.map((label) => label.trim().toLowerCase()));
-  const derived: string[] = [];
-  if (isKnownCreator(asset.creator)) derived.push(asset.creator!.trim());
-  derived.push(...centuryLabels(asset.year));
-  const extra = derived.filter((label) => {
-    const key = label.toLowerCase();
-    if (have.has(key)) return false;
-    have.add(key);
-    return true;
-  });
-  return extra.length ? [...curated, ...extra] : curated;
 };
 
 /** Display form: "societal-decay" / "societal decay" -> "Societal decay". */
@@ -189,6 +168,8 @@ export interface SearchWeights {
   image?: number;
 }
 
+export type SearchRanking = "weighted" | "rrf";
+
 export interface ScoredAsset {
   asset: MediaAsset;
   score: number;
@@ -205,6 +186,7 @@ export interface ConceptPill {
 export interface SearchResult {
   query: string;
   channel: Channel;
+  ranking: SearchRanking;
   weights: SearchWeights;
   results: ScoredAsset[];
   pills: ConceptPill[];

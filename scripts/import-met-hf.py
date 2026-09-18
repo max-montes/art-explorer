@@ -81,6 +81,24 @@ def labels(*values: str) -> list[str]:
     return result
 
 
+def tag_terms(value: str) -> list[str]:
+    if not value:
+        return []
+    try:
+        tags = json.loads(value)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(tags, list):
+        return []
+    return labels(
+        *(
+            tag.get("term", "")
+            for tag in tags
+            if isinstance(tag, dict) and isinstance(tag.get("term"), str)
+        )
+    )
+
+
 def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
     if text(row, "isPublicDomain").lower() != "true":
         return None
@@ -101,7 +119,7 @@ def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
     year = text(row, "objectDate") or "Unknown"
     medium = text(row, "medium")
     culture = text(row, "culture")
-    associations = labels(department, classification, culture, medium)
+    associations = tag_terms(text(row, "tags"))
     asset_id = f"met-{object_id}"
     asset = {
         "id": asset_id,

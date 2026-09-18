@@ -20,7 +20,7 @@ import { mediaPreviewUrl } from "@/lib/media/preview-url";
 import { FullscreenButton, Lightbox } from "./lightbox";
 import { Masonry } from "./masonry";
 
-const STARTING_QUERY = "Plato";
+const STARTING_QUERY = "fire";
 const UNDO_WINDOW_MS = 6000;
 
 /**
@@ -68,11 +68,14 @@ function ResultCard({
   const previewUrl = mediaUrl ? mediaPreviewUrl(mediaUrl) : undefined;
   // Curator-approved items can be edited or removed from the collection.
   const curated = asset.id.startsWith("curated-");
-  const activateSimilar = () => onSimilar(asset);
+  const activateVisual = () => {
+    if (mediaUrl) onView(asset);
+    else onSimilar(asset);
+  };
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      activateSimilar();
+      activateVisual();
     }
   };
 
@@ -88,8 +91,12 @@ function ResultCard({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`Explore assets similar to ${asset.title}`}
-        onClick={activateSimilar}
+        aria-label={
+          mediaUrl
+            ? `View ${asset.title} full screen`
+            : `Explore assets similar to ${asset.title}`
+        }
+        onClick={activateVisual}
         onKeyDown={handleKeyDown}
       >
         {mediaUrl ? (
@@ -139,7 +146,9 @@ function ResultCard({
             </>
           )}
         </div>
-        <div className="similar-cue">Drag to collect · click for similar</div>
+        <div className="similar-cue">
+          Drag to collect · {mediaUrl ? "click to view" : "click for similar"}
+        </div>
       </div>
       <div className="card-caption">
         <div>

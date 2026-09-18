@@ -22,6 +22,11 @@ export interface MetObject {
   objectDate?: string | null;
   culture?: string | null;
   medium?: string | null;
+  tags?: Array<{
+    term?: string | null;
+    AAT_URL?: string | null;
+    Wikidata_URL?: string | null;
+  }> | null;
 }
 
 export function normalizeMetObjectIDs(value: unknown): number[] {
@@ -104,12 +109,6 @@ const NON_ART_CLASSIFICATIONS = [
   "vessel",
 ];
 
-const splitLabels = (value: string) =>
-  value
-    .split(/[;,]/)
-    .map((label) => label.trim())
-    .filter(Boolean);
-
 const text = (value: string | null | undefined) => value?.trim() ?? "";
 
 export function isArtworkObject(object: MetObject): boolean {
@@ -143,12 +142,9 @@ export function isPaintingObject(object: MetObject): boolean {
 export function mapMetObject(object: MetObject): MediaAsset {
   const title = text(object.title) || text(object.objectName) || "Untitled";
   const creator = text(object.artistDisplayName) || "Unknown Creator";
-  const associations = [
-    ...splitLabels(text(object.department)),
-    ...splitLabels(text(object.classification)),
-    ...splitLabels(text(object.culture)),
-    ...splitLabels(text(object.medium)),
-  ];
+  const associations = (object.tags ?? [])
+    .map((tag) => text(tag.term))
+    .filter(Boolean);
   const uniqueAssociations = [
     ...new Map(
       associations.map((label) => [label.toLocaleLowerCase(), label]),

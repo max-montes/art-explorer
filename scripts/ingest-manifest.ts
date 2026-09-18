@@ -116,7 +116,7 @@ async function main() {
           documents,
           vectors,
           provider: provider.name,
-          documentVersion: 1,
+          documentVersion: 2,
         })),
       );
       console.log(

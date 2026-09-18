@@ -97,8 +97,7 @@ describe("script analyzer", () => {
     expect(analysis.channel).toBe("artwork");
     expect(analysis.passages[0]).toMatchObject({
       text: "Plato seeks truth.",
-      // The fixture creator and century count as associations too.
-      associations: ["reason", "humanism", "harmony", "Plato", "philosophers", "Fixture", "19th century"],
+      associations: ["reason", "humanism", "harmony", "Plato", "philosophers"],
       results: [school, school],
     });
   });
