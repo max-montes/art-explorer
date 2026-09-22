@@ -34,6 +34,23 @@ describe("association-based retrieval", () => {
     expect(response.results[0].matchedLabel).not.toBe("Caspar David Friedrich");
   });
 
+  it("pins an exact title first and fills the remainder from its neighbors", async () => {
+    const response = await createService().search(
+      "The Starry Night",
+      "artwork",
+      4,
+      "weighted",
+    );
+
+    expect(response.results[0].asset.id).toBe("curated-starry-night");
+    expect(response.results.slice(1).map(({ asset }) => asset.id)).toContain(
+      "curated-wanderer-above-sea-of-fog",
+    );
+    expect(
+      new Set(response.results.map(({ asset }) => asset.id)).size,
+    ).toBe(response.results.length);
+  });
+
   it("offers the creator as a follow-up search", async () => {
     // "Solitary traveler" is unique to the Wanderer, so its creator surfaces.
     const response = await createService().search("solitary traveler");

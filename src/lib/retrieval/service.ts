@@ -12,6 +12,11 @@ import {
 } from "@/lib/catalog/types";
 import { buildQueryDocuments } from "./documents";
 import type { EmbeddingProvider, ImageEmbeddingProvider } from "./providers";
+import {
+  analyzeCatalogQuery,
+  buildCatalogLexicon,
+  type CatalogLexicon,
+} from "./query-intent";
 import type { CatalogRepository } from "./repository";
 import { reciprocalRankFusion } from "./scoring";
 import { stemLabel } from "./stem";
@@ -80,6 +85,8 @@ const averageBundles = (bundles: AssetVectors[]): AssetVectors => {
 };
 
 export class RetrievalService {
+  private readonly lexicons = new Map<Channel, Promise<CatalogLexicon>>();
+
   constructor(
     private readonly repository: CatalogRepository,
     private readonly provider: EmbeddingProvider,
@@ -95,51 +102,137 @@ export class RetrievalService {
     if (!normalized) {
       throw new Error("A search query is required.");
     }
+    const lexicon = await this.catalogLexicon(channel);
+    const intent = analyzeCatalogQuery(normalized, lexicon);
+    if (intent.titleAssetIds.length === 1) {
+      const exactTitleResult = await this.searchFromExactTitle(
+        normalized,
+        intent.titleAssetIds[0],
+        channel,
+        limit,
+        ranking,
+      );
+      if (exactTitleResult) return exactTitleResult;
+    }
+    const embeddingQuery = intent.residualQuery || normalized;
     const vectors = await vectorBundle(
       this.provider,
-      buildQueryDocuments(normalized),
+      buildQueryDocuments(embeddingQuery),
     );
     let imageVector: number[] | undefined;
-    if (process.env.IMAGE_EMBEDDINGS === "true" && "embedImageText" in this.provider) {
+    if (process.env.IMAGE_EMBEDDINGS === "true") {
+      if (!("embedImageText" in this.provider)) {
+        throw new Error(
+          "IMAGE_EMBEDDINGS is enabled but the embedding provider cannot embed image queries.",
+        );
+      }
       try {
         imageVector = (
           await (
             this.provider as EmbeddingProvider & ImageEmbeddingProvider
-          ).embedImageText([normalized])
+          ).embedImageText([embeddingQuery])
         )[0];
-      } catch {
-        imageVector = undefined;
+      } catch (error) {
+        throw new Error(
+          `The image channel failed to embed the query: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
     }
+    if (ranking === "rrf" && !imageVector) {
+      throw new Error("RRF ranking requires IMAGE_EMBEDDINGS=true.");
+    }
     const activeWeights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
-    const effectiveRanking = ranking === "rrf" && imageVector ? "rrf" : "weighted";
-    const results =
+    const effectiveRanking = ranking;
+    const baseLimit = limit * 2;
+    const facetFilters = {
+      ...(intent.cultures.length ? { cultures: intent.cultures } : {}),
+      ...(intent.yearRange ? { yearRange: intent.yearRange } : {}),
+    };
+    const baseResults =
       effectiveRanking === "rrf"
         ? reciprocalRankFusion(
-            await Promise.all(
-              [
-                { semantic: 1, metadata: 0 },
-                { semantic: 0, metadata: 1 },
-                { semantic: 0, metadata: 0, image: 1 },
-              ].map((weights) =>
-                this.repository.search({
-                  vectors,
-                  weights,
-                  limit: Math.max(RRF_MIN_CANDIDATES_PER_CHANNEL, limit * 3),
-                  channel,
-                  imageVector,
-                }),
-              ),
-            ),
-            limit,
+            await Promise.all([
+              this.repository.search({
+                vectors,
+                weights: { semantic: 1, metadata: 0 },
+                limit: Math.max(
+                  RRF_MIN_CANDIDATES_PER_CHANNEL,
+                  baseLimit * 3,
+                ),
+                channel,
+                imageVector,
+                ...facetFilters,
+              }),
+              this.repository.textSearch({
+                text: intent.residualQuery,
+                limit: Math.max(
+                  RRF_MIN_CANDIDATES_PER_CHANNEL,
+                  baseLimit * 3,
+                ),
+                channel,
+                ...facetFilters,
+              }),
+              this.repository.search({
+                vectors,
+                weights: { semantic: 0, metadata: 0, image: 1 },
+                limit: Math.max(
+                  RRF_MIN_CANDIDATES_PER_CHANNEL,
+                  baseLimit * 3,
+                ),
+                channel,
+                imageVector,
+                ...facetFilters,
+              }),
+            ]),
+            baseLimit,
           )
         : await this.repository.search({
             vectors,
             weights: activeWeights,
+            limit: baseLimit,
+            channel,
+            imageVector,
+            ...facetFilters,
+          });
+    const pinWeights: SearchWeights = imageVector
+      ? { semantic: 0, metadata: 0, image: 1 }
+      : { semantic: 0, metadata: 1 };
+    const hasStructuredIntent = intent.creatorNames.length > 0;
+    const [titlePins, structuredPins] = await Promise.all([
+      intent.titleAssetIds.length
+        ? this.repository.search({
+            vectors,
+            weights: pinWeights,
+            limit: Math.min(limit, intent.titleAssetIds.length),
+            channel,
+            imageVector,
+            assetIds: intent.titleAssetIds,
+          })
+        : Promise.resolve([]),
+      hasStructuredIntent
+        ? this.repository.search({
+            vectors,
+            weights: pinWeights,
             limit,
             channel,
             imageVector,
-          });
+            ...(intent.creatorNames.length
+              ? { creatorNames: intent.creatorNames }
+              : {}),
+            ...facetFilters,
+          })
+        : Promise.resolve([]),
+    ]);
+    const results = [
+      ...new Map(
+        [...titlePins, ...structuredPins, ...baseResults].map((result) => [
+          result.asset.id,
+          result,
+        ]),
+      ).values(),
+    ].slice(0, limit);
     const pills = await this.pillsFor(normalized, results);
 
     return {
@@ -149,6 +242,111 @@ export class RetrievalService {
       weights: activeWeights,
       results,
       pills,
+    };
+  }
+
+  private catalogLexicon(channel: Channel): Promise<CatalogLexicon> {
+    const existing = this.lexicons.get(channel);
+    if (existing) return existing;
+    const pending = this.repository
+      .catalogAssets(channel)
+      .then(buildCatalogLexicon);
+    this.lexicons.set(channel, pending);
+    return pending;
+  }
+
+  private async searchFromExactTitle(
+    query: string,
+    assetId: string,
+    channel: Channel,
+    limit: number,
+    ranking: SearchRanking,
+  ): Promise<SearchResult | null> {
+    const [asset, vectors] = await Promise.all([
+      this.repository.findAsset(assetId),
+      this.repository.findAssetVectors(assetId),
+    ]);
+    if (!asset || !vectors) return null;
+
+    const imageVector = vectors.image;
+    if (process.env.IMAGE_EMBEDDINGS === "true" && !imageVector) {
+      throw new Error(
+        `The exact-title match ${asset.id} has no SigLIP image embedding.`,
+      );
+    }
+    if (ranking === "rrf" && !imageVector) {
+      throw new Error("RRF ranking requires an image embedding.");
+    }
+
+    const weights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
+    const neighborLimit = Math.max(0, limit - 1);
+    const candidateLimit = Math.max(
+      RRF_MIN_CANDIDATES_PER_CHANNEL,
+      neighborLimit * 3,
+    );
+    const neighbors =
+      neighborLimit === 0
+        ? []
+        : ranking === "rrf"
+          ? reciprocalRankFusion(
+              await Promise.all([
+                this.repository.search({
+                  vectors,
+                  weights: { semantic: 1, metadata: 0 },
+                  limit: candidateLimit,
+                  channel,
+                  excludeAssetId: asset.id,
+                  mode: "whole",
+                  imageVector,
+                }),
+                this.repository.search({
+                  vectors,
+                  weights: { semantic: 0, metadata: 1 },
+                  limit: candidateLimit,
+                  channel,
+                  excludeAssetId: asset.id,
+                  mode: "whole",
+                  imageVector,
+                }),
+                this.repository.search({
+                  vectors,
+                  weights: { semantic: 0, metadata: 0, image: 1 },
+                  limit: candidateLimit,
+                  channel,
+                  excludeAssetId: asset.id,
+                  mode: "whole",
+                  imageVector,
+                }),
+              ]),
+              neighborLimit,
+            )
+          : await this.repository.search({
+              vectors,
+              weights,
+              limit: neighborLimit,
+              channel,
+              excludeAssetId: asset.id,
+              mode: "whole",
+              imageVector,
+            });
+    const pinned: ScoredAsset = {
+      asset,
+      score: 1,
+      scores: {
+        semantic: 1,
+        metadata: 1,
+        ...(imageVector ? { image: 1 } : {}),
+      },
+    };
+    const results = [pinned, ...neighbors].slice(0, limit);
+
+    return {
+      query,
+      channel,
+      ranking,
+      weights,
+      results,
+      pills: await this.pillsFor(query, results),
     };
   }
 

@@ -50,12 +50,16 @@ npm run catalog:met:hf -- \
 
 IMAGE_EMBEDDINGS=true \
 EMBEDDING_BATCH_SIZE=8 \
+ONNX_INTRA_OP_THREADS=4 \
+ONNX_INTER_OP_THREADS=1 \
 RESUME_SKIP_EXISTING=true \
 npm run catalog:ingest -- curation/met-paintings.json
 ```
 
 Ingestion is resumable. Broken image URLs are reported and skipped without
-stopping the job.
+stopping the job. Interactive inference defaults to one ONNX intra-op and
+inter-op thread to avoid saturating the development server. Offline ingestion
+can raise `ONNX_INTRA_OP_THREADS` based on the machine's available CPU.
 
 ## Evaluate search
 

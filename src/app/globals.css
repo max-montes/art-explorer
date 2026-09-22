@@ -401,8 +401,7 @@ a {
 .asset-visual img,
 .asset-visual media {
   display: block;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   transition: transform 500ms cubic-bezier(0.2, 0.75, 0.25, 1);
   width: 100%;
 }
@@ -536,6 +535,54 @@ a {
 
 .lightbox-close:hover {
   color: white;
+}
+
+.lightbox-nav {
+  align-items: center;
+  background: rgba(17, 17, 15, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  height: 48px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+  width: 48px;
+  z-index: 1;
+}
+
+.lightbox-nav:hover:not(:disabled),
+.lightbox-nav:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.lightbox-nav:disabled {
+  cursor: default;
+  opacity: 0.22;
+}
+
+.lightbox-nav svg {
+  fill: none;
+  height: 26px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 26px;
+}
+
+.lightbox-previous {
+  left: 22px;
+}
+
+.lightbox-next {
+  right: 22px;
 }
 
 .lightbox-caption {

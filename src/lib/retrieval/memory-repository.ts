@@ -1,4 +1,5 @@
 import {
+  assetAssociations,
   channelOf,
   type AssetVectors,
   type Concept,
@@ -11,9 +12,18 @@ import type { EmbeddingProvider } from "./providers";
 import type {
   CatalogIndexEntry,
   CatalogRepository,
+  TextQuery,
   VectorQuery,
 } from "./repository";
 import { combinedScore, cosine, semanticScore } from "./scoring";
+
+const normalizeWords = (value: string) =>
+  value
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
 
 export class MemoryCatalogRepository implements CatalogRepository {
   private readonly vectors = new Map<string, AssetVectors>();
@@ -37,6 +47,10 @@ export class MemoryCatalogRepository implements CatalogRepository {
     await this.preparing;
   }
 
+  async catalogAssets(channel: "artwork"): Promise<MediaAsset[]> {
+    return this.assets.filter((asset) => channelOf(asset) === channel);
+  }
+
   async findAsset(id: string): Promise<MediaAsset | null> {
     return this.assets.find((asset) => asset.id === id) ?? null;
   }
@@ -52,7 +66,20 @@ export class MemoryCatalogRepository implements CatalogRepository {
       .filter(
         (asset) =>
           asset.id !== query.excludeAssetId &&
-          channelOf(asset) === query.channel,
+          channelOf(asset) === query.channel &&
+          (!query.creatorNames?.length ||
+            query.creatorNames.includes(asset.creator)) &&
+          (!query.assetIds?.length || query.assetIds.includes(asset.id)) &&
+          (!query.cultures?.length ||
+            (asset.culture && query.cultures.includes(asset.culture))) &&
+          (!query.yearRange ||
+            ((asset.objectBeginDate ?? Number.POSITIVE_INFINITY) <=
+              query.yearRange.end &&
+              (asset.objectEndDate ?? Number.NEGATIVE_INFINITY) >=
+                query.yearRange.start &&
+              (asset.objectEndDate ?? Number.POSITIVE_INFINITY) -
+                (asset.objectBeginDate ?? Number.NEGATIVE_INFINITY) <=
+                100)),
       )
       .map((asset) => {
         const vectors = this.vectors.get(asset.id);
@@ -79,6 +106,50 @@ export class MemoryCatalogRepository implements CatalogRepository {
           ...(matchedLabel ? { matchedLabel } : {}),
         };
       })
+      .sort((left, right) => right.score - left.score)
+      .slice(0, query.limit);
+  }
+
+  async textSearch(query: TextQuery): Promise<ScoredAsset[]> {
+    const words = normalizeWords(query.text);
+    if (!words.length) return [];
+    return this.assets
+      .filter(
+        (asset) =>
+          channelOf(asset) === query.channel &&
+          (!query.creatorNames?.length ||
+            query.creatorNames.includes(asset.creator)) &&
+          (!query.assetIds?.length || query.assetIds.includes(asset.id)) &&
+          (!query.cultures?.length ||
+            (asset.culture && query.cultures.includes(asset.culture))) &&
+          (!query.yearRange ||
+            ((asset.objectBeginDate ?? Number.POSITIVE_INFINITY) <=
+              query.yearRange.end &&
+              (asset.objectEndDate ?? Number.NEGATIVE_INFINITY) >=
+                query.yearRange.start &&
+              (asset.objectEndDate ?? Number.POSITIVE_INFINITY) -
+                (asset.objectBeginDate ?? Number.NEGATIVE_INFINITY) <=
+                100)),
+      )
+      .map((asset) => {
+        const document = normalizeWords(
+          [
+            asset.title,
+            asset.creator,
+            asset.year,
+            asset.culture,
+            asset.medium,
+            ...assetAssociations(asset),
+          ].join(" "),
+        );
+        const matches = words.filter((word) => document.includes(word)).length;
+        return {
+          asset,
+          score: matches / words.length,
+          scores: { semantic: 0, metadata: matches / words.length },
+        };
+      })
+      .filter((result) => result.score > 0)
       .sort((left, right) => right.score - left.score)
       .slice(0, query.limit);
   }

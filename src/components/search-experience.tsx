@@ -86,7 +86,7 @@ function ResultCard({
         draggable={Boolean(mediaUrl)}
         onDragStart={(event) => setMediaDragData(event, asset)}
         style={{
-          aspectRatio: asset.aspectRatio ?? 1.2,
+          ...(!mediaUrl ? { aspectRatio: asset.aspectRatio ?? 1.2 } : {}),
           backgroundColor: asset.dominantColor ?? "#473d35",
         }}
         role="button"
@@ -166,8 +166,6 @@ function ResultCard({
         </div>
         <a
           href={asset.source.sourceUrl}
-          target="_blank"
-          rel="noreferrer"
           aria-label={`View source and license for ${asset.title}`}
         >
           Source
@@ -415,6 +413,13 @@ export function SearchExperience() {
     event.preventDefault();
     void runSearch(input);
   };
+  const viewableAssets =
+    data?.results
+      .map((result) => result.asset)
+      .filter((asset) => Boolean(asset.source.mediaUrl)) ?? [];
+  const viewingIndex = viewing
+    ? viewableAssets.findIndex((asset) => asset.id === viewing.id)
+    : -1;
 
   return (
     <>
@@ -552,6 +557,16 @@ export function SearchExperience() {
             .filter(Boolean)
             .join(" — ")}
           onClose={() => setViewing(null)}
+          onPrevious={
+            viewingIndex > 0
+              ? () => setViewing(viewableAssets[viewingIndex - 1])
+              : undefined
+          }
+          onNext={
+            viewingIndex >= 0 && viewingIndex < viewableAssets.length - 1
+              ? () => setViewing(viewableAssets[viewingIndex + 1])
+              : undefined
+          }
         />
       )}
     </>

@@ -85,6 +85,22 @@ const isNumberMatrix = (value: unknown): value is number[][] =>
       row.every((component) => typeof component === "number"),
   );
 
+const onnxThreadCount = (name: string, fallback: number) => {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+  return value;
+};
+
+const onnxSessionOptions = () => ({
+  intraOpNumThreads: onnxThreadCount("ONNX_INTRA_OP_THREADS", 1),
+  interOpNumThreads: onnxThreadCount("ONNX_INTER_OP_THREADS", 1),
+  executionMode: "sequential" as const,
+});
+
 export class TransformersEmbeddingProvider implements EmbeddingProvider {
   readonly name: string;
   readonly dimensions = 384;
@@ -150,7 +166,9 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
 
   private async createExtractor() {
     const { pipeline } = await import("@huggingface/transformers");
-    const extractor = await pipeline("feature-extraction", this.model);
+    const extractor = await pipeline("feature-extraction", this.model, {
+      session_options: onnxSessionOptions(),
+    });
     return async (
       input: string[],
       options: { pooling: "mean"; normalize: true },
@@ -162,6 +180,7 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     const extractor = await pipeline(
       "image-feature-extraction",
       this.imageModel,
+      { session_options: onnxSessionOptions() },
     );
     return async (input: string | string[]) =>
       /siglip/i.test(this.imageModel)
@@ -175,9 +194,12 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       this.imageModel,
     );
     const model = /siglip/i.test(this.imageModel)
-      ? await transformers.SiglipTextModel.from_pretrained(this.imageModel)
+      ? await transformers.SiglipTextModel.from_pretrained(this.imageModel, {
+          session_options: onnxSessionOptions(),
+        })
       : await transformers.CLIPTextModelWithProjection.from_pretrained(
           this.imageModel,
+          { session_options: onnxSessionOptions() },
         );
     return {
       tokenizer: async (input: string[]) =>

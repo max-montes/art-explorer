@@ -13,6 +13,10 @@
       h2 { font:400 24px Georgia,serif; margin:0; }
       p { color:var(--muted); }
       .intro { max-width:720px; margin-top:0; }
+      .rubric { display:grid; gap:7px; max-width:720px; margin:16px 0 22px; padding:14px 16px; border-left:3px solid var(--accent); background:rgba(255,255,255,.5); }
+      .rubric div { color:var(--muted); }
+      .rubric strong { color:var(--ink); }
+      .rubric .note { font-size:13px; }
       .panel { background:rgba(255,255,255,.5); border:1px solid var(--rule); padding:18px; margin:22px 0; }
       label { display:block; font-weight:700; margin-bottom:6px; }
       textarea, select, button { font:inherit; }
@@ -20,6 +24,7 @@
       .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
       .field { min-width:180px; flex:1; }
       select { width:100%; padding:10px; border:1px solid var(--rule); background:var(--card); }
+      .fixed-value { padding:10px; border:1px solid var(--rule); background:var(--card); }
       button { border:1px solid var(--ink); background:var(--card); color:var(--ink); cursor:pointer; padding:9px 12px; }
       button:hover { background:#eee7dc; }
       button.primary { background:var(--ink); color:white; }
@@ -39,6 +44,8 @@
       .labels button { flex:1; padding:7px 4px; font-size:12px; }
       .labels button.selected { color:white; border-color:var(--ink); background:var(--accent); }
       .empty { color:var(--muted); padding:28px 0; }
+      .complete { background:var(--card); border:1px solid var(--rule); padding:28px; text-align:center; }
+      .complete h2 { margin-bottom:8px; }
       .lightbox { align-items:center; background:rgba(17,17,15,.94); display:flex; inset:0; justify-content:center; padding:40px; position:fixed; z-index:20; }
       .lightbox[hidden] { display:none; }
       .lightbox img { max-height:calc(100vh - 80px); max-width:calc(100vw - 80px); object-fit:contain; }
@@ -49,36 +56,42 @@
   <body>
     <main>
       <h1>Search evaluation</h1>
-      <p class="intro">Label the ranked results for a small, fixed query set. Labels are saved in this browser and can be exported as JSON for evaluation. Use <b>relevant</b> for a clear match, <b>unsure</b> for a borderline match, and <b>not relevant</b> for a clear miss.</p>
+      <p class="intro">Label the ranked results for a small, fixed query set. Labels are saved in this browser and can be exported as JSON for evaluation.</p>
+      <div class="rubric" aria-label="Labeling directions">
+        <div><strong>Relevant:</strong> The painting is a direct match or is meaningfully similar in subject, appearance, style, title, artist, or other semantic connection.</div>
+        <div><strong>Unsure:</strong> The painting may be similar, but the connection is weak, ambiguous, or depends heavily on interpretation.</div>
+        <div><strong>Not relevant:</strong> The painting is a clear miss and would not be useful for that search.</div>
+        <div class="note">* For exact title-queries: mark the exact painting, paintings with similar titles, and visually or semantically similar paintings as relevant.</div>
+      </div>
 
       <section class="panel">
         <label for="queries">Queries (one per line)</label>
-        <textarea id="queries">water
-melancholy
-portrait
-landscape
-light and shadow
-solitude
-power
-ritual
-American art
-blue</textarea>
+        <textarea id="queries">stormy sea
+red dress
+snowy forest
+woman reading
+Rembrandt
+Winslow Homer
+Thomas Cole
+Madame X
+The Harvesters
+The Gulf Stream
+Homer stormy sea
+Rembrandt dark portrait</textarea>
         <div class="controls" style="margin-top:12px">
           <div class="field">
             <label for="limit">Results per query</label>
-            <select id="limit"><option>10</option><option selected>12</option><option>20</option></select>
+            <select id="limit"><option selected>5</option><option>10</option><option>12</option><option>20</option></select>
           </div>
           <div class="field">
             <label for="ranking">Ranking strategy</label>
-            <select id="ranking">
-              <option value="weighted">Current weighted ranking</option>
-              <option value="rrf">RRF candidate pool</option>
-              <option value="pooled" selected>Weighted + RRF pooled</option>
-            </select>
+            <input id="ranking" type="hidden" value="rrf" />
+            <div class="fixed-value">Reciprocal rank fusion (RRF)</div>
           </div>
           <button class="primary" id="start">Start / reload query</button>
           <button id="export">Export labels</button>
           <button id="clear">Clear saved labels</button>
+          <button id="page-fullscreen">Full screen</button>
         </div>
         <p class="status" id="status">Enter queries and start labeling.</p>
       </section>
@@ -96,9 +109,24 @@ blue</textarea>
       <img id="lightbox-image" alt="" />
     </div>
     <script>
-      const state = { queries: [], queryIndex: 0, results: [], ranking: "pooled", labels: JSON.parse(localStorage.getItem("art-explorer-eval-labels") || "{}") };
+      const storedLabels = JSON.parse(localStorage.getItem("art-explorer-eval-labels") || "{}");
+      const labels = Object.fromEntries(Object.entries(storedLabels).map(([labelKey, label]) => [
+        labelKey,
+        { ...label, rankingMethod: label.rankingMethod || "unknown", resultLimit: label.resultLimit ?? null },
+      ]));
+      const state = {
+        queries: [],
+        queryIndex: 0,
+        results: [],
+        ranking: "pooled",
+        labels,
+        broken: new Set(),
+        completed: false,
+      };
       const $ = id => document.getElementById(id);
-      const key = (query, result) => `${query}::${result.asset.id}`;
+      const currentResultLimit = () => Number($("limit").value);
+      const key = (query, result, ranking = state.ranking, limit = currentResultLimit()) =>
+        `${query}::${ranking}::${limit}::${result.asset.id}`;
       const previewUrl = url => url?.replace("/original/", "/web-large/") || "";
       const closeLightbox = () => {
         $("lightbox").hidden = true;
@@ -111,11 +139,27 @@ blue</textarea>
       };
       const save = () => localStorage.setItem("art-explorer-eval-labels", JSON.stringify(state.labels));
       const setStatus = text => $("status").textContent = text;
+      const currentQuery = () => state.queries[state.queryIndex];
+      const currentQueryComplete = () =>
+        state.results.length > 0 &&
+        state.results.every(result => state.labels[key(currentQuery(), result)]);
+      const updateNextButton = () => {
+        const finalQuery = state.queryIndex >= state.queries.length - 1;
+        $("next").textContent = finalQuery ? "Finish evaluation" : "Next query →";
+        $("next").disabled = state.completed || !currentQueryComplete();
+      };
       const render = () => {
-        $("heading").textContent = state.queries[state.queryIndex] ? `“${state.queries[state.queryIndex]}”` : "Results";
+        $("heading").textContent = state.completed ? "Evaluation complete" : currentQuery() ? `“${currentQuery()}”` : "Results";
         $("results").innerHTML = "";
+        if (state.completed) {
+          $("results").innerHTML = `<div class="complete"><h2>Evaluation complete</h2><p>${Object.keys(state.labels).length} labels saved locally.</p><button class="primary" id="completion-export">Export labels</button></div>`;
+          $("completion-export").onclick = exportLabels;
+          updateNextButton();
+          return;
+        }
         if (!state.results.length) {
           $("results").innerHTML = '<div class="empty">No results returned.</div>';
+          updateNextButton();
           return;
         }
         state.results.forEach((result, index) => {
@@ -129,6 +173,17 @@ blue</textarea>
           image.alt = asset.title;
           image.loading = "lazy";
           image.onclick = () => openLightbox(asset);
+          image.onerror = () => {
+            const originalUrl = asset.source.mediaUrl || "";
+            if (originalUrl && image.src !== originalUrl) {
+              image.src = originalUrl;
+              return;
+            }
+            state.broken.add(asset.id);
+            state.results = state.results.filter(candidate => candidate.asset.id !== asset.id);
+            render();
+            setStatus(`${state.results.length} results. Removed a broken image; broken candidates are excluded from exports.`);
+          };
           imageWrap.appendChild(image);
           const fullscreen = document.createElement("button");
           fullscreen.className = "fullscreen";
@@ -144,22 +199,35 @@ blue</textarea>
           body.querySelector(".score").textContent =
             state.ranking === "pooled" ? "" : `score ${Number(result.score).toFixed(3)}`;
           const choices = [["relevant", "Relevant"], ["unsure", "Unsure"], ["not_relevant", "Not relevant"]];
-          const labelKey = key(state.queries[state.queryIndex], result);
+          const labelKey = key(currentQuery(), result);
           choices.forEach(([value, text]) => {
             const button = document.createElement("button");
             button.textContent = text;
             if (state.labels[labelKey]?.label === value) button.className = "selected";
             button.onclick = () => {
-              state.labels[labelKey] = { query: state.queries[state.queryIndex], assetId: asset.id, rank: index + 1, label: value, title: asset.title, timestamp: new Date().toISOString() };
+              state.labels[labelKey] = {
+                query: currentQuery(),
+                assetId: asset.id,
+                rank: index + 1,
+                label: value,
+                title: asset.title,
+                rankingMethod: state.ranking,
+                resultLimit: currentResultLimit(),
+                timestamp: new Date().toISOString(),
+              };
               save();
               render();
-              setStatus(`${Object.keys(state.labels).length} labels saved locally.`);
+              const remaining = state.results.filter(candidate => !state.labels[key(currentQuery(), candidate)]).length;
+              setStatus(remaining
+                ? `${Object.keys(state.labels).length} labels saved locally. ${remaining} result${remaining === 1 ? "" : "s"} remain for this query.`
+                : `${Object.keys(state.labels).length} labels saved locally. This query is complete.`);
             };
             body.querySelector(".labels").appendChild(button);
           });
           card.appendChild(body);
           $("results").appendChild(card);
         });
+        updateNextButton();
       };
       $("lightbox-close").onclick = closeLightbox;
       $("lightbox").onclick = event => {
@@ -175,11 +243,13 @@ blue</textarea>
         $("next").disabled = true;
         try {
           state.ranking = $("ranking").value;
+          const limit = currentResultLimit();
+          const requestLimit = state.ranking === "pooled" ? Math.max(limit * 4, 20) : limit;
           const strategies =
             state.ranking === "pooled" ? ["weighted", "rrf"] : [state.ranking];
           const responses = await Promise.all(
             strategies.map(strategy =>
-              fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${$("limit").value}&ranking=${strategy}`),
+              fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${requestLimit}&ranking=${strategy}`),
             ),
           );
           const payloads = await Promise.all(responses.map(response => response.json()));
@@ -195,13 +265,11 @@ blue</textarea>
               }
             }
           }
-          state.results = [...merged.values()];
+          state.results = [...merged.values()].slice(0, limit);
           render();
-          const isLastQuery = state.queryIndex >= state.queries.length - 1;
           const unlabeled = state.results.filter(result => !state.labels[key(query, result)]).length;
-          $("next").disabled = false;
-          $("next").textContent = isLastQuery ? "Finish & export" : "Next query →";
-          setStatus(`${state.results.length} results, ${unlabeled} new. ${Object.keys(state.labels).length} labels saved locally.`);
+          updateNextButton();
+          setStatus(`${state.results.length} results. ${Object.keys(state.labels).length} labels saved locally.${unlabeled ? ` ${unlabeled} result${unlabeled === 1 ? "" : "s"} remain for this query.` : " This query is complete."}`);
         } catch (error) {
           state.results = [];
           render();
@@ -211,10 +279,14 @@ blue</textarea>
       $("start").onclick = () => {
         state.queries = $("queries").value.split(/\n/).map(q => q.trim()).filter(Boolean);
         state.queryIndex = 0;
+        state.completed = false;
         loadQuery();
       };
       const exportLabels = () => {
-        const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), labels: Object.values(state.labels) }, null, 2)], { type: "application/json" });
+        const labels = Object.values(state.labels)
+          .filter(label => !state.broken.has(label.assetId))
+          .map(label => ({ ...label, rankingMethod: label.rankingMethod || "unknown", resultLimit: label.resultLimit ?? null }));
+        const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), labels }, null, 2)], { type: "application/json" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = "art-explorer-eval-labels.json";
@@ -227,11 +299,25 @@ blue</textarea>
           loadQuery();
           return;
         }
-        exportLabels();
-        setStatus(`Evaluation complete. ${Object.keys(state.labels).length} labels exported.`);
+        if (!currentQueryComplete()) return;
+        state.completed = true;
+        render();
+        setStatus(`Evaluation complete. ${Object.keys(state.labels).length} labels saved locally.`);
       };
       $("export").onclick = exportLabels;
-      $("clear").onclick = () => { if (confirm("Clear all labels saved in this browser?")) { state.labels = {}; save(); render(); setStatus("Saved labels cleared."); } };
+      $("clear").onclick = () => { if (confirm("Clear all labels saved in this browser?")) { state.labels = {}; state.completed = false; save(); render(); setStatus("Saved labels cleared."); } };
+      $("page-fullscreen").onclick = async () => {
+        if (!document.fullscreenEnabled || !document.documentElement.requestFullscreen) {
+          setStatus("Full screen is not supported by this browser.");
+          return;
+        }
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else await document.documentElement.requestFullscreen();
+        } catch (error) {
+          setStatus(`Full screen failed: ${error instanceof Error ? error.message : "permission denied."}`);
+        }
+      };
     </script>
   </body>
 </html>

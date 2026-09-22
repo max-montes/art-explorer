@@ -11,15 +11,23 @@ export function Lightbox({
   alt,
   caption,
   onClose,
+  onPrevious,
+  onNext,
 }: {
   src: string;
   alt: string;
   caption?: string;
   onClose: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
 }) {
+  const navigable = Boolean(onPrevious || onNext);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
+      else if (event.key === "ArrowLeft") onPrevious?.();
+      else if (event.key === "ArrowRight") onNext?.();
     };
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
@@ -28,7 +36,7 @@ export function Lightbox({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, [onClose, onNext, onPrevious]);
 
   return (
     <div
@@ -46,6 +54,40 @@ export function Lightbox({
       >
         ×
       </button>
+      {navigable && (
+        <>
+          <button
+            type="button"
+            className="lightbox-nav lightbox-previous"
+            aria-label="View previous artwork"
+            title="Previous artwork"
+            disabled={!onPrevious}
+            onClick={(event) => {
+              event.stopPropagation();
+              onPrevious?.();
+            }}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 4-8 8 8 8" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="lightbox-nav lightbox-next"
+            aria-label="View next artwork"
+            title="Next artwork"
+            disabled={!onNext}
+            onClick={(event) => {
+              event.stopPropagation();
+              onNext?.();
+            }}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m9 4 8 8-8 8" />
+            </svg>
+          </button>
+        </>
+      )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}

@@ -23,6 +23,20 @@ export interface VectorQuery {
    */
   mode?: "labels" | "whole";
   imageVector?: number[];
+  creatorNames?: string[];
+  assetIds?: string[];
+  cultures?: string[];
+  yearRange?: { start: number; end: number };
+}
+
+export interface TextQuery {
+  text: string;
+  limit: number;
+  channel: Channel;
+  creatorNames?: string[];
+  assetIds?: string[];
+  cultures?: string[];
+  yearRange?: { start: number; end: number };
 }
 
 export interface CatalogIndexEntry {
@@ -35,9 +49,11 @@ export interface CatalogIndexEntry {
 
 export interface CatalogRepository {
   prepare(): Promise<void>;
+  catalogAssets(channel: Channel): Promise<MediaAsset[]>;
   findAsset(id: string): Promise<MediaAsset | null>;
   findAssetVectors(id: string): Promise<AssetVectors | null>;
   search(query: VectorQuery): Promise<ScoredAsset[]>;
+  textSearch(query: TextQuery): Promise<ScoredAsset[]>;
   concepts(): Promise<Concept[]>;
   conceptEdges(): Promise<ConceptEdge[]>;
   upsertIndexedAsset(entry: CatalogIndexEntry): Promise<void>;

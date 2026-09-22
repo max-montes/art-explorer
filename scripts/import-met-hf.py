@@ -32,13 +32,22 @@ ART_DEPARTMENTS = (
     "modern",
     "photographs",
     "american decorative",
+    "robert lehman",
 )
+# Museum-classified as paintings, but these are pages of text with small
+# illustrations rather than standalone paintings.
+EXCLUDED_OBJECT_NAMES = frozenset({"folio", "manuscript", "initiation card"})
 
 
 def arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True)
     parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Write every matching painting instead of stopping at --limit.",
+    )
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--resume", action="store_true")
@@ -99,11 +108,30 @@ def tag_terms(value: str) -> list[str]:
     )
 
 
+def integer(value: str) -> int | None:
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def is_painting(row: dict[str, str]) -> bool:
+    object_name = text(row, "objectName").lower()
+    if object_name in EXCLUDED_OBJECT_NAMES:
+        return False
+    classification = text(row, "classification")
+    if classification:
+        return bool(re.search(r"\bpaintings?\b", classification, re.IGNORECASE))
+    # The American Wing leaves classification blank for its whole collection,
+    # so fall back to an exact object name. A prefix match would also admit
+    # "Painting, miniature" portrait lockets.
+    return object_name == "painting"
+
+
 def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
     if text(row, "isPublicDomain").lower() != "true":
         return None
-    classification = text(row, "classification")
-    if not re.search(r"\bpaintings?\b", classification, re.IGNORECASE):
+    if not is_painting(row):
         return None
     department = text(row, "department")
     if not any(name in department.lower() for name in ART_DEPARTMENTS):
@@ -119,6 +147,7 @@ def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
     year = text(row, "objectDate") or "Unknown"
     medium = text(row, "medium")
     culture = text(row, "culture")
+    artist_nationality = text(row, "artistNationality")
     associations = tag_terms(text(row, "tags"))
     asset_id = f"met-{object_id}"
     asset = {
@@ -128,6 +157,11 @@ def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
         "title": title,
         "creator": creator,
         "year": year,
+        "culture": culture or None,
+        "medium": medium or None,
+        "artistNationality": artist_nationality or None,
+        "objectBeginDate": integer(text(row, "objectBeginDate")),
+        "objectEndDate": integer(text(row, "objectEndDate")),
         "source": {
             "provider": "The Metropolitan Museum of Art",
             "sourceUrl": object_url,
@@ -208,19 +242,21 @@ def main() -> None:
             if entry:
                 entries.append(entry)
             current_offset = row_index + 1
-            if entry and (len(entries) % 100 == 0 or len(entries) >= args.limit):
+            reached_limit = not args.all and len(entries) >= args.limit
+            if entry and (len(entries) % 100 == 0 or reached_limit):
                 write_checkpoint(
                     checkpoint,
                     entries,
                     current_offset,
                 )
                 elapsed = max(0.001, time.monotonic() - started)
+                target = "all" if args.all else str(args.limit)
                 print(
                     f"[Met bulk] row={current_offset}; paintings="
-                    f"{len(entries)}/{args.limit}; {scanned / elapsed:.0f} rows/s",
+                    f"{len(entries)}/{target}; {scanned / elapsed:.0f} rows/s",
                     flush=True,
                 )
-            if len(entries) >= args.limit:
+            if reached_limit:
                 write_manifest(output, entries[: args.limit])
                 checkpoint.unlink(missing_ok=True)
                 elapsed = time.monotonic() - started
@@ -230,6 +266,16 @@ def main() -> None:
                     flush=True,
                 )
                 return
+
+    if args.all and entries:
+        write_manifest(output, entries)
+        checkpoint.unlink(missing_ok=True)
+        print(
+            f"[Met bulk] wrote all {len(entries)} paintings to {output} "
+            f"in {time.monotonic() - started:.1f}s",
+            flush=True,
+        )
+        return
 
     raise RuntimeError(
         f"Only found {len(entries)} paintings after scanning {scanned} rows"

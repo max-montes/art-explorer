@@ -70,7 +70,7 @@ describe("image-aware embedding safety", () => {
     expect(response.results.length).toBeGreaterThan(0);
   });
 
-  it("keeps the existing text-only weighting when CLIP is unavailable", async () => {
+  it("fails loudly when the configured image model is unavailable", async () => {
     process.env.IMAGE_EMBEDDINGS = "true";
     const base = new DeterministicEmbeddingProvider();
     const provider = Object.assign(base, {
@@ -83,8 +83,8 @@ describe("image-aware embedding safety", () => {
       provider,
     );
 
-    const response = await service.search("melancholy");
-
-    expect(response.weights).toEqual({ semantic: 0.8, metadata: 0.2 });
+    await expect(service.search("melancholy")).rejects.toThrow(
+      "The image channel failed to embed the query: model unavailable",
+    );
   });
 });

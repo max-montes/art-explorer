@@ -10,6 +10,7 @@ import {
 import type {
   CatalogIndexEntry,
   CatalogRepository,
+  TextQuery,
   VectorQuery,
 } from "./repository";
 
@@ -36,6 +37,18 @@ export class PostgresCatalogRepository implements CatalogRepository {
         "PostgreSQL catalog is not initialized. Run Docker Compose so db/schema.sql is applied.",
       );
     }
+  }
+
+  async catalogAssets(channel: "artwork"): Promise<MediaAsset[]> {
+    const result = await this.pool.query<{ catalog_payload: MediaAsset }>(
+      `SELECT asset.catalog_payload
+         FROM media_assets asset
+         JOIN media_embeddings embedding ON embedding.asset_id = asset.id
+        WHERE asset.library_category = $1
+          AND embedding.image_embedding IS NOT NULL`,
+      [channel],
+    );
+    return result.rows.map((row) => row.catalog_payload);
   }
 
   async findAsset(id: string): Promise<MediaAsset | null> {
@@ -120,6 +133,16 @@ export class PostgresCatalogRepository implements CatalogRepository {
          JOIN media_assets asset ON asset.id = embedding.asset_id
         WHERE ($5::text IS NULL OR asset.id <> $5)
           AND asset.library_category = $7
+          AND embedding.image_embedding IS NOT NULL
+          AND ($10::text[] IS NULL OR asset.creator = ANY($10))
+          AND ($11::text[] IS NULL OR asset.id = ANY($11))
+          AND ($12::text[] IS NULL OR asset.catalog_payload->>'culture' = ANY($12))
+          AND ($13::integer IS NULL OR (
+                (asset.catalog_payload->>'objectBeginDate')::integer <= $14
+            AND (asset.catalog_payload->>'objectEndDate')::integer >= $13
+            AND (asset.catalog_payload->>'objectEndDate')::integer
+                - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
+          ))
         ORDER BY score DESC
         LIMIT $6`,
       [
@@ -132,6 +155,11 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.channel,
         query.imageVector ? toVector(query.imageVector) : null,
         query.weights.image ?? 0,
+        query.creatorNames?.length ? query.creatorNames : null,
+        query.assetIds?.length ? query.assetIds : null,
+        query.cultures?.length ? query.cultures : null,
+        query.yearRange?.start ?? null,
+        query.yearRange?.end ?? null,
       ],
     );
     return result.rows.map((row) => ({
@@ -145,6 +173,61 @@ export class PostgresCatalogRepository implements CatalogRepository {
       ...(mode === "labels" && row.matched_label
         ? { matchedLabel: row.matched_label }
         : {}),
+    }));
+  }
+
+  async textSearch(query: TextQuery): Promise<ScoredAsset[]> {
+    if (!query.text.trim()) return [];
+    const result = await this.pool.query<{
+      catalog_payload: MediaAsset;
+      score: number;
+    }>(
+      `WITH searchable AS (
+         SELECT asset.*,
+                setweight(to_tsvector('simple', COALESCE(asset.title, '')), 'A')
+             || setweight(to_tsvector('simple', COALESCE(asset.creator, '')), 'A')
+             || setweight(to_tsvector('simple', COALESCE(asset.year_display, '')), 'B')
+             || setweight(to_tsvector('simple', COALESCE(asset.catalog_payload->>'culture', '')), 'B')
+             || setweight(to_tsvector('simple', COALESCE(asset.catalog_payload->>'medium', '')), 'B')
+             || setweight(to_tsvector('simple', COALESCE(asset.catalog_payload #>> '{semantics,associations}', '')), 'B')
+                   AS document
+           FROM media_assets asset
+           JOIN media_embeddings embedding ON embedding.asset_id = asset.id
+          WHERE asset.library_category = $2
+            AND embedding.image_embedding IS NOT NULL
+            AND ($4::text[] IS NULL OR asset.creator = ANY($4))
+            AND ($5::text[] IS NULL OR asset.id = ANY($5))
+            AND ($6::text[] IS NULL OR asset.catalog_payload->>'culture' = ANY($6))
+            AND ($7::integer IS NULL OR (
+                  (asset.catalog_payload->>'objectBeginDate')::integer <= $8
+              AND (asset.catalog_payload->>'objectEndDate')::integer >= $7
+              AND (asset.catalog_payload->>'objectEndDate')::integer
+                  - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
+            ))
+       ), parsed AS (
+         SELECT websearch_to_tsquery('simple', $1) AS query
+       )
+       SELECT searchable.catalog_payload,
+              ts_rank_cd(searchable.document, parsed.query, 32) AS score
+         FROM searchable, parsed
+        WHERE searchable.document @@ parsed.query
+        ORDER BY score DESC, searchable.title
+        LIMIT $3`,
+      [
+        query.text,
+        query.channel,
+        query.limit,
+        query.creatorNames?.length ? query.creatorNames : null,
+        query.assetIds?.length ? query.assetIds : null,
+        query.cultures?.length ? query.cultures : null,
+        query.yearRange?.start ?? null,
+        query.yearRange?.end ?? null,
+      ],
+    );
+    return result.rows.map((row) => ({
+      asset: row.catalog_payload,
+      score: Number(row.score),
+      scores: { semantic: 0, metadata: Number(row.score) },
     }));
   }
 

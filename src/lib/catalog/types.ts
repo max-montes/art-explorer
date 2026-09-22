@@ -115,6 +115,11 @@ export interface MediaAsset {
   title: string;
   creator: string;
   year: string;
+  culture?: string;
+  medium?: string;
+  artistNationality?: string;
+  objectBeginDate?: number;
+  objectEndDate?: number;
   source: MediaSource;
   semantics: CuratedSemantics;
   /** Pixel dimensions of the original, when known. */

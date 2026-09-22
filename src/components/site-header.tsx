@@ -14,7 +14,7 @@ export function SiteHeader() {
         </span>
         <span className="brand-copy">
           <strong>Art Explorer</strong>
-          <small>Find art by mood and idea</small>
+          <small>Search for paintings in your own words</small>
         </span>
       </Link>
       <nav className="header-actions">
