@@ -384,7 +384,7 @@ describe("curator catalog lifecycle", () => {
     ).not.toContain(draftUpload.record.draft.id);
   });
 
-  it("re-embeds approved records on startup when the semantic document drifts", async () => {
+  it("re-embeds approved records that lack the active image vector", async () => {
     const { curator, index, provider } = await harness();
     const upload = await curator.upload(
       "vincent.png",
@@ -395,18 +395,15 @@ describe("curator catalog lifecycle", () => {
       semanticDraft(upload.record.draft, { creator: "François-André Vincent" }),
     );
 
-    // Simulate a record embedded before the creator counted as an association.
-    const staleDocuments = {
-      semantic: "The Epistemic Lantern by François-André Vincent\nAssociations: Epistemic lantern",
-      metadata: approved.embedding.documents!.metadata,
-    };
-    const [staleVector] = await provider.embed([staleDocuments.semantic]);
+    // Simulate a record indexed before image-space retrieval became mandatory.
     await index.upsert({
       ...approved,
       embedding: {
         ...approved.embedding,
-        documents: staleDocuments,
-        vectors: { ...approved.embedding.vectors!, semantic: staleVector },
+        vectors: {
+          ...approved.embedding.vectors!,
+          image: undefined,
+        },
       },
     });
 
@@ -424,11 +421,8 @@ describe("curator catalog lifecycle", () => {
     expect(persisted).toEqual([approved.draft.id]);
     const healed = await index.findById(approved.draft.id);
     expect(healed?.embedding.version).toBe(approved.embedding.version + 1);
-    expect(healed?.embedding.documents?.semantic).not.toContain(
-      "François-André Vincent",
-    );
-    expect(healed?.embedding.documents?.metadata).toContain(
-      "François-André Vincent",
+    expect(healed?.embedding.vectors?.image).toHaveLength(
+      provider.imageDimensions,
     );
     const retrieval = new RetrievalService(restarted, provider);
     expect(

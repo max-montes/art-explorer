@@ -1,0 +1,3687 @@
+{
+  "version": 1,
+  "id": "image-model-v1",
+  "generatedAt": "2026-09-23T03:03:55.663Z",
+  "blinded": true,
+  "candidateSource": "Union of RRF and weighted top 10, reranked by each image model",
+  "queries": [
+    {
+      "query": "tenderness",
+      "group": "abstract_emotion",
+      "candidates": [
+        {
+          "id": "met-435752",
+          "type": "artwork",
+          "year": "1871",
+          "title": "Young Mother Gazing at Her Child",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-16481-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435752",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "William Bouguereau",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Children",
+              "Mothers",
+              "Women"
+            ],
+            "narrative": "1871",
+            "description": "Young Mother Gazing at Her Child — William Bouguereau — Oil on canvas",
+            "associations": [
+              "Women",
+              "Children",
+              "Mothers"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1871,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1871,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-435753",
+          "type": "artwork",
+          "year": "1872",
+          "title": "The Proposal",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-23423-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435753",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "William Bouguereau",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Women",
+              "Cats",
+              "Spinning Wheel"
+            ],
+            "narrative": "1872",
+            "description": "The Proposal — William Bouguereau — Oil on canvas",
+            "associations": [
+              "Men",
+              "Women",
+              "Cats",
+              "Spinning Wheel"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1872,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1872,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-437754",
+          "type": "artwork",
+          "year": "1874",
+          "title": "After the Ball",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT12025.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437754",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Alfred Stevens",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women"
+            ],
+            "narrative": "1874",
+            "description": "After the Ball — Alfred Stevens — Oil on canvas",
+            "associations": [
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1874,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1874,
+          "artistNationality": "Belgian"
+        },
+        {
+          "id": "met-437837",
+          "type": "artwork",
+          "year": "ca. 1894–96",
+          "title": "The Sofa",
+          "medium": "Oil on cardboard",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT1924.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437837",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Henri de Toulouse-Lautrec",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Couples",
+              "Women",
+              "Prostitutes"
+            ],
+            "narrative": "ca. 1894–96",
+            "description": "The Sofa — Henri de Toulouse-Lautrec — Oil on cardboard",
+            "associations": [
+              "Couples",
+              "Women",
+              "Prostitutes"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1896,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1894,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-12552",
+          "type": "artwork",
+          "year": "1895",
+          "title": "Jungle Tales (Contes de la Jungle)",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT2067.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12552",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "James Jebusa Shannon",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Girls",
+              "Women",
+              "Reading"
+            ],
+            "narrative": "1895 — American",
+            "description": "Jungle Tales (Contes de la Jungle) — James Jebusa Shannon — Oil on canvas",
+            "associations": [
+              "Girls",
+              "Women",
+              "Reading"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1895,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1895,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-435711",
+          "type": "artwork",
+          "year": "1869–70",
+          "title": "An Egyptian Peasant Woman and Her Child",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT234058.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435711",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Léon Bonnat",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Children",
+              "Women",
+              "Orientalist"
+            ],
+            "narrative": "1869–70",
+            "description": "An Egyptian Peasant Woman and Her Child — Léon Bonnat — Oil on canvas",
+            "associations": [
+              "Children",
+              "Women",
+              "Orientalist"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1870,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1869,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-438158",
+          "type": "artwork",
+          "year": "1873",
+          "title": "Springtime",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-33707-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/438158",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Pierre-Auguste Cot",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Couples",
+              "Men",
+              "Women",
+              "Forests"
+            ],
+            "narrative": "1873",
+            "description": "Springtime — Pierre-Auguste Cot — Oil on canvas",
+            "associations": [
+              "Couples",
+              "Men",
+              "Women",
+              "Forests"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1873,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1873,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-437544",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Virgin and Child",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.42.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437544",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Peter Paul Rubens",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Madonna and Child"
+            ],
+            "narrative": "Unknown",
+            "description": "Virgin and Child — Peter Paul Rubens — Oil on wood",
+            "associations": [
+              "Madonna and Child"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1640,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1597,
+          "artistNationality": "Flemish"
+        }
+      ]
+    },
+    {
+      "query": "dread",
+      "group": "abstract_emotion",
+      "candidates": [
+        {
+          "id": "met-437407",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Christ with a Staff",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT1347.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437407",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Rembrandt",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Christ"
+            ],
+            "narrative": "Unknown",
+            "description": "Christ with a Staff — Rembrandt — Oil on canvas",
+            "associations": [
+              "Christ"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1674,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1650,
+          "artistNationality": "Dutch"
+        },
+        {
+          "id": "met-441370",
+          "type": "artwork",
+          "year": "ca. 1878",
+          "title": "Moorish Guard",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/tr.144.13.2017_cropped.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/441370",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Edwin Lord Weeks",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Soldiers",
+              "Men",
+              "Orientalist"
+            ],
+            "narrative": "ca. 1878",
+            "description": "Moorish Guard — Edwin Lord Weeks — Oil on canvas",
+            "associations": [
+              "Soldiers",
+              "Men",
+              "Orientalist"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1883,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1873,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-49104",
+          "type": "artwork",
+          "year": "18th century",
+          "title": "Noh Mask of a Demoness (Hannya)",
+          "medium": "Matted painting; color on papier mache in relief, against a paper background",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/29_100_444_tms.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/49104",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Ogawa Haritsu (Ritsuō)",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Heads",
+              "Demons"
+            ],
+            "narrative": "18th century — Japan",
+            "description": "Noh Mask of a Demoness (Hannya) — Ogawa Haritsu (Ritsuō) — Matted painting; color on papier mache in relief, against a paper background",
+            "associations": [
+              "Demons",
+              "Heads"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1747,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1700,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-437508",
+          "type": "artwork",
+          "year": "ca. 1647",
+          "title": "Self-Portrait",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP323414.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437508",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Salvator Rosa",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Skulls",
+              "Men",
+              "Self-portraits",
+              "Writing"
+            ],
+            "narrative": "ca. 1647",
+            "description": "Self-Portrait — Salvator Rosa — Oil on canvas",
+            "associations": [
+              "Skulls",
+              "Men",
+              "Self-portraits",
+              "Writing"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1652,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1642,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-57202",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fan and Insect Cage",
+          "medium": "Album leaf; lacquer on silver paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205539.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57202",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Fans"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fan and Insect Cage — Shibata Zeshin — Album leaf; lacquer on silver paper",
+            "associations": [
+              "Fans"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-36066",
+          "type": "artwork",
+          "year": "early 20th century (?)",
+          "title": "Portraits of Emperors of Successive Dynasties",
+          "medium": "Album of twenty-four leaves; ink and color on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP160908.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/36066",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Emperors",
+              "Men",
+              "Portraits"
+            ],
+            "narrative": "early 20th century (?) — China",
+            "description": "Portraits of Emperors of Successive Dynasties — Unidentified artist — Album of twenty-four leaves; ink and color on silk",
+            "associations": [
+              "Emperors",
+              "Men",
+              "Portraits"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1933,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1900,
+          "artistNationality": null
+        },
+        {
+          "id": "met-45818",
+          "type": "artwork",
+          "year": "1846",
+          "title": "Red Zhong Kui, the Demon Queller",
+          "medium": "Hanging scroll; ink and color on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP317438.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/45818",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Katsushika Hokusai",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men"
+            ],
+            "narrative": "1846 — Japan",
+            "description": "Red Zhong Kui, the Demon Queller — Katsushika Hokusai — Hanging scroll; ink and color on silk",
+            "associations": [
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1846,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1846,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-440723",
+          "type": "artwork",
+          "year": "1868–69",
+          "title": "Bashi-Bazouk",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP243839.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/440723",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Jean-Léon Gérôme",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Portraits",
+              "Profiles",
+              "Orientalist"
+            ],
+            "narrative": "1868–69",
+            "description": "Bashi-Bazouk — Jean-Léon Gérôme — Oil on canvas",
+            "associations": [
+              "Men",
+              "Portraits",
+              "Profiles",
+              "Orientalist"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1869,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1868,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-435898",
+          "type": "artwork",
+          "year": "ca. 1450",
+          "title": "The Lamentation",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-20594-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435898",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Petrus Christus",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Sadness",
+              "Suffering",
+              "Christ",
+              "Mary Magdalene",
+              "Saint John the Evangelist",
+              "Virgin Mary",
+              "Lamentation",
+              "Death"
+            ],
+            "narrative": "ca. 1450",
+            "description": "The Lamentation — Petrus Christus — Oil on wood",
+            "associations": [
+              "Sadness",
+              "Suffering",
+              "Christ",
+              "Mary Magdalene",
+              "Saint John the Evangelist",
+              "Virgin Mary",
+              "Lamentation",
+              "Death"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1455,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1445,
+          "artistNationality": "Netherlandish"
+        }
+      ]
+    },
+    {
+      "query": "joy",
+      "group": "abstract_emotion",
+      "candidates": [
+        {
+          "id": "met-11192",
+          "type": "artwork",
+          "year": "1858",
+          "title": "Mercy's Dream",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap97.35.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11192",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Daniel Huntington",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women",
+              "Angels"
+            ],
+            "narrative": "1858 — American",
+            "description": "Mercy's Dream — Daniel Huntington — Oil on canvas",
+            "associations": [
+              "Angels",
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1858,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1858,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-438158",
+          "type": "artwork",
+          "year": "1873",
+          "title": "Springtime",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-33707-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/438158",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Pierre-Auguste Cot",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Couples",
+              "Men",
+              "Women",
+              "Forests"
+            ],
+            "narrative": "1873",
+            "description": "Springtime — Pierre-Auguste Cot — Oil on canvas",
+            "associations": [
+              "Couples",
+              "Men",
+              "Women",
+              "Forests"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1873,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1873,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-436429",
+          "type": "artwork",
+          "year": "ca. 1390",
+          "title": "Saint Margaret and the Dragon",
+          "medium": "Tempera on wood, gold ground",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/SF Gaddi.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436429",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Agnolo Gaddi",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women",
+              "Dragons",
+              "Saints"
+            ],
+            "narrative": "ca. 1390",
+            "description": "Saint Margaret and the Dragon — Agnolo Gaddi — Tempera on wood, gold ground",
+            "associations": [
+              "Women",
+              "Dragons",
+              "Saints"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1395,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1385,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-189538",
+          "type": "artwork",
+          "year": "1770–90",
+          "title": "Cupid Seated on a Garland",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/es/original/DP278833.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/189538",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Garlands",
+              "Cupid"
+            ],
+            "narrative": "1770–90",
+            "description": "Cupid Seated on a Garland — Unknown Creator — Oil on canvas",
+            "associations": [
+              "Garlands",
+              "Cupid"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1790,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1770,
+          "artistNationality": null
+        },
+        {
+          "id": "met-189542",
+          "type": "artwork",
+          "year": "18th century",
+          "title": "Bust of Henri IV in oval medallion with blue ground supported by two cupids",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/es/original/4187.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/189542",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "French Painter",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Profiles",
+              "Cupid",
+              "Flowers"
+            ],
+            "narrative": "18th century",
+            "description": "Bust of Henri IV in oval medallion with blue ground supported by two cupids — French Painter — Oil on canvas",
+            "associations": [
+              "Men",
+              "Profiles",
+              "Cupid",
+              "Flowers"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1799,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1700,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-57201",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fire Basket Suspended from Dock over a Fish Net in the Water",
+          "medium": "Album leaf; lacquer on gold paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57201",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Docks",
+              "Fire"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fire Basket Suspended from Dock over a Fish Net in the Water — Shibata Zeshin — Album leaf; lacquer on gold paper",
+            "associations": [
+              "Docks",
+              "Fire"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-53517",
+          "type": "artwork",
+          "year": "early 20th century",
+          "title": "Fisherman",
+          "medium": "Leaf; color on rice paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP-32406-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/53517",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [],
+            "narrative": "early 20th century — China",
+            "description": "Fisherman — Unknown Creator — Leaf; color on rice paper",
+            "associations": [],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1930,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1900,
+          "artistNationality": null
+        },
+        {
+          "id": "met-38057",
+          "type": "artwork",
+          "year": "ca. 1800",
+          "title": "Sketch with Kali and a Young Boy",
+          "medium": "Ink heightened with color on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP152314.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/38057",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "India (Punjab Hills, Kangra?)",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Swords",
+              "Heads",
+              "Boys",
+              "Goddess"
+            ],
+            "narrative": "ca. 1800 — India (Punjab Hills, Kangra?)",
+            "description": "Sketch with Kali and a Young Boy — Unknown Creator — Ink heightened with color on paper",
+            "associations": [
+              "Boys",
+              "Swords",
+              "Heads",
+              "Goddess"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1810,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1790,
+          "artistNationality": null
+        }
+      ]
+    },
+    {
+      "query": "nostalgia",
+      "group": "abstract_emotion",
+      "candidates": [
+        {
+          "id": "met-10994",
+          "type": "artwork",
+          "year": "1877",
+          "title": "The Banker's Table",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT2047.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/10994",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "William Michael Harnett",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Books",
+              "Feathers",
+              "Still Life",
+              "Coins"
+            ],
+            "narrative": "1877 — American",
+            "description": "The Banker's Table — William Michael Harnett — Oil on canvas",
+            "associations": [
+              "Books",
+              "Feathers",
+              "Still Life",
+              "Coins"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1877,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1877,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-11763",
+          "type": "artwork",
+          "year": "ca. 1881–1901",
+          "title": "Old Souvenirs",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT11456.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11763",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "John F. Peto",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Still Life"
+            ],
+            "narrative": "ca. 1881–1901 — American",
+            "description": "Old Souvenirs — John F. Peto — Oil on canvas",
+            "associations": [
+              "Still Life"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1901,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1878,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-11761",
+          "type": "artwork",
+          "year": "1885",
+          "title": "Office Board",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT2061.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11761",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "John F. Peto",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Still Life",
+              "Trompe-l'Oeil"
+            ],
+            "narrative": "1885 — American",
+            "description": "Office Board — John F. Peto — Oil on canvas",
+            "associations": [
+              "Still Life",
+              "Trompe-l'Oeil"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1885,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1885,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-11316",
+          "type": "artwork",
+          "year": "1872",
+          "title": "Newport Rocks",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap74.6.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11316",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "John Frederick Kensett",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Landscapes"
+            ],
+            "narrative": "1872 — American",
+            "description": "Newport Rocks — John Frederick Kensett — Oil on canvas",
+            "associations": [
+              "Landscapes"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1872,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1872,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-57201",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fire Basket Suspended from Dock over a Fish Net in the Water",
+          "medium": "Album leaf; lacquer on gold paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57201",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Docks",
+              "Fire"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fire Basket Suspended from Dock over a Fish Net in the Water — Shibata Zeshin — Album leaf; lacquer on gold paper",
+            "associations": [
+              "Fire",
+              "Docks"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-438849",
+          "type": "artwork",
+          "year": "ca. 1835–45",
+          "title": "Landscape",
+          "medium": "Oil on paper, laid down on board",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP136056.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/438849",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Carl Rottmann",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Landscapes"
+            ],
+            "narrative": "ca. 1835–45",
+            "description": "Landscape — Carl Rottmann — Oil on paper, laid down on board",
+            "associations": [
+              "Landscapes"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1850,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1830,
+          "artistNationality": "German"
+        }
+      ]
+    },
+    {
+      "query": "oppression",
+      "group": "abstract_social",
+      "candidates": [
+        {
+          "id": "met-13043",
+          "type": "artwork",
+          "year": "1849",
+          "title": "The Calumny of Apelles",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap24.186.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/13043",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "John Vanderlyn",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Women",
+              "Female Nudes"
+            ],
+            "narrative": "1849 — American",
+            "description": "The Calumny of Apelles — John Vanderlyn — Oil on canvas",
+            "associations": [
+              "Men",
+              "Women",
+              "Female Nudes"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1849,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1849,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-13025",
+          "type": "artwork",
+          "year": "ca. 1850",
+          "title": "Washington's Triumphal Entry into New York",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap54.90.177.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/13025",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "George Washington",
+              "Men",
+              "Women",
+              "Horses"
+            ],
+            "narrative": "ca. 1850 — American",
+            "description": "Washington's Triumphal Entry into New York — Unknown Creator — Oil on canvas",
+            "associations": [
+              "Women",
+              "George Washington",
+              "Men",
+              "Horses"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1850,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1847,
+          "artistNationality": null
+        },
+        {
+          "id": "met-436413",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Christ Bearing the Cross",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.112.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436413",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Northern French Painter",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Soldiers",
+              "Christ",
+              "Cross",
+              "Bearing the Cross"
+            ],
+            "narrative": "Unknown",
+            "description": "Christ Bearing the Cross — Northern French Painter — Oil on wood",
+            "associations": [
+              "Soldiers",
+              "Christ",
+              "Cross",
+              "Bearing the Cross"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1485,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1475,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-436483",
+          "type": "artwork",
+          "year": "ca. 1890",
+          "title": "Pygmalion and Galatea",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-14201-005.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436483",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Jean-Léon Gérôme",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Female Nudes",
+              "Cupid",
+              "Galatea",
+              "Pygmalion",
+              "Artists"
+            ],
+            "narrative": "ca. 1890",
+            "description": "Pygmalion and Galatea — Jean-Léon Gérôme — Oil on canvas",
+            "associations": [
+              "Men",
+              "Female Nudes",
+              "Cupid",
+              "Galatea",
+              "Pygmalion",
+              "Artists"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1895,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1885,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-51306",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Watching the Phoenix",
+          "medium": "Hanging scroll; ink and color on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/20558.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/51306",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Phoenix"
+            ],
+            "narrative": "Unknown — China",
+            "description": "Watching the Phoenix — Unidentified artist — Hanging scroll; ink and color on silk",
+            "associations": [
+              "Men",
+              "Phoenix"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1644,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1368,
+          "artistNationality": null
+        },
+        {
+          "id": "met-437329",
+          "type": "artwork",
+          "year": "probably 1633–34",
+          "title": "The Abduction of the Sabine Women",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP-29324-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437329",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Nicolas Poussin",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Suffering",
+              "Children",
+              "Men",
+              "Women",
+              "Horses"
+            ],
+            "narrative": "probably 1633–34",
+            "description": "The Abduction of the Sabine Women — Nicolas Poussin — Oil on canvas",
+            "associations": [
+              "Suffering",
+              "Children",
+              "Men",
+              "Women",
+              "Horses"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1634,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1633,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-435808",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "The Brawl",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.2.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435808",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Adriaen Brouwer",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Anger",
+              "Men"
+            ],
+            "narrative": "Unknown",
+            "description": "The Brawl — Adriaen Brouwer — Oil on wood",
+            "associations": [
+              "Anger",
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1699,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1600,
+          "artistNationality": "Flemish"
+        },
+        {
+          "id": "met-438466",
+          "type": "artwork",
+          "year": "ca. 1400",
+          "title": "The Flagellation",
+          "medium": "Oil, egg(?), and gold on plywood, transferred from wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP164873.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/438466",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Master of the Berswordt Altar",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Christ",
+              "Flagellation"
+            ],
+            "narrative": "ca. 1400",
+            "description": "The Flagellation — Master of the Berswordt Altar — Oil, egg(?), and gold on plywood, transferred from wood",
+            "associations": [
+              "Men",
+              "Christ",
+              "Flagellation"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1405,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1395,
+          "artistNationality": "German"
+        },
+        {
+          "id": "met-11140",
+          "type": "artwork",
+          "year": "1872",
+          "title": "Snap the Whip",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP-20820-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11140",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Winslow Homer",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Boys",
+              "Playing",
+              "Games"
+            ],
+            "narrative": "1872 — American",
+            "description": "Snap the Whip — Winslow Homer — Oil on canvas",
+            "associations": [
+              "Boys",
+              "Playing",
+              "Games"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1872,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1872,
+          "artistNationality": "American"
+        }
+      ]
+    },
+    {
+      "query": "defiance",
+      "group": "abstract_social",
+      "candidates": [
+        {
+          "id": "met-436188",
+          "type": "artwork",
+          "year": "1879",
+          "title": "The Defense of Champigny",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT259753.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436188",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Edouard Detaille",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Battles",
+              "Soldiers",
+              "Cannons",
+              "Men",
+              "Generals"
+            ],
+            "narrative": "1879",
+            "description": "The Defense of Champigny — Edouard Detaille — Oil on canvas",
+            "associations": [
+              "Battles",
+              "Soldiers",
+              "Cannons",
+              "Men",
+              "Generals"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1879,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1879,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-10431",
+          "type": "artwork",
+          "year": "ca. 1845",
+          "title": "The Constitution and the Guerriere",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP155950.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/10431",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Thomas Chambers",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Flags",
+              "Ships"
+            ],
+            "narrative": "ca. 1845 — American",
+            "description": "The Constitution and the Guerriere — Thomas Chambers — Oil on canvas",
+            "associations": [
+              "Flags",
+              "Ships"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1845,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1842,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-18113",
+          "type": "artwork",
+          "year": "1790",
+          "title": "General George Eliott",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT5671.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/18113",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Mather Brown",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Battles",
+              "Swords",
+              "Men",
+              "Generals"
+            ],
+            "narrative": "1790 — American",
+            "description": "General George Eliott — Mather Brown — Oil on canvas",
+            "associations": [
+              "Battles",
+              "Swords",
+              "Men",
+              "Generals"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1790,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1790,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-11417",
+          "type": "artwork",
+          "year": "1851",
+          "title": "Washington Crossing the Delaware",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP215410.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11417",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Emanuel Leutze",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Soldiers",
+              "American Revolution",
+              "George Washington",
+              "Men",
+              "Horses",
+              "Flags",
+              "Boats"
+            ],
+            "narrative": "1851 — American",
+            "description": "Washington Crossing the Delaware — Emanuel Leutze — Oil on canvas",
+            "associations": [
+              "Soldiers",
+              "American Revolution",
+              "George Washington",
+              "Men",
+              "Horses",
+              "Flags",
+              "Boats"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1851,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1851,
+          "artistNationality": "German American"
+        },
+        {
+          "id": "met-436228",
+          "type": "artwork",
+          "year": "ca. 1866",
+          "title": "Making the Splice between the Shore End and the Ocean Cable",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep92.10.47.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436228",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Robert Charles Dudley",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Ships",
+              "Transatlantic Cable"
+            ],
+            "narrative": "ca. 1866",
+            "description": "Making the Splice between the Shore End and the Ocean Cable — Robert Charles Dudley — Oil on canvas",
+            "associations": [
+              "Men",
+              "Ships",
+              "Transatlantic Cable"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1871,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1861,
+          "artistNationality": "British"
+        },
+        {
+          "id": "met-12873",
+          "type": "artwork",
+          "year": "1776",
+          "title": "Commodore Hopkins",
+          "medium": "Oil on glass",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/116218.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12873",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Portraits",
+              "Ships"
+            ],
+            "narrative": "1776",
+            "description": "Commodore Hopkins — Unknown Creator — Oil on glass",
+            "associations": [
+              "Men",
+              "Portraits",
+              "Ships"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1776,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1776,
+          "artistNationality": null
+        },
+        {
+          "id": "met-437052",
+          "type": "artwork",
+          "year": "ca. 1861–75",
+          "title": "1807, Friedland",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT2144.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437052",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Ernest Meissonier",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Wars",
+              "Army",
+              "Soldiers",
+              "Napoleon I",
+              "Horses"
+            ],
+            "narrative": "ca. 1861–75",
+            "description": "1807, Friedland — Ernest Meissonier — Oil on canvas",
+            "associations": [
+              "Wars",
+              "Army",
+              "Soldiers",
+              "Napoleon I",
+              "Horses"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1875,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1860,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-20768",
+          "type": "artwork",
+          "year": "1852",
+          "title": "The Thomas Hunt and the America",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/LC-2019_11-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/20768",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "James Bard",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Flags",
+              "Boats",
+              "Ships"
+            ],
+            "narrative": "1852 — American",
+            "description": "The Thomas Hunt and the America — James Bard — Oil on canvas",
+            "associations": [
+              "Flags",
+              "Boats",
+              "Ships"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1852,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1852,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-12024",
+          "type": "artwork",
+          "year": "1828",
+          "title": "The Custom House at Greenock, Scotland",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP115732.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12024",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Robert Salmon",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buildings",
+              "Men",
+              "Storms",
+              "Ships"
+            ],
+            "narrative": "1828 — American",
+            "description": "The Custom House at Greenock, Scotland — Robert Salmon — Oil on wood",
+            "associations": [
+              "Buildings",
+              "Men",
+              "Storms",
+              "Ships"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1828,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1828,
+          "artistNationality": "American"
+        }
+      ]
+    },
+    {
+      "query": "devotion",
+      "group": "abstract_social",
+      "candidates": [
+        {
+          "id": "met-436909",
+          "type": "artwork",
+          "year": "early 1490s",
+          "title": "Madonna Adoring the Child with the Infant Saint John the Baptist and an Angel",
+          "medium": "Tempera on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP358280.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436909",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Lorenzo di Credi (Lorenzo d'Andrea d'Oderigo)",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Angels",
+              "Christ",
+              "Madonna and Child",
+              "Saint John the Baptist"
+            ],
+            "narrative": "early 1490s",
+            "description": "Madonna Adoring the Child with the Infant Saint John the Baptist and an Angel — Lorenzo di Credi (Lorenzo d'Andrea d'Oderigo) — Tempera on wood",
+            "associations": [
+              "Saint John the Baptist",
+              "Angels",
+              "Christ",
+              "Madonna and Child"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1490,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1490,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-436836",
+          "type": "artwork",
+          "year": "1649",
+          "title": "Allegory of Music",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT1387.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436836",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Laurent de La Hyre",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Birds",
+              "Women",
+              "Music",
+              "Lutes",
+              "Violins",
+              "Allegory"
+            ],
+            "narrative": "1649",
+            "description": "Allegory of Music — Laurent de La Hyre — Oil on canvas",
+            "associations": [
+              "Birds",
+              "Women",
+              "Music",
+              "Lutes",
+              "Violins",
+              "Allegory"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1649,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1649,
+          "artistNationality": "French"
+        },
+        {
+          "id": "met-435731",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "The Coronation of the Virgin",
+          "medium": "Tempera on canvas, transferred from wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DT350031.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435731",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Botticelli",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Saint Francis",
+              "Saint John the Baptist",
+              "Virgin Mary",
+              "Saints",
+              "Coronation of the Virgin"
+            ],
+            "narrative": "Unknown",
+            "description": "The Coronation of the Virgin — Botticelli — Tempera on canvas, transferred from wood",
+            "associations": [
+              "Men",
+              "Saint Francis",
+              "Saint John the Baptist",
+              "Virgin Mary",
+              "Saints",
+              "Coronation of the Virgin"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1499,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1475,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-458978",
+          "type": "artwork",
+          "year": "ca. 1455",
+          "title": "Coronation of the Virgin",
+          "medium": "Tempera on wood, gold ground",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/rl/original/DT708.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/458978",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Giovanni di Paolo (Giovanni di Paolo di Grazia)",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Angels",
+              "Christ",
+              "Virgin Mary",
+              "Ceremony"
+            ],
+            "narrative": "ca. 1455",
+            "description": "Coronation of the Virgin — Giovanni di Paolo (Giovanni di Paolo di Grazia) — Tempera on wood, gold ground",
+            "associations": [
+              "Ceremony",
+              "Angels",
+              "Christ",
+              "Virgin Mary"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1458,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1452,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-437798",
+          "type": "artwork",
+          "year": "ca. 1750",
+          "title": "The Glorification of the Barbaro Family",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/DP287646.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/437798",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Giovanni Battista Tiepolo",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Women",
+              "Putti",
+              "Sky"
+            ],
+            "narrative": "ca. 1750",
+            "description": "The Glorification of the Barbaro Family — Giovanni Battista Tiepolo — Oil on canvas",
+            "associations": [
+              "Men",
+              "Women",
+              "Putti",
+              "Sky"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1755,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1745,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-40345",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Bodhisattva",
+          "medium": "Fresco",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/29_76.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/40345",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "narrative": "Unknown — China",
+            "description": "Bodhisattva — Unknown Creator — Fresco",
+            "associations": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1279,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 960,
+          "artistNationality": null
+        },
+        {
+          "id": "met-436815",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Crusaders before Jerusalem",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep87.15.110.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/436815",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Wilhelm von Kaulbach",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Horses",
+              "Christ"
+            ],
+            "narrative": "Unknown",
+            "description": "Crusaders before Jerusalem — Wilhelm von Kaulbach — Oil on canvas",
+            "associations": [
+              "Horses",
+              "Men",
+              "Christ"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1874,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1825,
+          "artistNationality": "German"
+        },
+        {
+          "id": "met-838012",
+          "type": "artwork",
+          "year": "ca. 11th century",
+          "title": "Manjushri, Painting from a Prajnaparamita Sutra Manuscript",
+          "medium": "Gouache and black ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP-22236-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/838012",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "Western Tibet",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [],
+            "narrative": "ca. 11th century — Western Tibet",
+            "description": "Manjushri, Painting from a Prajnaparamita Sutra Manuscript — Unidentified artist — Gouache and black ink on paper",
+            "associations": [],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1199,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1000,
+          "artistNationality": null
+        },
+        {
+          "id": "met-11199",
+          "type": "artwork",
+          "year": "1861",
+          "title": "Study in a Wood",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap25.110.42.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11199",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Daniel Huntington",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women",
+              "Reading"
+            ],
+            "narrative": "1861 — American",
+            "description": "Study in a Wood — Daniel Huntington — Oil on canvas",
+            "associations": [
+              "Women",
+              "Reading"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1861,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1861,
+          "artistNationality": "American"
+        }
+      ]
+    },
+    {
+      "query": "freedom",
+      "group": "abstract_social",
+      "candidates": [
+        {
+          "id": "met-11417",
+          "type": "artwork",
+          "year": "1851",
+          "title": "Washington Crossing the Delaware",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP215410.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11417",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Emanuel Leutze",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Soldiers",
+              "American Revolution",
+              "George Washington",
+              "Men",
+              "Horses",
+              "Flags",
+              "Boats"
+            ],
+            "narrative": "1851 — American",
+            "description": "Washington Crossing the Delaware — Emanuel Leutze — Oil on canvas",
+            "associations": [
+              "Soldiers",
+              "American Revolution",
+              "George Washington",
+              "Men",
+              "Horses",
+              "Flags",
+              "Boats"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1851,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1851,
+          "artistNationality": "German American"
+        },
+        {
+          "id": "met-12667",
+          "type": "artwork",
+          "year": "ca. 1793–94",
+          "title": "Horatio Gates",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT2041.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12667",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Gilbert Stuart",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "American Revolution",
+              "Men",
+              "Portraits",
+              "Generals"
+            ],
+            "narrative": "ca. 1793–94 — American",
+            "description": "Horatio Gates — Gilbert Stuart — Oil on canvas",
+            "associations": [
+              "American Revolution",
+              "Men",
+              "Portraits",
+              "Generals"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1794,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1790,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-10116",
+          "type": "artwork",
+          "year": "1860–1900",
+          "title": "American Eagle on Red Scroll",
+          "medium": "Oil on canvas, mounted on masonite",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap1980.360.12.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/10116",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "W. H. Bean",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Eagles"
+            ],
+            "narrative": "1860–1900 — American",
+            "description": "American Eagle on Red Scroll — W. H. Bean — Oil on canvas, mounted on masonite",
+            "associations": [
+              "Eagles"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1900,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1860,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-435734",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Saint Sebastian",
+          "medium": "Tempera and oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep48.78.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435734",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Francesco Botticini (Francesco di Giovanni)",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Angels",
+              "Saint Sebastian"
+            ],
+            "narrative": "Unknown",
+            "description": "Saint Sebastian — Francesco Botticini (Francesco di Giovanni) — Tempera and oil on wood",
+            "associations": [
+              "Men",
+              "Angels",
+              "Saint Sebastian"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1497,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1466,
+          "artistNationality": "Italian"
+        },
+        {
+          "id": "met-10070",
+          "type": "artwork",
+          "year": "1831",
+          "title": "The Spanish Girl in Reverie",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap01.7.2.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/10070",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Washington Allston",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women"
+            ],
+            "narrative": "1831 — American",
+            "description": "The Spanish Girl in Reverie — Washington Allston — Oil on canvas",
+            "associations": [
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1831,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1831,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-12929",
+          "type": "artwork",
+          "year": "Ca. 1800",
+          "title": "Liberty",
+          "medium": "verre églomisé",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP205026.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12929",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Chinese, for American market",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Eagles",
+              "Women",
+              "Flags",
+              "Allegory"
+            ],
+            "narrative": "Ca. 1800 — Chinese, for American market",
+            "description": "Liberty — Unknown Creator — verre églomisé",
+            "associations": [
+              "Allegory",
+              "Eagles",
+              "Women",
+              "Flags"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1800,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1797,
+          "artistNationality": null
+        },
+        {
+          "id": "met-12928",
+          "type": "artwork",
+          "year": "ca. 1800",
+          "title": "Liberty",
+          "medium": "Oil on glass",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DP-35722-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12928",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Chinese Painter",
+          "culture": "Chinese, for American market",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Eagles",
+              "Women"
+            ],
+            "narrative": "ca. 1800 — Chinese, for American market",
+            "description": "Liberty — Chinese Painter — Oil on glass",
+            "associations": [
+              "Eagles",
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1800,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1797,
+          "artistNationality": "American"
+        }
+      ]
+    },
+    {
+      "query": "vulnerability",
+      "group": "abstract_state",
+      "candidates": [
+        {
+          "id": "met-75166",
+          "type": "artwork",
+          "year": "late 19th century",
+          "title": "Egret on Tree Stump",
+          "medium": "Fan painting mounted as album leaf; tempera on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205589.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/75166",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Birds"
+            ],
+            "narrative": "late 19th century — Japan",
+            "description": "Egret on Tree Stump — Shibata Zeshin — Fan painting mounted as album leaf; tempera on paper",
+            "associations": [
+              "Birds"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1891,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1867,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-54212",
+          "type": "artwork",
+          "year": "ca. 6th–7th century",
+          "title": "Head of a Buddha",
+          "medium": "Pigments on mud plaster",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP338613.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/54212",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "China (Xinjiang Uyghur Autonomous Region)",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Heads",
+              "Buddhism",
+              "Buddha"
+            ],
+            "narrative": "ca. 6th–7th century — China (Xinjiang Uyghur Autonomous Region)",
+            "description": "Head of a Buddha — Unknown Creator — Pigments on mud plaster",
+            "associations": [
+              "Heads",
+              "Buddhism",
+              "Buddha"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 699,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 500,
+          "artistNationality": null
+        },
+        {
+          "id": "met-57201",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fire Basket Suspended from Dock over a Fish Net in the Water",
+          "medium": "Album leaf; lacquer on gold paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57201",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Docks",
+              "Fire"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fire Basket Suspended from Dock over a Fish Net in the Water — Shibata Zeshin — Album leaf; lacquer on gold paper",
+            "associations": [
+              "Fire",
+              "Docks"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-57253",
+          "type": "artwork",
+          "year": "18th–19th century",
+          "title": "Yorimasa Killing Nue",
+          "medium": "Ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP-24892-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57253",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Katsushika Hokusai",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Animals",
+              "Swords",
+              "Men"
+            ],
+            "narrative": "18th–19th century — Japan",
+            "description": "Yorimasa Killing Nue — Katsushika Hokusai — Ink on paper",
+            "associations": [
+              "Animals",
+              "Swords",
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1849,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1760,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-10993",
+          "type": "artwork",
+          "year": "1879",
+          "title": "The Artist's Letter Rack",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT243651.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/10993",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "William Michael Harnett",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [],
+            "narrative": "1879 — American",
+            "description": "The Artist's Letter Rack — William Michael Harnett — Oil on canvas",
+            "associations": [],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1879,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1879,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-38057",
+          "type": "artwork",
+          "year": "ca. 1800",
+          "title": "Sketch with Kali and a Young Boy",
+          "medium": "Ink heightened with color on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP152314.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/38057",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "India (Punjab Hills, Kangra?)",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Swords",
+              "Heads",
+              "Boys",
+              "Goddess"
+            ],
+            "narrative": "ca. 1800 — India (Punjab Hills, Kangra?)",
+            "description": "Sketch with Kali and a Young Boy — Unknown Creator — Ink heightened with color on paper",
+            "associations": [
+              "Swords",
+              "Heads",
+              "Boys",
+              "Goddess"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1810,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1790,
+          "artistNationality": null
+        },
+        {
+          "id": "met-40516",
+          "type": "artwork",
+          "year": "ca. 1332",
+          "title": "Reading a sutra by moonlight",
+          "medium": "Hanging scroll; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP123749.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/40516",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Reading"
+            ],
+            "narrative": "ca. 1332 — China",
+            "description": "Reading a sutra by moonlight — Unidentified artist — Hanging scroll; ink on paper",
+            "associations": [
+              "Men",
+              "Reading"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1337,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1322,
+          "artistNationality": null
+        },
+        {
+          "id": "met-670913",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "\"Akashi\", \"Channel Buoys\" (\"Miotsukushi\"),  \"The Wormwood Patch\" (\"Yomogiu\"),  \"Gatehouse\" (\"Sekiya\"), and  \"Picture Contest\" (\"E-awase\") chapters from the Tale of Genji (Genji monogatari)",
+          "medium": "Handscroll; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP701524_crd.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/670913",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Women"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "\"Akashi\", \"Channel Buoys\" (\"Miotsukushi\"),  \"The Wormwood Patch\" (\"Yomogiu\"),  \"Gatehouse\" (\"Sekiya\"), and  \"Picture Contest\" (\"E-awase\") chapters from the Tale of Genji (Genji monogatari) — Unknown Creator — Handscroll; ink on paper",
+            "associations": [
+              "Men",
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1573,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1392,
+          "artistNationality": null
+        },
+        {
+          "id": "met-45614",
+          "type": "artwork",
+          "year": "11th–12th century",
+          "title": "Scroll of Mudras",
+          "medium": "Handscroll; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP234946_CRD.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/45614",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Hands"
+            ],
+            "narrative": "11th–12th century — Japan",
+            "description": "Scroll of Mudras — Unknown Creator — Handscroll; ink on paper",
+            "associations": [
+              "Hands"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1185,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1000,
+          "artistNationality": null
+        }
+      ]
+    },
+    {
+      "query": "resilience",
+      "group": "abstract_state",
+      "candidates": [
+        {
+          "id": "met-435806",
+          "type": "artwork",
+          "year": "ca. 1626–27",
+          "title": "A Peasant Woman Picking Fleas off a Dog",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.1.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435806",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Adriaen Brouwer",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women",
+              "Dogs"
+            ],
+            "narrative": "ca. 1626–27",
+            "description": "A Peasant Woman Picking Fleas off a Dog — Adriaen Brouwer — Oil on wood",
+            "associations": [
+              "Women",
+              "Dogs"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1627,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1626,
+          "artistNationality": "Flemish"
+        },
+        {
+          "id": "met-435808",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "The Brawl",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.2.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435808",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Adriaen Brouwer",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Anger",
+              "Men"
+            ],
+            "narrative": "Unknown",
+            "description": "The Brawl — Adriaen Brouwer — Oil on wood",
+            "associations": [
+              "Anger",
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1699,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1600,
+          "artistNationality": "Flemish"
+        },
+        {
+          "id": "met-36009",
+          "type": "artwork",
+          "year": "late 12th century",
+          "title": "Gibbon Seated on a Branch",
+          "medium": "Fan mounted as an album leaf; ink on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP153506.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/36009",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Gibbons"
+            ],
+            "narrative": "late 12th century — China",
+            "description": "Gibbon Seated on a Branch — Unidentified artist — Fan mounted as an album leaf; ink on silk",
+            "associations": [
+              "Gibbons"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1199,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1167,
+          "artistNationality": null
+        },
+        {
+          "id": "met-12709",
+          "type": "artwork",
+          "year": "1840",
+          "title": "George Washington",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap54.74.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/12709",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Thomas Wilcocks Sully",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "George Washington",
+              "Men",
+              "Portraits"
+            ],
+            "narrative": "1840 — American",
+            "description": "George Washington — Thomas Wilcocks Sully — Oil on canvas",
+            "associations": [
+              "George Washington",
+              "Men",
+              "Portraits"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1840,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1840,
+          "artistNationality": null
+        },
+        {
+          "id": "met-488126",
+          "type": "artwork",
+          "year": "1939",
+          "title": "\"One Third of a Nation\"",
+          "medium": "Oil and tempera on Masonite",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ma/original/DP-42826-001.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/488126",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "O. Louis Guglielmi",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buildings",
+              "Coffins"
+            ],
+            "narrative": "1939",
+            "description": "\"One Third of a Nation\" — O. Louis Guglielmi — Oil and tempera on Masonite",
+            "associations": [
+              "Buildings",
+              "Coffins"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1939,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1939,
+          "artistNationality": "American, born Egypt"
+        },
+        {
+          "id": "met-11137",
+          "type": "artwork",
+          "year": "1905–10",
+          "title": "Shooting the Rapids, Saguenay River",
+          "medium": "Oil on canvas with chalk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap11.57.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11137",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Winslow Homer",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Rivers",
+              "Boats"
+            ],
+            "narrative": "1905–10 — American",
+            "description": "Shooting the Rapids, Saguenay River — Winslow Homer — Oil on canvas with chalk",
+            "associations": [
+              "Men",
+              "Rivers",
+              "Boats"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1910,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1905,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-57201",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fire Basket Suspended from Dock over a Fish Net in the Water",
+          "medium": "Album leaf; lacquer on gold paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57201",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Docks",
+              "Fire"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fire Basket Suspended from Dock over a Fish Net in the Water — Shibata Zeshin — Album leaf; lacquer on gold paper",
+            "associations": [
+              "Docks",
+              "Fire"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-11739",
+          "type": "artwork",
+          "year": "ca. 1846",
+          "title": "George Washington",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap24.109.86.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11739",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Rembrandt Peale",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "George Washington",
+              "Men",
+              "Portraits"
+            ],
+            "narrative": "ca. 1846 — American",
+            "description": "George Washington — Rembrandt Peale — Oil on canvas",
+            "associations": [
+              "George Washington",
+              "Men",
+              "Portraits"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1846,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1843,
+          "artistNationality": "American"
+        }
+      ]
+    },
+    {
+      "query": "tension",
+      "group": "abstract_state",
+      "candidates": [
+        {
+          "id": "met-11180",
+          "type": "artwork",
+          "year": "1867",
+          "title": "Italian Girl",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/ap08.136.2.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/11180",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "William Morris Hunt",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Girls",
+              "Portraits",
+              "Profiles"
+            ],
+            "narrative": "1867 — American",
+            "description": "Italian Girl — William Morris Hunt — Oil on canvas",
+            "associations": [
+              "Girls",
+              "Portraits",
+              "Profiles"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1867,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1867,
+          "artistNationality": "American"
+        },
+        {
+          "id": "met-57201",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Fire Basket Suspended from Dock over a Fish Net in the Water",
+          "medium": "Album leaf; lacquer on gold paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP205538.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/57201",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Shibata Zeshin",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Docks",
+              "Fire"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "Fire Basket Suspended from Dock over a Fish Net in the Water — Shibata Zeshin — Album leaf; lacquer on gold paper",
+            "associations": [
+              "Docks",
+              "Fire"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1868,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1807,
+          "artistNationality": "Japanese"
+        },
+        {
+          "id": "met-435808",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "The Brawl",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.2.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435808",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Adriaen Brouwer",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Anger",
+              "Men"
+            ],
+            "narrative": "Unknown",
+            "description": "The Brawl — Adriaen Brouwer — Oil on wood",
+            "associations": [
+              "Anger",
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1699,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1600,
+          "artistNationality": "Flemish"
+        },
+        {
+          "id": "met-40516",
+          "type": "artwork",
+          "year": "ca. 1332",
+          "title": "Reading a sutra by moonlight",
+          "medium": "Hanging scroll; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP123749.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/40516",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Reading"
+            ],
+            "narrative": "ca. 1332 — China",
+            "description": "Reading a sutra by moonlight — Unidentified artist — Hanging scroll; ink on paper",
+            "associations": [
+              "Men",
+              "Reading"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1337,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1322,
+          "artistNationality": null
+        },
+        {
+          "id": "met-435806",
+          "type": "artwork",
+          "year": "ca. 1626–27",
+          "title": "A Peasant Woman Picking Fleas off a Dog",
+          "medium": "Oil on wood",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ep/original/ep32.100.1.bw.R.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/435806",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Adriaen Brouwer",
+          "culture": null,
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Women",
+              "Dogs"
+            ],
+            "narrative": "ca. 1626–27",
+            "description": "A Peasant Woman Picking Fleas off a Dog — Adriaen Brouwer — Oil on wood",
+            "associations": [
+              "Dogs",
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1627,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1626,
+          "artistNationality": "Flemish"
+        },
+        {
+          "id": "met-670913",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "\"Akashi\", \"Channel Buoys\" (\"Miotsukushi\"),  \"The Wormwood Patch\" (\"Yomogiu\"),  \"Gatehouse\" (\"Sekiya\"), and  \"Picture Contest\" (\"E-awase\") chapters from the Tale of Genji (Genji monogatari)",
+          "medium": "Handscroll; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/DP701524_crd.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/670913",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men",
+              "Women"
+            ],
+            "narrative": "Unknown — Japan",
+            "description": "\"Akashi\", \"Channel Buoys\" (\"Miotsukushi\"),  \"The Wormwood Patch\" (\"Yomogiu\"),  \"Gatehouse\" (\"Sekiya\"), and  \"Picture Contest\" (\"E-awase\") chapters from the Tale of Genji (Genji monogatari) — Unknown Creator — Handscroll; ink on paper",
+            "associations": [
+              "Men",
+              "Women"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1573,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1392,
+          "artistNationality": null
+        },
+        {
+          "id": "met-51812",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Shide, the Buddhist Hermit",
+          "medium": "Framed painting; ink and color on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/55_155_1_O2_sf.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/51812",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unidentified artist",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Men"
+            ],
+            "narrative": "Unknown — China",
+            "description": "Shide, the Buddhist Hermit — Unidentified artist — Framed painting; ink and color on silk",
+            "associations": [
+              "Men"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1368,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1271,
+          "artistNationality": null
+        }
+      ]
+    },
+    {
+      "query": "transcendence",
+      "group": "abstract_state",
+      "candidates": [
+        {
+          "id": "met-54794",
+          "type": "artwork",
+          "year": "18th century",
+          "title": "Buddha on the Lotus Leaf",
+          "medium": "Painting on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/18_146_3_55933.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/54794",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "narrative": "18th century — Japan",
+            "description": "Buddha on the Lotus Leaf — Unknown Creator — Painting on paper",
+            "associations": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1799,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1700,
+          "artistNationality": null
+        },
+        {
+          "id": "met-54791",
+          "type": "artwork",
+          "year": "18th century",
+          "title": "Amida Manifesting in the Dharma-body of Expedient Means",
+          "medium": "Ink, color, and cut silver on silk",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/18_146_1_O4_sf.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/54791",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "narrative": "18th century — Japan",
+            "description": "Amida Manifesting in the Dharma-body of Expedient Means — Unknown Creator — Ink, color, and cut silver on silk",
+            "associations": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1799,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1700,
+          "artistNationality": null
+        },
+        {
+          "id": "met-54792",
+          "type": "artwork",
+          "year": "18th century",
+          "title": "Buddha on the Lotus Leaf",
+          "medium": "Painting on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/18_146_2_55934.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/54792",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "narrative": "18th century — Japan",
+            "description": "Buddha on the Lotus Leaf — Unknown Creator — Painting on paper",
+            "associations": [
+              "Buddhism",
+              "Buddha"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1799,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1700,
+          "artistNationality": null
+        },
+        {
+          "id": "met-37824",
+          "type": "artwork",
+          "year": "19th century",
+          "title": "Thanka with Large Buddha",
+          "medium": "Distemper on cloth",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/1971_24_2.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/37824",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Tibet",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Horses",
+              "Clouds",
+              "Buddhism",
+              "Buddha",
+              "Monks",
+              "Carts"
+            ],
+            "narrative": "19th century — Tibet",
+            "description": "Thanka with Large Buddha — Unknown Creator — Distemper on cloth",
+            "associations": [
+              "Horses",
+              "Clouds",
+              "Buddhism",
+              "Buddha",
+              "Monks",
+              "Carts"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1899,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1800,
+          "artistNationality": null
+        },
+        {
+          "id": "met-40356",
+          "type": "artwork",
+          "year": "17th century",
+          "title": "Drawing of Eleven-headed Kannon",
+          "medium": "Matted drawing; ink on paper",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/1978_213.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/40356",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "Japan",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "narrative": "17th century — Japan",
+            "description": "Drawing of Eleven-headed Kannon — Unknown Creator — Matted drawing; ink on paper",
+            "associations": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1699,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1600,
+          "artistNationality": null
+        },
+        {
+          "id": "met-40345",
+          "type": "artwork",
+          "year": "Unknown",
+          "title": "Bodhisattva",
+          "medium": "Fresco",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/as/original/29_76.JPG",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/40345",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Unknown Creator",
+          "culture": "China",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "narrative": "Unknown — China",
+            "description": "Bodhisattva — Unknown Creator — Fresco",
+            "associations": [
+              "Buddhism",
+              "Bodhisattvas"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1279,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 960,
+          "artistNationality": null
+        },
+        {
+          "id": "met-13070",
+          "type": "artwork",
+          "year": "1885",
+          "title": "The Pleiades",
+          "medium": "Oil on canvas",
+          "source": {
+            "license": "CC0 / Public Domain",
+            "mediaUrl": "https://images.metmuseum.org/CRDImages/ad/original/DT5186.jpg",
+            "provider": "The Metropolitan Museum of Art",
+            "sourceUrl": "https://www.metmuseum.org/art/collection/search/13070",
+            "licenseUrl": "https://www.metmuseum.org/policies/terms-and-conditions#art"
+          },
+          "creator": "Elihu Vedder",
+          "culture": "American",
+          "ownerId": null,
+          "semantics": {
+            "moods": [],
+            "concepts": [],
+            "subjects": [
+              "Female Nudes",
+              "Dancing"
+            ],
+            "narrative": "1885 — American",
+            "description": "The Pleiades — Elihu Vedder — Oil on canvas",
+            "associations": [
+              "Female Nudes",
+              "Dancing"
+            ],
+            "curatorNotes": "Imported from The Met Open Access collection."
+          },
+          "objectEndDate": 1885,
+          "libraryCategory": "artwork",
+          "objectBeginDate": 1885,
+          "artistNationality": "American"
+        }
+      ]
+    }
+  ]
+}

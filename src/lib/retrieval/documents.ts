@@ -49,72 +49,53 @@ export function buildQueryDocuments(query: string): EmbeddingDocuments {
 export async function embedAsset(
   asset: MediaAsset,
   provider: EmbeddingProvider,
+  imageInput?: string,
 ): Promise<{ documents: EmbeddingDocuments; vectors: AssetVectors }> {
-  return (await embedAssets([asset], provider))[0];
+  return (
+    await embedAssets([asset], provider, imageInput ? [imageInput] : undefined)
+  )[0];
 }
 
 export async function embedAssets(
   assets: MediaAsset[],
   provider: EmbeddingProvider,
+  imageInputs?: string[],
 ): Promise<Array<{ documents: EmbeddingDocuments; vectors: AssetVectors }>> {
   if (!assets.length) return [];
   const documents = assets.map(buildEmbeddingDocuments);
-  const embeddedDocuments = await provider.embed([
-    ...assets.flatMap((asset, index) => [
-      documents[index].semantic,
-      documents[index].metadata,
-      ...assetAssociations(asset),
-    ]),
-  ]);
-  let documentIndex = 0;
+  const inputs = assets.map((asset, index) => {
+    const explicit = imageInputs?.[index];
+    if (explicit) return explicit;
+    const mediaUrl = asset.source.mediaUrl;
+    if (mediaUrl && /^(https?:|data:)/i.test(mediaUrl)) return mediaUrl;
+    return [asset.title, asset.creator, ...assetAssociations(asset)].join(" ");
+  });
+  const embeddedImages = await embedImagesWithFailureIsolation(
+    assets,
+    inputs,
+    provider,
+  );
   const results: Array<{
     documents: EmbeddingDocuments;
     vectors: AssetVectors;
   }> = assets.map((asset, index) => {
     const assetDocuments = documents[index];
-    const semantic = embeddedDocuments[documentIndex++];
-    const metadata = embeddedDocuments[documentIndex++];
-    const labels = assetAssociations(asset).map(
-      () => embeddedDocuments[documentIndex++],
-    );
+    const image = embeddedImages.get(asset.id) ?? [];
     return {
       documents: assetDocuments,
-      vectors: { semantic, metadata, labels },
+      vectors: { semantic: image, metadata: image, image },
     };
   });
-
-  if (
-    process.env.IMAGE_EMBEDDINGS === "true" &&
-    "embedImages" in provider
-  ) {
-    const imageProvider = provider as EmbeddingProvider & ImageEmbeddingProvider;
-    const imageAssets = assets.filter(
-      asset =>
-        asset.source.mediaUrl &&
-        /^(https?:|data:)/i.test(asset.source.mediaUrl),
-    );
-    if (imageAssets.length) {
-      const imageVectors = await embedImagesWithFailureIsolation(
-        imageAssets,
-        imageProvider,
-      );
-      for (const [assetIndex, result] of results.entries()) {
-        const image = imageVectors.get(assets[assetIndex].id);
-        if (image) result.vectors.image = image;
-      }
-    }
-  }
   return results;
 }
 
 async function embedImagesWithFailureIsolation(
   assets: MediaAsset[],
+  inputs: string[],
   provider: ImageEmbeddingProvider,
 ): Promise<Map<string, number[]>> {
   try {
-    const vectors = await provider.embedImages(
-      assets.map(asset => asset.source.mediaUrl as string),
-    );
+    const vectors = await provider.embedImages(inputs);
     if (vectors.length !== assets.length) {
       throw new Error(
         `CLIP returned ${vectors.length} vectors for ${assets.length} images.`,
@@ -131,8 +112,16 @@ async function embedImagesWithFailureIsolation(
     }
     const middle = Math.ceil(assets.length / 2);
     const [left, right] = await Promise.all([
-      embedImagesWithFailureIsolation(assets.slice(0, middle), provider),
-      embedImagesWithFailureIsolation(assets.slice(middle), provider),
+      embedImagesWithFailureIsolation(
+        assets.slice(0, middle),
+        inputs.slice(0, middle),
+        provider,
+      ),
+      embedImagesWithFailureIsolation(
+        assets.slice(middle),
+        inputs.slice(middle),
+        provider,
+      ),
     ]);
     return new Map([...left, ...right]);
   }

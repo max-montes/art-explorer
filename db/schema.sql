@@ -90,36 +90,10 @@ CREATE INDEX IF NOT EXISTS asset_labels_lookup_idx
 CREATE TABLE IF NOT EXISTS media_embeddings (
   asset_id text PRIMARY KEY REFERENCES media_assets(id) ON DELETE CASCADE,
   model_name text NOT NULL,
-  document_version integer NOT NULL DEFAULT 1,
-  semantic_document text NOT NULL,
-  metadata_document text NOT NULL,
-  semantic_embedding vector(384) NOT NULL,
-  metadata_embedding vector(384) NOT NULL,
   image_embedding vector(768),
+  jina_image_embedding vector(256),
   embedded_at timestamptz NOT NULL DEFAULT now()
 );
-
--- Pre-associations databases stored separate concept/mood vectors. Rebuild the
--- table on upgrade; approved curator records are rehydrated on boot.
-DO $$ BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-     WHERE table_name = 'media_embeddings' AND column_name = 'concept_embedding'
-  ) THEN
-    DROP TABLE media_embeddings;
-    CREATE TABLE media_embeddings (
-      asset_id text PRIMARY KEY REFERENCES media_assets(id) ON DELETE CASCADE,
-      model_name text NOT NULL,
-      document_version integer NOT NULL DEFAULT 1,
-      semantic_document text NOT NULL,
-      metadata_document text NOT NULL,
-      semantic_embedding vector(384) NOT NULL,
-      metadata_embedding vector(384) NOT NULL,
-      image_embedding vector(768),
-      embedded_at timestamptz NOT NULL DEFAULT now()
-    );
-  END IF;
-END $$;
 
 DO $$ BEGIN
   IF EXISTS (
@@ -137,26 +111,28 @@ END $$;
 
 ALTER TABLE media_embeddings
   ADD COLUMN IF NOT EXISTS image_embedding vector(768);
+ALTER TABLE media_embeddings
+  ADD COLUMN IF NOT EXISTS jina_image_embedding vector(256);
 
-CREATE INDEX IF NOT EXISTS media_embeddings_semantic_hnsw_idx
-  ON media_embeddings USING hnsw (semantic_embedding vector_cosine_ops);
-CREATE INDEX IF NOT EXISTS media_embeddings_metadata_hnsw_idx
-  ON media_embeddings USING hnsw (metadata_embedding vector_cosine_ops);
+DROP TABLE IF EXISTS asset_label_embeddings;
+DROP VIEW IF EXISTS met_record_comparison;
+DROP INDEX IF EXISTS media_embeddings_semantic_hnsw_idx;
+DROP INDEX IF EXISTS media_embeddings_metadata_hnsw_idx;
+ALTER TABLE media_embeddings
+  DROP COLUMN IF EXISTS document_version,
+  DROP COLUMN IF EXISTS semantic_document,
+  DROP COLUMN IF EXISTS metadata_document,
+  DROP COLUMN IF EXISTS semantic_embedding,
+  DROP COLUMN IF EXISTS metadata_embedding,
+  DROP COLUMN IF EXISTS concept_document,
+  DROP COLUMN IF EXISTS mood_document,
+  DROP COLUMN IF EXISTS concept_embedding,
+  DROP COLUMN IF EXISTS mood_embedding;
+
 CREATE INDEX IF NOT EXISTS media_embeddings_image_hnsw_idx
   ON media_embeddings USING hnsw (image_embedding vector_cosine_ops);
-
--- One row per association so search can score by best-matching label rather
--- than a whole-list vector that dilutes literal matches.
-CREATE TABLE IF NOT EXISTS asset_label_embeddings (
-  asset_id text NOT NULL REFERENCES media_assets(id) ON DELETE CASCADE,
-  position integer NOT NULL,
-  label text NOT NULL,
-  embedding vector(384) NOT NULL,
-  PRIMARY KEY (asset_id, position)
-);
-
-CREATE INDEX IF NOT EXISTS asset_label_embeddings_hnsw_idx
-  ON asset_label_embeddings USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS media_embeddings_jina_image_hnsw_idx
+  ON media_embeddings USING hnsw (jina_image_embedding vector_cosine_ops);
 
 CREATE TABLE IF NOT EXISTS curation_decisions (
   manifest_version integer NOT NULL,

@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  reciprocalRankFusion,
-  semanticScore,
-} from "@/lib/retrieval/scoring";
+import { semanticScore } from "@/lib/retrieval/scoring";
 import { MemoryCatalogRepository } from "@/lib/retrieval/memory-repository";
 import { DeterministicEmbeddingProvider } from "@/lib/retrieval/providers";
 import { RetrievalService } from "@/lib/retrieval/service";
@@ -26,30 +23,6 @@ describe("label scoring", () => {
     const score = semanticScore(unit(0), asset, vectors, "labels");
     expect(score.semantic).toBeCloseTo(1);
     expect(score.matchedLabel).toBe("Death");
-  });
-
-  describe("reciprocal rank fusion", () => {
-    it("rewards support across independent rankings without combining raw scores", () => {
-      const a = curatedAsset("a", "A", "Unknown", []);
-      const b = curatedAsset("b", "B", "Unknown", []);
-      const c = curatedAsset("c", "C", "Unknown", []);
-      const result = (asset: typeof a, score: number) => ({
-        asset,
-        score,
-        scores: { semantic: score, metadata: score },
-      });
-
-      const fused = reciprocalRankFusion(
-        [
-          [result(a, 0.9), result(b, 0.8), result(c, 0.1)],
-          [result(b, 100), result(c, 10), result(a, 1)],
-        ],
-        3,
-      );
-
-      expect(fused[0].asset.id).toBe("curated-b");
-      expect(fused[0].score).toBeGreaterThan(fused[1].score);
-    });
   });
 
   it("adds a small bonus for additional strong labels, capped at 1", () => {
@@ -128,9 +101,9 @@ describe("literal label matches are not diluted by long lists", () => {
 
     const response = await service.search("death", "artwork");
     expect(response.results[0].asset.id).toBe("curated-jerome");
-    expect(response.results[0].matchedLabel).toBe("Death");
-    // The literal match scores far above anything else.
-    expect(response.results[0].scores.semantic).toBeGreaterThan(0.9);
-    expect(response.results[1].scores.semantic).toBeLessThan(0.5);
+    expect(response.results[0].scores.image).toBeGreaterThan(0);
+    expect(response.results[0].score).toBeGreaterThan(
+      response.results[1].score,
+    );
   });
 });

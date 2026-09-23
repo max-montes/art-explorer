@@ -1,14 +1,10 @@
 export interface EmbeddingProvider {
   readonly name: string;
-  readonly dimensions: number;
-  embed(documents: string[]): Promise<number[][]>;
-}
-
-export interface ImageEmbeddingProvider {
   readonly imageDimensions: number;
   embedImages(images: string[]): Promise<number[][]>;
   embedImageText(texts: string[]): Promise<number[][]>;
 }
+export type ImageEmbeddingProvider = EmbeddingProvider;
 
 const SEMANTIC_EXPANSIONS: Record<string, string[]> = {
   plato: ["classical philosophy", "reason", "philosopher"],
@@ -52,20 +48,24 @@ const normalize = (vector: number[]) => {
 };
 
 export class DeterministicEmbeddingProvider implements EmbeddingProvider {
-  readonly name = "deterministic-semantic-hash";
-  readonly dimensions = 384;
+  readonly name = "deterministic-image-hash";
+  readonly imageDimensions = 384;
 
-  async embed(documents: string[]): Promise<number[][]> {
+  async embedImageText(documents: string[]): Promise<number[][]> {
     return documents.map((document) => {
-      const vector = Array.from({ length: this.dimensions }, () => 0);
+      const vector = Array.from({ length: this.imageDimensions }, () => 0);
       for (const token of tokenize(document)) {
         const tokenHash = hash(token);
-        const bucket = tokenHash % this.dimensions;
+        const bucket = tokenHash % this.imageDimensions;
         const sign = tokenHash & 1 ? 1 : -1;
         vector[bucket] += sign;
       }
       return normalize(vector);
     });
+  }
+
+  embedImages(images: string[]): Promise<number[][]> {
+    return this.embedImageText(images);
   }
 }
 
@@ -103,56 +103,47 @@ const onnxSessionOptions = () => ({
 
 export class TransformersEmbeddingProvider implements EmbeddingProvider {
   readonly name: string;
-  readonly dimensions = 384;
   readonly imageDimensions: number;
   private readonly imageModel: string;
-  private extractor?: Promise<
-    (
-      input: string[],
-      options: { pooling: "mean"; normalize: true },
-    ) => Promise<unknown>
-  >;
   private imageExtractor?: Promise<(input: string | string[]) => Promise<unknown>>;
   private imageText?: Promise<{
     tokenizer: (input: string[]) => Promise<Record<string, unknown>>;
     model: (input: Record<string, unknown>) => Promise<unknown>;
   }>;
+  private jina?: Promise<{
+    embedImages: (input: string[]) => Promise<unknown>;
+    embedText: (input: string[]) => Promise<unknown>;
+  }>;
 
-  constructor(
-    private readonly model = "Xenova/all-MiniLM-L6-v2",
-  ) {
+  constructor() {
     this.imageModel =
       process.env.IMAGE_EMBEDDING_MODEL ??
-      "Xenova/siglip-base-patch16-224";
-    this.imageDimensions = /siglip/i.test(this.imageModel) ? 768 : 512;
-    this.name = `transformers:${model}+${this.imageModel}`;
-  }
-
-  async embed(documents: string[]): Promise<number[][]> {
-    if (!this.extractor) {
-      this.extractor = this.createExtractor();
-    }
-
-    const extractor = await this.extractor;
-    const output = await extractor(documents, {
-      pooling: "mean",
-      normalize: true,
-    });
-    const values = isTensorLike(output) ? output.tolist() : output;
-
-    if (!isNumberMatrix(values)) {
-      throw new Error(`Embedding model ${this.model} returned an invalid tensor.`);
-    }
-    return values;
+      "jinaai/jina-clip-v2";
+    this.imageDimensions = /jina-clip-v2/i.test(this.imageModel)
+      ? 256
+      : /siglip/i.test(this.imageModel)
+        ? 768
+        : 512;
+    this.name = `transformers:${this.imageModel}`;
   }
 
   async embedImages(images: string[]): Promise<number[][]> {
+    if (/jina-clip-v2/i.test(this.imageModel)) {
+      if (!this.jina) this.jina = this.createJina();
+      const output = await (await this.jina).embedImages(images);
+      return this.jinaRows(output, "image");
+    }
     if (!this.imageExtractor) this.imageExtractor = this.createImageExtractor();
     const output = await (await this.imageExtractor)(images);
     return this.tensorRows(output, "image").map(normalize);
   }
 
   async embedImageText(texts: string[]): Promise<number[][]> {
+    if (/jina-clip-v2/i.test(this.imageModel)) {
+      if (!this.jina) this.jina = this.createJina();
+      const output = await (await this.jina).embedText(texts);
+      return this.jinaRows(output, "text");
+    }
     if (!this.imageText) this.imageText = this.createImageText();
     const { tokenizer, model } = await this.imageText;
     const output = await model(await tokenizer(texts));
@@ -162,17 +153,6 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       (output as { pooler_output?: unknown }).pooler_output ??
       output;
     return this.tensorRows(values, "text").map(normalize);
-  }
-
-  private async createExtractor() {
-    const { pipeline } = await import("@huggingface/transformers");
-    const extractor = await pipeline("feature-extraction", this.model, {
-      session_options: onnxSessionOptions(),
-    });
-    return async (
-      input: string[],
-      options: { pooling: "mean"; normalize: true },
-    ): Promise<unknown> => extractor(input, options);
   }
 
   private async createImageExtractor() {
@@ -211,6 +191,46 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     };
   }
 
+  private async createJina() {
+    const transformers = await import("@huggingface/transformers");
+    const [processor, model] = await Promise.all([
+      transformers.AutoProcessor.from_pretrained(this.imageModel),
+      transformers.AutoModel.from_pretrained(this.imageModel, {
+        dtype: "q4",
+        session_options: onnxSessionOptions(),
+      }),
+    ]);
+    return {
+      embedImages: async (input: string[]) => {
+        const images = await Promise.all(
+          input.map((image) => transformers.RawImage.read(image)),
+        );
+        return model(await processor(null, images));
+      },
+      embedText: async (input: string[]) =>
+        model(
+          await processor(input, null, {
+            padding: true,
+            truncation: true,
+          }),
+        ),
+    };
+  }
+
+  private jinaRows(value: unknown, kind: string): number[][] {
+    const output = value as {
+      l2norm_image_embeddings?: unknown;
+      l2norm_text_embeddings?: unknown;
+    };
+    const tensor =
+      kind === "image"
+        ? output.l2norm_image_embeddings
+        : output.l2norm_text_embeddings;
+    return this.tensorRows(tensor, kind).map((row) =>
+      normalize(row.slice(0, this.imageDimensions)),
+    );
+  }
+
   private tensorRows(value: unknown, kind: string): number[][] {
     const values = isTensorLike(value) ? value.tolist() : value;
     if (!isNumberMatrix(values)) {
@@ -226,7 +246,7 @@ export function createEmbeddingProvider(): EmbeddingProvider {
     return new DeterministicEmbeddingProvider();
   }
   if (provider === "transformers") {
-    return new TransformersEmbeddingProvider(process.env.EMBEDDING_MODEL);
+    return new TransformersEmbeddingProvider();
   }
   throw new Error(`Unsupported EMBEDDING_PROVIDER: ${provider}`);
 }

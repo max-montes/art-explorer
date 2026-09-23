@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "description": "Pre-registered query set for comparing image embedding models. Deterministic creator, title, culture, date, and medium lookups are excluded.",
+  "queries": [
+    {
+      "phase": "retrospective",
+      "group": "visual",
+      "mode": "text",
+      "query": "stormy sea"
+    },
+    {
+      "phase": "retrospective",
+      "group": "visual",
+      "mode": "text",
+      "query": "red dress"
+    },
+    {
+      "phase": "retrospective",
+      "group": "visual",
+      "mode": "text",
+      "query": "snowy forest"
+    },
+    {
+      "phase": "retrospective",
+      "group": "visual",
+      "mode": "text",
+      "query": "woman reading"
+    },
+    {
+      "phase": "retrospective",
+      "group": "constrained_visual",
+      "mode": "text",
+      "query": "Homer stormy sea",
+      "embeddingQuery": "stormy sea"
+    },
+    {
+      "phase": "retrospective",
+      "group": "constrained_visual",
+      "mode": "text",
+      "query": "Rembrandt dark portrait",
+      "embeddingQuery": "dark portrait"
+    },
+    {
+      "phase": "retrospective",
+      "group": "image_similarity",
+      "mode": "image",
+      "query": "Madame X",
+      "anchorTitle": "Madame X"
+    },
+    {
+      "phase": "retrospective",
+      "group": "image_similarity",
+      "mode": "image",
+      "query": "The Harvesters",
+      "anchorTitle": "The Harvesters"
+    },
+    {
+      "phase": "retrospective",
+      "group": "image_similarity",
+      "mode": "image",
+      "query": "The Gulf Stream",
+      "anchorTitle": "The Gulf Stream"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "isolation"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "power"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "mourning"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "hope"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "uneasy calm"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "authority"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "fragility"
+    },
+    {
+      "phase": "retrospective",
+      "group": "abstract_baseline",
+      "mode": "text",
+      "query": "conflict"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_emotion",
+      "mode": "text",
+      "query": "tenderness"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_emotion",
+      "mode": "text",
+      "query": "dread"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_emotion",
+      "mode": "text",
+      "query": "joy"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_emotion",
+      "mode": "text",
+      "query": "nostalgia"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_social",
+      "mode": "text",
+      "query": "oppression"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_social",
+      "mode": "text",
+      "query": "defiance"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_social",
+      "mode": "text",
+      "query": "devotion"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_social",
+      "mode": "text",
+      "query": "freedom"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_state",
+      "mode": "text",
+      "query": "vulnerability"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_state",
+      "mode": "text",
+      "query": "resilience"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_state",
+      "mode": "text",
+      "query": "tension"
+    },
+    {
+      "phase": "prospective",
+      "group": "abstract_state",
+      "mode": "text",
+      "query": "transcendence"
+    }
+  ]
+}

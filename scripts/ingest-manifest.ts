@@ -83,8 +83,14 @@ async function main() {
             await client.query<{ asset_id: string }>(
               `SELECT asset_id
                  FROM media_embeddings
-                WHERE ($1::boolean = false OR image_embedding IS NOT NULL)`,
-              [process.env.IMAGE_EMBEDDINGS === "true"],
+                WHERE ${
+                  /jina-clip-v2/i.test(
+                    process.env.IMAGE_EMBEDDING_MODEL ??
+                      "jinaai/jina-clip-v2",
+                  )
+                    ? "jina_image_embedding"
+                    : "image_embedding"
+                } IS NOT NULL`,
             )
           ).rows.map(row => row.asset_id),
         )
@@ -107,8 +113,15 @@ async function main() {
         .slice(start, start + embeddingBatchSize)
         .map((entry) => entry.asset);
       const embedded = await embedAssets(assets, provider);
-      if (embedded.some(({ vectors }) => vectors.semantic.length !== 384)) {
-        throw new Error("The catalog schema requires 384-dimensional embeddings.");
+      if (
+        embedded.some(
+          ({ vectors }) =>
+            vectors.image?.length !== provider.imageDimensions,
+        )
+      ) {
+        throw new Error(
+          `The image index requires ${provider.imageDimensions}-dimensional embeddings.`,
+        );
       }
       await repository.upsertIndexedAssets(
         embedded.map(({ documents, vectors }, index) => ({

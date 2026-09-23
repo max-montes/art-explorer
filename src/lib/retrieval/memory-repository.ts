@@ -117,7 +117,10 @@ export class MemoryCatalogRepository implements CatalogRepository {
           ...(matchedLabel ? { matchedLabel } : {}),
         };
       })
-      .sort((left, right) => right.score - left.score)
+      .sort(
+        (left, right) =>
+          right.score - left.score || left.asset.id.localeCompare(right.asset.id),
+      )
       .slice(0, query.limit);
   }
 

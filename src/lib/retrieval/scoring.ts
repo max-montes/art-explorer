@@ -2,7 +2,6 @@ import {
   assetAssociations,
   type AssetVectors,
   type MediaAsset,
-  type ScoredAsset,
   type SearchWeights,
 } from "@/lib/catalog/types";
 
@@ -18,11 +17,9 @@ export const cosine = (left: number[], right: number[]) => {
 
 /**
  * How much other well-matching labels add on top of the best one. Relative
- * to the best match rather than an absolute floor: MiniLM puts "related" at
- * roughly 0.35–0.55, so a second label within 70% of the best is real
- * evidence the work is about the query (Rejected Poet: Love + Rejection for
- * "heartbreak") rather than touching it once. Capped so breadth never beats
- * a stronger single match by much.
+ * to the best match rather than an absolute floor. This remains useful for the
+ * deterministic in-memory test repository, where a second related label
+ * should break a tie without beating a clearly stronger primary match.
  */
 const SECONDARY_RELATIVE_FLOOR = 0.7;
 const SECONDARY_MATCH_WEIGHT = 0.6;
@@ -75,47 +72,3 @@ export const combinedScore = (
   scores.semantic * weights.semantic +
   scores.metadata * weights.metadata +
   (scores.image ?? 0) * (weights.image ?? 0);
-
-export const reciprocalRankFusion = (
-  rankings: ScoredAsset[][],
-  limit: number,
-  rankConstant = 60,
-): ScoredAsset[] => {
-  if (rankings.length === 0) return [];
-  const fused = new Map<
-    string,
-    { result: ScoredAsset; score: number; firstSeen: number }
-  >();
-  let firstSeen = 0;
-
-  for (const ranking of rankings) {
-    ranking.forEach((result, index) => {
-      const current = fused.get(result.asset.id);
-      const contribution = 1 / (rankConstant + index + 1);
-      if (current) {
-        current.score += contribution;
-        if (!current.result.matchedLabel && result.matchedLabel) {
-          current.result = result;
-        }
-      } else {
-        fused.set(result.asset.id, {
-          result,
-          score: contribution,
-          firstSeen: firstSeen++,
-        });
-      }
-    });
-  }
-
-  const maximum = rankings.length / (rankConstant + 1);
-  return [...fused.values()]
-    .sort(
-      (left, right) =>
-        right.score - left.score || left.firstSeen - right.firstSeen,
-    )
-    .slice(0, limit)
-    .map(({ result, score }) => ({
-      ...result,
-      score: score / maximum,
-    }));
-};

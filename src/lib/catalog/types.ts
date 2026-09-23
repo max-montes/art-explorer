@@ -173,7 +173,7 @@ export interface SearchWeights {
   image?: number;
 }
 
-export type SearchRanking = "weighted" | "rrf";
+export type SearchRanking = "image" | "structured";
 
 export interface ScoredAsset {
   asset: MediaAsset;

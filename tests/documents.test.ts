@@ -69,7 +69,7 @@ describe("buildEmbeddingDocuments", () => {
     );
   });
 
-  it("embeds multiple assets in one ordered batch", async () => {
+  it("embeds multiple asset images in one ordered batch", async () => {
     const results = await embedAssets(
       [fixture, { ...fixture, id: "document-fixture-2", title: "Another Study" }],
       new DeterministicEmbeddingProvider(),
@@ -77,10 +77,8 @@ describe("buildEmbeddingDocuments", () => {
 
     expect(results).toHaveLength(2);
     expect(results[0].documents.semantic).toBe(results[1].documents.semantic);
-    expect(results[0].vectors.semantic).toHaveLength(384);
-    expect(results[0].vectors.labels).toHaveLength(
-      assetAssociations(fixture).length,
-    );
+    expect(results[0].vectors.image).toHaveLength(384);
+    expect(results[1].vectors.image).toHaveLength(384);
   });
 
   it("keeps creator and date metadata out of subject associations", () => {

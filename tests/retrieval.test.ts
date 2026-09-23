@@ -22,7 +22,11 @@ describe("association-based retrieval", () => {
     expect(response.results[0].asset.semantics.associations).toContain(
       "Melancholic",
     );
-    expect(response.weights).toEqual({ semantic: 0.8, metadata: 0.2 });
+    expect(response.weights).toEqual({
+      image: 1,
+      semantic: 0,
+      metadata: 0,
+    });
   });
 
   it("resolves a creator name through metadata, not subject associations", async () => {
@@ -39,7 +43,6 @@ describe("association-based retrieval", () => {
       "The Starry Night",
       "artwork",
       4,
-      "weighted",
     );
 
     expect(response.results[0].asset.id).toBe("curated-starry-night");
@@ -72,7 +75,7 @@ describe("association-based retrieval", () => {
       provider,
     );
 
-    const dutch = await service.search("Dutch", "artwork", 5, "weighted");
+    const dutch = await service.search("Dutch", "artwork", 5);
     expect(dutch.results.map(({ asset }) => asset.id)).toEqual([
       "curated-dutch-oil",
     ]);
@@ -81,7 +84,6 @@ describe("association-based retrieval", () => {
       "watercolor",
       "artwork",
       5,
-      "weighted",
     );
     expect(watercolor.results.map(({ asset }) => asset.id)).toEqual([
       "curated-french-watercolor",

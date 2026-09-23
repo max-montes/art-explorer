@@ -10,53 +10,32 @@ import {
   type SearchResult,
   type SearchWeights,
 } from "@/lib/catalog/types";
-import { buildQueryDocuments } from "./documents";
-import type { EmbeddingProvider, ImageEmbeddingProvider } from "./providers";
+import type { EmbeddingProvider } from "./providers";
 import {
   analyzeCatalogQuery,
   buildCatalogLexicon,
   type CatalogLexicon,
 } from "./query-intent";
 import type { CatalogRepository } from "./repository";
-import { reciprocalRankFusion } from "./scoring";
 import { stemLabel } from "./stem";
 
-/**
- * Text-only search favors subject semantics while retaining enough metadata
- * weight for explicit title and creator queries. Image-aware search uses an
- * explicit SigLIP/subject/metadata blend.
- */
-const SEARCH_WEIGHTS: SearchWeights = { semantic: 0.8, metadata: 0.2 };
-const HYBRID_SEARCH_WEIGHTS: SearchWeights = {
-  semantic: 0.05,
-  metadata: 0.05,
-  image: 0.9,
-};
-const SIMILAR_WEIGHTS: SearchWeights = { semantic: 0.92, metadata: 0.08 };
-/** A artwork recommendation is chosen on associations alone; titles are irrelevant. */
-const SCRIPT_RECOMMENDATION_WEIGHTS: SearchWeights = {
-  semantic: 1,
+const IMAGE_SEARCH_WEIGHTS: SearchWeights = {
+  semantic: 0,
   metadata: 0,
+  image: 1,
+};
+const STRUCTURED_SEARCH_WEIGHTS: SearchWeights = {
+  semantic: 0,
+  metadata: 0,
+  image: 0,
 };
 
 /**
  * A result contributes follow-up pills only if it matched meaningfully: above
  * an absolute floor and not far behind the best match.
  */
-const PILL_SOURCE_FLOOR = 0.3;
+const PILL_SOURCE_FLOOR = 0;
 const PILL_SOURCE_RELATIVE = 0.5;
-const RRF_MIN_CANDIDATES_PER_CHANNEL = 30;
-
-const vectorBundle = async (
-  provider: EmbeddingProvider,
-  documents: ReturnType<typeof buildQueryDocuments>,
-): Promise<AssetVectors> => {
-  const [semantic, metadata] = await provider.embed([
-    documents.semantic,
-    documents.metadata,
-  ]);
-  return { semantic, metadata };
-};
 
 const normalize = (vector: number[]) => {
   const magnitude = Math.sqrt(vector.reduce((sum, c) => sum + c * c, 0));
@@ -67,21 +46,18 @@ const normalize = (vector: number[]) => {
  * Mean-pool one vector per channel across many passages. This represents the
  * tone of a whole script without hitting the embedding model's input limit.
  */
-const averageBundles = (bundles: AssetVectors[]): AssetVectors => {
-  const mean = (pick: (bundle: AssetVectors) => number[]) => {
-    const dimensions = pick(bundles[0]).length;
+const averageVectors = (vectors: number[][]): number[] => {
+  const mean = () => {
+    const dimensions = vectors[0].length;
     const sum = new Array<number>(dimensions).fill(0);
-    for (const bundle of bundles) {
-      pick(bundle).forEach((value, index) => {
+    for (const vector of vectors) {
+      vector.forEach((value, index) => {
         sum[index] += value;
       });
     }
-    return normalize(sum.map((value) => value / bundles.length));
+    return normalize(sum.map((value) => value / vectors.length));
   };
-  return {
-    semantic: mean((bundle) => bundle.semantic),
-    metadata: mean((bundle) => bundle.metadata),
-  };
+  return mean();
 };
 
 export class RetrievalService {
@@ -96,7 +72,6 @@ export class RetrievalService {
     query: string,
     channel: Channel = DEFAULT_CHANNEL,
     limit = 12,
-    ranking: SearchRanking = "weighted",
   ): Promise<SearchResult> {
     const normalized = query.trim();
     if (!normalized) {
@@ -110,28 +85,14 @@ export class RetrievalService {
         intent.titleAssetIds[0],
         channel,
         limit,
-        ranking,
       );
       if (exactTitleResult) return exactTitleResult;
     }
-    const embeddingQuery = intent.residualQuery || normalized;
-    const vectors = await vectorBundle(
-      this.provider,
-      buildQueryDocuments(embeddingQuery),
-    );
-    let imageVector: number[] | undefined;
-    if (process.env.IMAGE_EMBEDDINGS === "true") {
-      if (!("embedImageText" in this.provider)) {
-        throw new Error(
-          "IMAGE_EMBEDDINGS is enabled but the embedding provider cannot embed image queries.",
-        );
-      }
+    const embeddingQuery = intent.residualQuery;
+    let imageVector = new Array<number>(this.provider.imageDimensions).fill(0);
+    if (embeddingQuery) {
       try {
-        imageVector = (
-          await (
-            this.provider as EmbeddingProvider & ImageEmbeddingProvider
-          ).embedImageText([embeddingQuery])
-        )[0];
+        imageVector = (await this.provider.embedImageText([embeddingQuery]))[0];
       } catch (error) {
         throw new Error(
           `The image channel failed to embed the query: ${
@@ -140,13 +101,23 @@ export class RetrievalService {
         );
       }
     }
-    if (ranking === "rrf" && !imageVector) {
-      throw new Error("RRF ranking requires IMAGE_EMBEDDINGS=true.");
-    }
-    const activeWeights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
-    const effectiveRanking = ranking;
+    const vectors: AssetVectors = {
+      semantic: imageVector,
+      metadata: imageVector,
+      image: imageVector,
+    };
+    const searchImageVector = embeddingQuery ? imageVector : undefined;
+    const activeWeights = imageVector
+      ? embeddingQuery
+        ? IMAGE_SEARCH_WEIGHTS
+        : STRUCTURED_SEARCH_WEIGHTS
+      : STRUCTURED_SEARCH_WEIGHTS;
+    const ranking: SearchRanking = embeddingQuery ? "image" : "structured";
     const baseLimit = limit * 2;
     const facetFilters = {
+      ...(intent.creatorNames.length
+        ? { creatorNames: intent.creatorNames }
+        : {}),
       ...(intent.cultures.length ? { cultures: intent.cultures } : {}),
       ...(intent.artistNationalities.length
         ? { artistNationalities: intent.artistNationalities }
@@ -156,84 +127,28 @@ export class RetrievalService {
         : {}),
       ...(intent.yearRange ? { yearRange: intent.yearRange } : {}),
     };
-    const baseResults =
-      effectiveRanking === "rrf"
-        ? reciprocalRankFusion(
-            await Promise.all([
-              this.repository.search({
-                vectors,
-                weights: { semantic: 1, metadata: 0 },
-                limit: Math.max(
-                  RRF_MIN_CANDIDATES_PER_CHANNEL,
-                  baseLimit * 3,
-                ),
-                channel,
-                imageVector,
-                ...facetFilters,
-              }),
-              this.repository.textSearch({
-                text: intent.residualQuery,
-                limit: Math.max(
-                  RRF_MIN_CANDIDATES_PER_CHANNEL,
-                  baseLimit * 3,
-                ),
-                channel,
-                ...facetFilters,
-              }),
-              this.repository.search({
-                vectors,
-                weights: { semantic: 0, metadata: 0, image: 1 },
-                limit: Math.max(
-                  RRF_MIN_CANDIDATES_PER_CHANNEL,
-                  baseLimit * 3,
-                ),
-                channel,
-                imageVector,
-                ...facetFilters,
-              }),
-            ]),
-            baseLimit,
-          )
-        : await this.repository.search({
-            vectors,
-            weights: activeWeights,
-            limit: baseLimit,
-            channel,
-            imageVector,
-            ...facetFilters,
-          });
-    const pinWeights: SearchWeights = imageVector
-      ? { semantic: 0, metadata: 0, image: 1 }
-      : { semantic: 0, metadata: 1 };
-    const hasStructuredIntent = intent.creatorNames.length > 0;
-    const [titlePins, structuredPins] = await Promise.all([
-      intent.titleAssetIds.length
-        ? this.repository.search({
-            vectors,
-            weights: pinWeights,
-            limit: Math.min(limit, intent.titleAssetIds.length),
-            channel,
-            imageVector,
-            assetIds: intent.titleAssetIds,
-          })
-        : Promise.resolve([]),
-      hasStructuredIntent
-        ? this.repository.search({
-            vectors,
-            weights: pinWeights,
-            limit,
-            channel,
-            imageVector,
-            ...(intent.creatorNames.length
-              ? { creatorNames: intent.creatorNames }
-              : {}),
-            ...facetFilters,
-          })
-        : Promise.resolve([]),
-    ]);
+    const baseResults = await this.repository.search({
+      vectors,
+      weights: activeWeights,
+      limit: baseLimit,
+      channel,
+      imageVector: searchImageVector,
+      ...facetFilters,
+    });
+    const pinWeights = IMAGE_SEARCH_WEIGHTS;
+    const titlePins = intent.titleAssetIds.length
+      ? await this.repository.search({
+          vectors,
+          weights: pinWeights,
+          limit: Math.min(limit, intent.titleAssetIds.length),
+          channel,
+          imageVector: searchImageVector,
+          assetIds: intent.titleAssetIds,
+        })
+      : [];
     const results = [
       ...new Map(
-        [...titlePins, ...structuredPins, ...baseResults].map((result) => [
+        [...titlePins, ...baseResults].map((result) => [
           result.asset.id,
           result,
         ]),
@@ -244,7 +159,7 @@ export class RetrievalService {
     return {
       query: normalized,
       channel,
-      ranking: effectiveRanking,
+      ranking,
       weights: activeWeights,
       results,
       pills,
@@ -266,7 +181,6 @@ export class RetrievalService {
     assetId: string,
     channel: Channel,
     limit: number,
-    ranking: SearchRanking,
   ): Promise<SearchResult | null> {
     const [asset, vectors] = await Promise.all([
       this.repository.findAsset(assetId),
@@ -275,66 +189,27 @@ export class RetrievalService {
     if (!asset || !vectors) return null;
 
     const imageVector = vectors.image;
-    if (process.env.IMAGE_EMBEDDINGS === "true" && !imageVector) {
+    if (!imageVector) {
       throw new Error(
-        `The exact-title match ${asset.id} has no SigLIP image embedding.`,
+        `The exact-title match ${asset.id} has no image embedding for the active model.`,
       );
     }
-    if (ranking === "rrf" && !imageVector) {
-      throw new Error("RRF ranking requires an image embedding.");
-    }
 
-    const weights = imageVector ? HYBRID_SEARCH_WEIGHTS : SEARCH_WEIGHTS;
+    const weights = IMAGE_SEARCH_WEIGHTS;
+    const ranking: SearchRanking = "image";
     const neighborLimit = Math.max(0, limit - 1);
-    const candidateLimit = Math.max(
-      RRF_MIN_CANDIDATES_PER_CHANNEL,
-      neighborLimit * 3,
-    );
     const neighbors =
       neighborLimit === 0
         ? []
-        : ranking === "rrf"
-          ? reciprocalRankFusion(
-              await Promise.all([
-                this.repository.search({
-                  vectors,
-                  weights: { semantic: 1, metadata: 0 },
-                  limit: candidateLimit,
-                  channel,
-                  excludeAssetId: asset.id,
-                  mode: "whole",
-                  imageVector,
-                }),
-                this.repository.search({
-                  vectors,
-                  weights: { semantic: 0, metadata: 1 },
-                  limit: candidateLimit,
-                  channel,
-                  excludeAssetId: asset.id,
-                  mode: "whole",
-                  imageVector,
-                }),
-                this.repository.search({
-                  vectors,
-                  weights: { semantic: 0, metadata: 0, image: 1 },
-                  limit: candidateLimit,
-                  channel,
-                  excludeAssetId: asset.id,
-                  mode: "whole",
-                  imageVector,
-                }),
-              ]),
-              neighborLimit,
-            )
-          : await this.repository.search({
-              vectors,
-              weights,
-              limit: neighborLimit,
-              channel,
-              excludeAssetId: asset.id,
-              mode: "whole",
-              imageVector,
-            });
+        : await this.repository.search({
+            vectors,
+            weights,
+            limit: neighborLimit,
+            channel,
+            excludeAssetId: asset.id,
+            mode: "whole",
+            imageVector,
+          });
     const pinned: ScoredAsset = {
       asset,
       score: 1,
@@ -370,21 +245,21 @@ export class RetrievalService {
     if (texts.length === 0) {
       throw new Error("A script is required.");
     }
-    // One embed call for all passages: 2 documents per passage.
-    const documents = texts.map(buildQueryDocuments);
-    const flat = await this.provider.embed(
-      documents.flatMap((d) => [d.semantic, d.metadata]),
+    const imageVector = averageVectors(
+      await this.provider.embedImageText(texts),
     );
-    const bundles = documents.map((_, index) => ({
-      semantic: flat[index * 2],
-      metadata: flat[index * 2 + 1],
-    }));
-    const weights = SCRIPT_RECOMMENDATION_WEIGHTS;
+    const vectors = {
+      semantic: imageVector,
+      metadata: imageVector,
+      image: imageVector,
+    };
+    const weights = IMAGE_SEARCH_WEIGHTS;
     const results = await this.repository.search({
-      vectors: averageBundles(bundles),
+      vectors,
       weights,
       limit,
       channel,
+      imageVector,
     });
     return { results, weights };
   }
@@ -399,7 +274,10 @@ export class RetrievalService {
       throw new Error(`Asset not found: ${assetId}`);
     }
     const channel = channelOf(asset) ?? DEFAULT_CHANNEL;
-    const weights = SIMILAR_WEIGHTS;
+    if (!vectors.image) {
+      throw new Error(`Asset ${assetId} has no image embedding.`);
+    }
+    const weights = IMAGE_SEARCH_WEIGHTS;
     const results = await this.repository.search({
       vectors,
       weights,
@@ -408,6 +286,7 @@ export class RetrievalService {
       excludeAssetId: assetId,
       // The source's whole character is the signal, not any single label.
       mode: "whole",
+      imageVector: vectors.image,
     });
     // Suggest from the source asset's own associations, then its neighbours.
     const pills = await this.pillsFor(asset.title, [
@@ -417,7 +296,7 @@ export class RetrievalService {
     return {
       query: `Similar to ${asset.title}`,
       channel,
-      ranking: "weighted",
+      ranking: "image",
       weights,
       results,
       pills,
@@ -438,13 +317,13 @@ export class RetrievalService {
     const pills = new Map<string, ConceptPill>();
     // Only results that genuinely matched should shape follow-ups. With few
     // curated works, the top 3 by position may include near-zero scores.
-    const best = results[0]?.scores.semantic ?? 0;
+    const best = results[0]?.score ?? 0;
     const lists = results
       .slice(0, 3)
       .filter(
         (result) =>
-          result.scores.semantic >= PILL_SOURCE_FLOOR &&
-          result.scores.semantic >= best * PILL_SOURCE_RELATIVE,
+          result.score >= PILL_SOURCE_FLOOR &&
+          result.score >= best * PILL_SOURCE_RELATIVE,
       )
       .map((result) => {
       const labels = assetAssociations(result.asset);

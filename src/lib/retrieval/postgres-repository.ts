@@ -1,6 +1,5 @@
 import { Pool } from "pg";
 import {
-  assetAssociations,
   type AssetVectors,
   type Concept,
   type ConceptEdge,
@@ -19,14 +18,20 @@ const toVector = (values: number[]) => `[${values.join(",")}]`;
 interface SearchRow {
   catalog_payload: MediaAsset;
   score: number;
-  semantic_score: number;
-  metadata_score: number;
   image_score: number | null;
-  matched_label: string | null;
 }
 
 export class PostgresCatalogRepository implements CatalogRepository {
-  constructor(private readonly pool: Pool) {}
+  private readonly imageColumn: "image_embedding" | "jina_image_embedding";
+
+  constructor(
+    private readonly pool: Pool,
+    imageModel = process.env.IMAGE_EMBEDDING_MODEL ?? "jinaai/jina-clip-v2",
+  ) {
+    this.imageColumn = /jina-clip-v2/i.test(imageModel)
+      ? "jina_image_embedding"
+      : "image_embedding";
+  }
 
   async prepare(): Promise<void> {
     const result = await this.pool.query<{ table_name: string | null }>(
@@ -45,7 +50,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
          FROM media_assets asset
          JOIN media_embeddings embedding ON embedding.asset_id = asset.id
         WHERE asset.library_category = $1
-          AND embedding.image_embedding IS NOT NULL`,
+          AND embedding.${this.imageColumn} IS NOT NULL`,
       [channel],
     );
     return result.rows.map((row) => row.catalog_payload);
@@ -60,109 +65,63 @@ export class PostgresCatalogRepository implements CatalogRepository {
   }
 
   async findAssetVectors(id: string): Promise<AssetVectors | null> {
-    const [embedding, labels] = await Promise.all([
-      this.pool.query<{ semantic: string; metadata: string; image: string | null }>(
-        `SELECT semantic_embedding::text AS semantic,
-                metadata_embedding::text AS metadata,
-                image_embedding::text AS image
-           FROM media_embeddings
-          WHERE asset_id = $1`,
-        [id],
-      ),
-      this.pool.query<{ embedding: string }>(
-        `SELECT embedding::text AS embedding
-           FROM asset_label_embeddings
-          WHERE asset_id = $1
-          ORDER BY position`,
-        [id],
-      ),
-    ]);
+    const embedding = await this.pool.query<{ image: string | null }>(
+      `SELECT ${this.imageColumn}::text AS image
+         FROM media_embeddings
+        WHERE asset_id = $1`,
+      [id],
+    );
     const row = embedding.rows[0];
-    if (!row) return null;
+    if (!row?.image) return null;
+    const image = this.parseVector(row.image);
     return {
-      semantic: this.parseVector(row.semantic),
-      metadata: this.parseVector(row.metadata),
-      ...(row.image ? { image: this.parseVector(row.image) } : {}),
-      ...(labels.rows.length
-        ? { labels: labels.rows.map((r) => this.parseVector(r.embedding)) }
-        : {}),
+      semantic: image,
+      metadata: image,
+      image,
     };
   }
 
-  /**
-   * Label mode mirrors `semanticScore`: best label similarity plus a small
-   * bonus for other labels above the floor. Assets without label rows (older
-   * records) fall back to the whole-list vector via COALESCE.
-   */
   async search(query: VectorQuery): Promise<ScoredAsset[]> {
-    const mode = query.mode ?? "labels";
-    // Mirrors semanticScore: best label + min(0.08, 0.6 * Σ(s - 0.7·best))
-    // over the other labels scoring above 70% of the best.
-    const semanticExpression =
-      mode === "whole"
-        ? `1 - (embedding.semantic_embedding <=> $1::vector)`
-        : `COALESCE(
-             (SELECT LEAST(1, b.best + LEAST(0.08, 0.6 * COALESCE(
-                (SELECT SUM(s.sim - 0.7 * b.best)
-                   FROM (SELECT 1 - (l.embedding <=> $1::vector) AS sim
-                           FROM asset_label_embeddings l WHERE l.asset_id = asset.id) s
-                  WHERE s.sim > 0.7 * b.best AND s.sim < b.best), 0)))
-                FROM (SELECT MAX(1 - (l.embedding <=> $1::vector)) AS best
-                        FROM asset_label_embeddings l WHERE l.asset_id = asset.id) b
-               WHERE b.best IS NOT NULL),
-             1 - (embedding.semantic_embedding <=> $1::vector))`;
     const result = await this.pool.query<SearchRow>(
       `SELECT asset.catalog_payload,
-              ${semanticExpression} AS semantic_score,
-              1 - (embedding.metadata_embedding <=> $2::vector) AS metadata_score,
-              CASE WHEN $8::vector IS NULL OR embedding.image_embedding IS NULL
+              CASE WHEN $1::vector IS NULL OR embedding.${this.imageColumn} IS NULL
                        THEN 0
-                       ELSE 1 - (embedding.image_embedding <=> $8::vector)
+                       ELSE 1 - (embedding.${this.imageColumn} <=> $1::vector)
                   END AS image_score,
-              (${semanticExpression}) * $3
-                + (1 - (embedding.metadata_embedding <=> $2::vector)) * $4
-                + CASE WHEN $8::vector IS NULL OR embedding.image_embedding IS NULL
+              CASE WHEN $1::vector IS NULL OR embedding.${this.imageColumn} IS NULL
                        THEN 0
-                       ELSE (1 - (embedding.image_embedding <=> $8::vector)) * $9
-                  END AS score,
-              (SELECT l.label FROM asset_label_embeddings l
-                WHERE l.asset_id = asset.id
-                ORDER BY l.embedding <=> $1::vector
-                LIMIT 1) AS matched_label
+                       ELSE (1 - (embedding.${this.imageColumn} <=> $1::vector)) * $2
+                  END AS score
          FROM media_embeddings embedding
          JOIN media_assets asset ON asset.id = embedding.asset_id
-        WHERE ($5::text IS NULL OR asset.id <> $5)
-          AND asset.library_category = $7
-          AND embedding.image_embedding IS NOT NULL
-          AND ($10::text[] IS NULL OR asset.creator = ANY($10))
-          AND ($11::text[] IS NULL OR asset.id = ANY($11))
-          AND (($12::text[] IS NULL AND $13::text[] IS NULL)
-            OR asset.catalog_payload->>'culture' = ANY($12)
-            OR asset.catalog_payload->>'artistNationality' = ANY($13))
-          AND ($14::integer IS NULL OR (
-                (asset.catalog_payload->>'objectBeginDate')::integer <= $15
-            AND (asset.catalog_payload->>'objectEndDate')::integer >= $14
+        WHERE ($3::text IS NULL OR asset.id <> $3)
+          AND asset.library_category = $5
+          AND embedding.${this.imageColumn} IS NOT NULL
+          AND ($6::text[] IS NULL OR asset.creator = ANY($6))
+          AND ($7::text[] IS NULL OR asset.id = ANY($7))
+          AND (($8::text[] IS NULL AND $9::text[] IS NULL)
+            OR asset.catalog_payload->>'culture' = ANY($8)
+            OR asset.catalog_payload->>'artistNationality' = ANY($9))
+          AND ($10::integer IS NULL OR (
+                (asset.catalog_payload->>'objectBeginDate')::integer <= $11
+            AND (asset.catalog_payload->>'objectEndDate')::integer >= $10
             AND (asset.catalog_payload->>'objectEndDate')::integer
                 - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
           ))
-          AND ($16::text[] IS NULL OR EXISTS (
+          AND ($12::text[] IS NULL OR EXISTS (
                 SELECT 1
-                  FROM unnest($16::text[]) AS term
+                  FROM unnest($12::text[]) AS term
                  WHERE lower(asset.catalog_payload->>'medium')
                        LIKE '%' || term || '%'
           ))
-        ORDER BY score DESC
-        LIMIT $6`,
+        ORDER BY score DESC, asset.id
+        LIMIT $4`,
       [
-        toVector(query.vectors.semantic),
-        toVector(query.vectors.metadata),
-        query.weights.semantic,
-        query.weights.metadata,
+        query.imageVector ? toVector(query.imageVector) : null,
+        query.weights.image ?? 0,
         query.excludeAssetId ?? null,
         query.limit,
         query.channel,
-        query.imageVector ? toVector(query.imageVector) : null,
-        query.weights.image ?? 0,
         query.creatorNames?.length ? query.creatorNames : null,
         query.assetIds?.length ? query.assetIds : null,
         query.cultures?.length ? query.cultures : null,
@@ -178,13 +137,10 @@ export class PostgresCatalogRepository implements CatalogRepository {
       asset: row.catalog_payload,
       score: Number(row.score),
       scores: {
-        semantic: Number(row.semantic_score),
-        metadata: Number(row.metadata_score),
+        semantic: 0,
+        metadata: 0,
         ...(row.image_score !== null ? { image: Number(row.image_score) } : {}),
       },
-      ...(mode === "labels" && row.matched_label
-        ? { matchedLabel: row.matched_label }
-        : {}),
     }));
   }
 
@@ -206,7 +162,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
            FROM media_assets asset
            JOIN media_embeddings embedding ON embedding.asset_id = asset.id
           WHERE asset.library_category = $2
-            AND embedding.image_embedding IS NOT NULL
+            AND embedding.${this.imageColumn} IS NOT NULL
             AND ($4::text[] IS NULL OR asset.creator = ANY($4))
             AND ($5::text[] IS NULL OR asset.id = ANY($5))
             AND (($6::text[] IS NULL AND $7::text[] IS NULL)
@@ -285,7 +241,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
     try {
       await client.query("BEGIN");
       for (const entry of entries) {
-        const { asset, documents, vectors } = entry;
+        const { asset, vectors } = entry;
         await client.query(
         `INSERT INTO media_assets (
           id, media_type, library_category, title, creator, year_display, description, narrative,
@@ -351,50 +307,21 @@ export class PostgresCatalogRepository implements CatalogRepository {
         }
         await client.query(
         `INSERT INTO media_embeddings (
-           asset_id, model_name, document_version, semantic_document,
-           metadata_document, semantic_embedding, metadata_embedding, image_embedding
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           asset_id, model_name, ${this.imageColumn}
+         ) VALUES ($1, $2, $3)
          ON CONFLICT (asset_id) DO UPDATE SET
            model_name = EXCLUDED.model_name,
-           document_version = EXCLUDED.document_version,
-           semantic_document = EXCLUDED.semantic_document,
-           metadata_document = EXCLUDED.metadata_document,
-           semantic_embedding = EXCLUDED.semantic_embedding,
-           metadata_embedding = EXCLUDED.metadata_embedding,
-           image_embedding = COALESCE(
-             EXCLUDED.image_embedding,
-             media_embeddings.image_embedding
+           ${this.imageColumn} = COALESCE(
+             EXCLUDED.${this.imageColumn},
+             media_embeddings.${this.imageColumn}
            ),
            embedded_at = now()`,
         [
           asset.id,
           entry.provider,
-          entry.documentVersion,
-          documents.semantic,
-          documents.metadata,
-          toVector(vectors.semantic),
-          toVector(vectors.metadata),
           vectors.image ? toVector(vectors.image) : null,
         ],
         );
-        await client.query(
-          "DELETE FROM asset_label_embeddings WHERE asset_id = $1",
-          [asset.id],
-        );
-        if (vectors.labels?.length) {
-          const associationLabels = assetAssociations(asset);
-          for (
-            let i = 0;
-            i < vectors.labels.length && i < associationLabels.length;
-            i++
-          ) {
-            await client.query(
-              `INSERT INTO asset_label_embeddings (asset_id, position, label, embedding)
-               VALUES ($1, $2, $3, $4)`,
-              [asset.id, i, associationLabels[i], toVector(vectors.labels[i])],
-            );
-          }
-        }
       }
       await client.query("COMMIT");
     } catch (error) {

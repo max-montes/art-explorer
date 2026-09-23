@@ -83,11 +83,14 @@
 
       <section class="panel">
         <label for="queries">Queries (one per line)</label>
-        <textarea id="queries">Dutch
-French
-oil on canvas
-watercolor
-tempera</textarea>
+        <textarea id="queries">isolation
+power
+mourning
+hope
+uneasy calm
+authority
+fragility
+conflict</textarea>
         <div class="controls" style="margin-top:12px">
           <div class="field">
             <label for="limit">Results per query</label>
@@ -95,8 +98,8 @@ tempera</textarea>
           </div>
           <div class="field">
             <label for="ranking">Ranking strategy</label>
-            <input id="ranking" type="hidden" value="rrf" />
-            <div class="fixed-value">Reciprocal rank fusion (RRF)</div>
+            <input id="ranking" type="hidden" value="image" />
+            <div class="fixed-value">Direct Jina image ranking</div>
           </div>
           <button class="primary" id="start">Start / reload query</button>
           <button id="export">Export labels</button>
@@ -146,6 +149,7 @@ tempera</textarea>
         queryIndex: 0,
         results: [],
         ranking: "pooled",
+        dataset: null,
         labels,
         broken: new Set(),
         completed: false,
@@ -154,7 +158,8 @@ tempera</textarea>
       const $ = id => document.getElementById(id);
       const choices = [["relevant", "Relevant"], ["unsure", "Unsure"], ["not_relevant", "Not relevant"]];
       const currentResultLimit = () => Number($("limit").value);
-      const key = (query, result, ranking = state.ranking, limit = currentResultLimit()) =>
+      const activeResultLimit = () => state.dataset ? state.results.length : currentResultLimit();
+      const key = (query, result, ranking = state.ranking, limit = activeResultLimit()) =>
         `${query}::${ranking}::${limit}::${result.asset.id}`;
       const previewUrl = url => url?.replace("/original/", "/web-large/") || "";
       const closeLightbox = () => {
@@ -192,7 +197,7 @@ tempera</textarea>
           label: value,
           title: result.asset.title,
           rankingMethod: state.ranking,
-          resultLimit: currentResultLimit(),
+          resultLimit: activeResultLimit(),
           timestamp: new Date().toISOString(),
         };
         save();
@@ -315,30 +320,25 @@ tempera</textarea>
         setStatus(`Loading “${query}”…`);
         $("next").disabled = true;
         try {
+          if (state.dataset) {
+            const queryData = state.dataset.queries.find(entry => entry.query === query);
+            if (!queryData) throw new Error(`The evaluation dataset has no entry for “${query}”.`);
+            state.ranking = `blind:${state.dataset.id}`;
+            state.results = queryData.candidates.map(asset => ({ asset, score: 0, scores: {} }));
+            render();
+            const unlabeled = state.results.filter(result => !state.labels[key(query, result)]).length;
+            updateNextButton();
+            setStatus(`${state.results.length} blinded candidates. ${unlabeled} remain for this query.`);
+            return;
+          }
           state.ranking = $("ranking").value;
           const limit = currentResultLimit();
-          const requestLimit = state.ranking === "pooled" ? Math.max(limit * 4, 20) : limit;
-          const strategies =
-            state.ranking === "pooled" ? ["weighted", "rrf"] : [state.ranking];
-          const responses = await Promise.all(
-            strategies.map(strategy =>
-              fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${requestLimit}&ranking=${strategy}`),
-            ),
+          const response = await fetch(
+            `/api/search?q=${encodeURIComponent(query)}&limit=${limit}`,
           );
-          const payloads = await Promise.all(responses.map(response => response.json()));
-          const failed = responses.findIndex(response => !response.ok);
-          if (failed >= 0) throw new Error(payloads[failed].error || "Search failed.");
-          const merged = new Map();
-          const longest = Math.max(...payloads.map(data => data.results?.length || 0));
-          for (let rank = 0; rank < longest; rank++) {
-            for (const data of payloads) {
-              const result = data.results?.[rank];
-              if (result && !merged.has(result.asset.id)) {
-                merged.set(result.asset.id, result);
-              }
-            }
-          }
-          state.results = [...merged.values()].slice(0, limit);
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Search failed.");
+          state.results = payload.results;
           render();
           const unlabeled = state.results.filter(result => !state.labels[key(query, result)]).length;
           updateNextButton();
@@ -391,6 +391,27 @@ tempera</textarea>
           setStatus(`Full screen failed: ${error instanceof Error ? error.message : "permission denied."}`);
         }
       };
+      const datasetUrl = new URLSearchParams(location.search).get("dataset");
+      if (datasetUrl) {
+        fetch(datasetUrl)
+          .then(response => {
+            if (!response.ok) throw new Error(`Could not load evaluation dataset (${response.status}).`);
+            return response.json();
+          })
+          .then(dataset => {
+            state.dataset = dataset;
+            state.queries = dataset.queries.map(entry => entry.query);
+            state.queryIndex = 0;
+            state.completed = false;
+            $("queries").value = state.queries.join("\n");
+            $("queries").readOnly = true;
+            $("limit").disabled = true;
+            document.querySelector(".fixed-value").textContent = "Blinded model comparison";
+            loadQuery();
+          })
+          .catch(error => setStatus(error.message));
+      }
+      render();
     </script>
   </body>
 </html>

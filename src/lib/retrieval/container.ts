@@ -1,13 +1,12 @@
 import { Pool } from "pg";
 import {
-  assetAssociations,
   type AssetVectors,
   type EmbeddingDocuments,
 } from "@/lib/catalog/types";
 import { LocalCuratorIndexRepository } from "@/lib/curation/local-repository";
 import { curatorDraftToMediaAsset } from "@/lib/curation/service";
 import type { CuratorIndexRecord } from "@/lib/curation/types";
-import { buildEmbeddingDocuments, embedAsset } from "./documents";
+import { embedAsset } from "./documents";
 import { MemoryCatalogRepository } from "./memory-repository";
 import { PostgresCatalogRepository } from "./postgres-repository";
 import {
@@ -106,13 +105,9 @@ export async function hydrateCuratedCatalog(
     let vectors = currentVectors(record.embedding.vectors);
     let { provider: providerName, version } = record.embedding;
 
-    const expected = buildEmbeddingDocuments(asset);
-    const labelCount = assetAssociations(asset).length;
     const drifted =
-      expected.semantic !== documents.semantic ||
-      expected.metadata !== documents.metadata ||
-      // Per-label vectors were added after the first records were approved.
-      (labelCount > 0 && (vectors.labels?.length ?? 0) !== labelCount);
+      Boolean(options.provider) &&
+      vectors.image?.length !== options.provider?.imageDimensions;
     if (drifted && options.provider) {
       ({ documents, vectors } = await embedAsset(asset, options.provider));
       providerName = options.provider.name;

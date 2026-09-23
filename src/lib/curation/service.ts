@@ -242,7 +242,13 @@ export class CuratorService {
 
     const existing = await this.repository.findById(draft.id);
     const asset = curatorDraftToMediaAsset(draft);
-    const { documents, vectors } = await embedAsset(asset, this.provider);
+    const bytes = await this.mediaStore.read(draft.sha256);
+    const imageInput = `data:${draft.mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
+    const { documents, vectors } = await embedAsset(
+      asset,
+      this.provider,
+      imageInput,
+    );
     const publishedPath = await this.mediaStore.publish(
       draft.sha256,
       draft.fileName,
