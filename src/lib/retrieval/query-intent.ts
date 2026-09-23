@@ -25,6 +25,7 @@ const CULTURE_DEMONYMS: Record<string, string> = {
   thai: "thailand",
   tibetan: "tibet",
 };
+const MEDIUM_ALIASES = ["oil on canvas", "watercolor", "watercolour", "tempera"];
 
 export const normalizeCatalogText = (value: string) =>
   value
@@ -43,10 +44,17 @@ interface CreatorAlias {
   creators: string[];
 }
 
+interface OriginAlias {
+  alias: string;
+  cultures: string[];
+  artistNationalities: string[];
+}
+
 export interface CatalogLexicon {
   assets: MediaAsset[];
   creatorAliases: CreatorAlias[];
-  cultureAliases: Array<{ alias: string; cultures: string[] }>;
+  originAliases: OriginAlias[];
+  mediumAliases: string[];
   titles: Map<string, string[]>;
 }
 
@@ -55,6 +63,8 @@ export interface CatalogQueryIntent {
   titleAssetIds: string[];
   matchedCreatorAliases: string[];
   cultures: string[];
+  artistNationalities: string[];
+  mediumTerms: string[];
   yearRange?: { start: number; end: number };
   residualQuery: string;
 }
@@ -79,6 +89,8 @@ const creatorPhrases = (creator: string) => {
 export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
   const aliases = new Map<string, Set<string>>();
   const cultureAliases = new Map<string, Set<string>>();
+  const nationalityAliases = new Map<string, Set<string>>();
+  const mediumAliases = new Set<string>();
   const titles = new Map<string, string[]>();
   for (const asset of assets) {
     for (const alias of creatorPhrases(asset.creator)) {
@@ -98,6 +110,22 @@ export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
         cultureAliases.set(alias, cultures);
       }
     }
+    if (asset.artistNationality) {
+      const full = normalizeCatalogText(asset.artistNationality);
+      const base = normalizeCatalogText(
+        asset.artistNationality.split(/[,(]/, 1)[0],
+      );
+      for (const alias of new Set([full, base])) {
+        if (!alias) continue;
+        const nationalities = nationalityAliases.get(alias) ?? new Set<string>();
+        nationalities.add(asset.artistNationality);
+        nationalityAliases.set(alias, nationalities);
+      }
+    }
+    const medium = normalizeCatalogText(asset.medium ?? "");
+    for (const alias of MEDIUM_ALIASES) {
+      if (containsPhrase(medium, alias)) mediumAliases.add(alias);
+    }
   }
   for (const [demonym, country] of Object.entries(CULTURE_DEMONYMS)) {
     const matching = [...cultureAliases]
@@ -105,16 +133,22 @@ export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
       .flatMap(([, cultures]) => [...cultures]);
     if (matching.length) cultureAliases.set(demonym, new Set(matching));
   }
+  const originAliases = new Set([
+    ...cultureAliases.keys(),
+    ...nationalityAliases.keys(),
+  ]);
   return {
     assets,
     creatorAliases: [...aliases].map(([alias, creators]) => ({
       alias,
       creators: [...creators],
     })),
-    cultureAliases: [...cultureAliases].map(([alias, cultures]) => ({
+    originAliases: [...originAliases].map((alias) => ({
       alias,
-      cultures: [...cultures],
+      cultures: [...(cultureAliases.get(alias) ?? [])],
+      artistNationalities: [...(nationalityAliases.get(alias) ?? [])],
     })),
+    mediumAliases: [...mediumAliases],
     titles,
   };
 };
@@ -143,13 +177,21 @@ export const analyzeCatalogQuery = (
   const titleIsDistinctive =
     titleAssetIds.length > 0 &&
     (normalized.split(" ").length > 1 || titleAssetIds.length === 1);
-  const cultureMatch = titleIsDistinctive
+  const originMatch = titleIsDistinctive
     ? undefined
-    : lexicon.cultureAliases
+    : lexicon.originAliases
         .filter(({ alias }) => containsPhrase(normalized, alias))
         .sort(
           (left, right) =>
             right.alias.split(" ").length - left.alias.split(" ").length,
+        )[0];
+  const mediumMatch = titleIsDistinctive
+    ? undefined
+    : lexicon.mediumAliases
+        .filter((alias) => containsPhrase(normalized, alias))
+        .sort(
+          (left, right) =>
+            right.split(" ").length - left.split(" ").length,
         )[0];
   const centuryMatch = normalized.match(
     /\b(\d{1,2})(?:st|nd|rd|th) century\b/,
@@ -191,10 +233,13 @@ export const analyzeCatalogQuery = (
   for (const { alias } of selected) {
     residual = ` ${residual} `.replace(` ${alias} `, " ").trim();
   }
-  if (cultureMatch) {
+  if (originMatch) {
     residual = ` ${residual} `
-      .replace(` ${cultureMatch.alias} `, " ")
+      .replace(` ${originMatch.alias} `, " ")
       .trim();
+  }
+  if (mediumMatch) {
+    residual = ` ${residual} `.replace(` ${mediumMatch} `, " ").trim();
   }
   if (centuryMatch) {
     residual = ` ${residual} `
@@ -210,7 +255,9 @@ export const analyzeCatalogQuery = (
     creatorNames: [...new Set(selected.flatMap(({ creators }) => creators))],
     titleAssetIds: titleIsDistinctive ? titleAssetIds : [],
     matchedCreatorAliases: selected.map(({ alias }) => alias),
-    cultures: cultureMatch?.cultures ?? [],
+    cultures: originMatch?.cultures ?? [],
+    artistNationalities: originMatch?.artistNationalities ?? [],
+    mediumTerms: mediumMatch ? [mediumMatch] : [],
     ...(yearRange ? { yearRange } : {}),
     residualQuery: residual,
   };

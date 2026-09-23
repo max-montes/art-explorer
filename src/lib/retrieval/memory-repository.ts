@@ -70,8 +70,19 @@ export class MemoryCatalogRepository implements CatalogRepository {
           (!query.creatorNames?.length ||
             query.creatorNames.includes(asset.creator)) &&
           (!query.assetIds?.length || query.assetIds.includes(asset.id)) &&
-          (!query.cultures?.length ||
-            (asset.culture && query.cultures.includes(asset.culture))) &&
+          ((!query.cultures?.length &&
+            !query.artistNationalities?.length) ||
+            Boolean(
+              (asset.culture && query.cultures?.includes(asset.culture)) ||
+                (asset.artistNationality &&
+                  query.artistNationalities?.includes(
+                    asset.artistNationality,
+                  )),
+            )) &&
+          (!query.mediumTerms?.length ||
+            query.mediumTerms.some((term) =>
+              normalizeWords(asset.medium ?? "").join(" ").includes(term),
+            )) &&
           (!query.yearRange ||
             ((asset.objectBeginDate ?? Number.POSITIVE_INFINITY) <=
               query.yearRange.end &&
@@ -120,8 +131,19 @@ export class MemoryCatalogRepository implements CatalogRepository {
           (!query.creatorNames?.length ||
             query.creatorNames.includes(asset.creator)) &&
           (!query.assetIds?.length || query.assetIds.includes(asset.id)) &&
-          (!query.cultures?.length ||
-            (asset.culture && query.cultures.includes(asset.culture))) &&
+          ((!query.cultures?.length &&
+            !query.artistNationalities?.length) ||
+            Boolean(
+              (asset.culture && query.cultures?.includes(asset.culture)) ||
+                (asset.artistNationality &&
+                  query.artistNationalities?.includes(
+                    asset.artistNationality,
+                  )),
+            )) &&
+          (!query.mediumTerms?.length ||
+            query.mediumTerms.some((term) =>
+              normalizeWords(asset.medium ?? "").join(" ").includes(term),
+            )) &&
           (!query.yearRange ||
             ((asset.objectBeginDate ?? Number.POSITIVE_INFINITY) <=
               query.yearRange.end &&

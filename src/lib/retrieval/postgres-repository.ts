@@ -136,12 +136,20 @@ export class PostgresCatalogRepository implements CatalogRepository {
           AND embedding.image_embedding IS NOT NULL
           AND ($10::text[] IS NULL OR asset.creator = ANY($10))
           AND ($11::text[] IS NULL OR asset.id = ANY($11))
-          AND ($12::text[] IS NULL OR asset.catalog_payload->>'culture' = ANY($12))
-          AND ($13::integer IS NULL OR (
-                (asset.catalog_payload->>'objectBeginDate')::integer <= $14
-            AND (asset.catalog_payload->>'objectEndDate')::integer >= $13
+          AND (($12::text[] IS NULL AND $13::text[] IS NULL)
+            OR asset.catalog_payload->>'culture' = ANY($12)
+            OR asset.catalog_payload->>'artistNationality' = ANY($13))
+          AND ($14::integer IS NULL OR (
+                (asset.catalog_payload->>'objectBeginDate')::integer <= $15
+            AND (asset.catalog_payload->>'objectEndDate')::integer >= $14
             AND (asset.catalog_payload->>'objectEndDate')::integer
                 - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
+          ))
+          AND ($16::text[] IS NULL OR EXISTS (
+                SELECT 1
+                  FROM unnest($16::text[]) AS term
+                 WHERE lower(asset.catalog_payload->>'medium')
+                       LIKE '%' || term || '%'
           ))
         ORDER BY score DESC
         LIMIT $6`,
@@ -158,8 +166,12 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.creatorNames?.length ? query.creatorNames : null,
         query.assetIds?.length ? query.assetIds : null,
         query.cultures?.length ? query.cultures : null,
+        query.artistNationalities?.length
+          ? query.artistNationalities
+          : null,
         query.yearRange?.start ?? null,
         query.yearRange?.end ?? null,
+        query.mediumTerms?.length ? query.mediumTerms : null,
       ],
     );
     return result.rows.map((row) => ({
@@ -197,12 +209,20 @@ export class PostgresCatalogRepository implements CatalogRepository {
             AND embedding.image_embedding IS NOT NULL
             AND ($4::text[] IS NULL OR asset.creator = ANY($4))
             AND ($5::text[] IS NULL OR asset.id = ANY($5))
-            AND ($6::text[] IS NULL OR asset.catalog_payload->>'culture' = ANY($6))
-            AND ($7::integer IS NULL OR (
-                  (asset.catalog_payload->>'objectBeginDate')::integer <= $8
-              AND (asset.catalog_payload->>'objectEndDate')::integer >= $7
+            AND (($6::text[] IS NULL AND $7::text[] IS NULL)
+              OR asset.catalog_payload->>'culture' = ANY($6)
+              OR asset.catalog_payload->>'artistNationality' = ANY($7))
+            AND ($8::integer IS NULL OR (
+                  (asset.catalog_payload->>'objectBeginDate')::integer <= $9
+              AND (asset.catalog_payload->>'objectEndDate')::integer >= $8
               AND (asset.catalog_payload->>'objectEndDate')::integer
                   - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
+            ))
+            AND ($10::text[] IS NULL OR EXISTS (
+                  SELECT 1
+                    FROM unnest($10::text[]) AS term
+                   WHERE lower(asset.catalog_payload->>'medium')
+                         LIKE '%' || term || '%'
             ))
        ), parsed AS (
          SELECT websearch_to_tsquery('simple', $1) AS query
@@ -220,8 +240,12 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.creatorNames?.length ? query.creatorNames : null,
         query.assetIds?.length ? query.assetIds : null,
         query.cultures?.length ? query.cultures : null,
+        query.artistNationalities?.length
+          ? query.artistNationalities
+          : null,
         query.yearRange?.start ?? null,
         query.yearRange?.end ?? null,
+        query.mediumTerms?.length ? query.mediumTerms : null,
       ],
     );
     return result.rows.map((row) => ({

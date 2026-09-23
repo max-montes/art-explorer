@@ -32,6 +32,13 @@ const catalog = [
     objectBeginDate: 1650,
     objectEndDate: 1650,
   }),
+  curatedAsset("dutch", "River Landscape", "Artist Four", ["River"], {
+    artistNationality: "Dutch",
+    medium: "Oil on canvas",
+  }),
+  curatedAsset("watercolor", "Study of Clouds", "Artist Five", ["Clouds"], {
+    medium: "Graphite and watercolor on paper",
+  }),
 ];
 const lexicon = buildCatalogLexicon(catalog);
 
@@ -88,6 +95,25 @@ describe("catalog query intent", () => {
       cultures: ["Japan"],
       yearRange: { start: 1600, end: 1699 },
       residualQuery: "moonlit landscape",
+    });
+  });
+
+  it("matches an origin through artist nationality", () => {
+    expect(analyzeCatalogQuery("Dutch landscape", lexicon)).toMatchObject({
+      cultures: [],
+      artistNationalities: ["Dutch"],
+      residualQuery: "landscape",
+    });
+  });
+
+  it("extracts known medium terms as deterministic facets", () => {
+    expect(analyzeCatalogQuery("watercolor clouds", lexicon)).toMatchObject({
+      mediumTerms: ["watercolor"],
+      residualQuery: "clouds",
+    });
+    expect(analyzeCatalogQuery("oil on canvas", lexicon)).toMatchObject({
+      mediumTerms: ["oil on canvas"],
+      residualQuery: "",
     });
   });
 });

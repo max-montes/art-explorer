@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MemoryCatalogRepository } from "@/lib/retrieval/memory-repository";
 import { DeterministicEmbeddingProvider } from "@/lib/retrieval/providers";
 import { RetrievalService } from "@/lib/retrieval/service";
-import { curatedFixtures } from "./fixtures/curated-catalog";
+import { curatedAsset, curatedFixtures } from "./fixtures/curated-catalog";
 
 const createService = () => {
   const provider = new DeterministicEmbeddingProvider();
@@ -49,6 +49,43 @@ describe("association-based retrieval", () => {
     expect(
       new Set(response.results.map(({ asset }) => asset.id)).size,
     ).toBe(response.results.length);
+  });
+
+  it("hard-filters structured nationality and medium queries", async () => {
+    const provider = new DeterministicEmbeddingProvider();
+    const assets = [
+      curatedAsset("dutch-oil", "River", "Dutch Artist", ["Landscape"], {
+        artistNationality: "Dutch",
+        medium: "Oil on canvas",
+      }),
+      curatedAsset("french-watercolor", "Clouds", "French Artist", ["Sky"], {
+        artistNationality: "French",
+        medium: "Watercolor on paper",
+      }),
+      curatedAsset("french-oil", "Garden", "French Artist", ["Landscape"], {
+        artistNationality: "French",
+        medium: "Oil on canvas",
+      }),
+    ];
+    const service = new RetrievalService(
+      new MemoryCatalogRepository(assets, [], [], provider),
+      provider,
+    );
+
+    const dutch = await service.search("Dutch", "artwork", 5, "weighted");
+    expect(dutch.results.map(({ asset }) => asset.id)).toEqual([
+      "curated-dutch-oil",
+    ]);
+
+    const watercolor = await service.search(
+      "watercolor",
+      "artwork",
+      5,
+      "weighted",
+    );
+    expect(watercolor.results.map(({ asset }) => asset.id)).toEqual([
+      "curated-french-watercolor",
+    ]);
   });
 
   it("offers the creator as a follow-up search", async () => {

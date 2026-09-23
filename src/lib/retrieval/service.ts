@@ -148,6 +148,12 @@ export class RetrievalService {
     const baseLimit = limit * 2;
     const facetFilters = {
       ...(intent.cultures.length ? { cultures: intent.cultures } : {}),
+      ...(intent.artistNationalities.length
+        ? { artistNationalities: intent.artistNationalities }
+        : {}),
+      ...(intent.mediumTerms.length
+        ? { mediumTerms: intent.mediumTerms }
+        : {}),
       ...(intent.yearRange ? { yearRange: intent.yearRange } : {}),
     };
     const baseResults =

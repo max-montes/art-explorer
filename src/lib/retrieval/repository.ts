@@ -26,6 +26,8 @@ export interface VectorQuery {
   creatorNames?: string[];
   assetIds?: string[];
   cultures?: string[];
+  artistNationalities?: string[];
+  mediumTerms?: string[];
   yearRange?: { start: number; end: number };
 }
 
@@ -36,6 +38,8 @@ export interface TextQuery {
   creatorNames?: string[];
   assetIds?: string[];
   cultures?: string[];
+  artistNationalities?: string[];
+  mediumTerms?: string[];
   yearRange?: { start: number; end: number };
 }
 
