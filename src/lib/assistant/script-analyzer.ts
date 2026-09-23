@@ -13,11 +13,6 @@ export interface PassageSearch {
     channel: Channel,
     limit?: number,
   ): Promise<{ results: ScoredAsset[] }>;
-  recommendForScript(
-    passages: string[],
-    channel: Channel,
-    limit?: number,
-  ): Promise<{ results: ScoredAsset[] }>;
 }
 
 interface TextSpan {

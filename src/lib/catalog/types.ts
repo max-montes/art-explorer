@@ -210,10 +210,4 @@ export interface ScriptAnalysis {
   text: string;
   channel: Channel;
   passages: ScriptPassage[];
-  /** Optional whole-text recommendation for clients that request one. */
-  recommendation?: {
-    results: ScoredAsset[];
-    associations: string[];
-    passageCount: number;
-  };
 }

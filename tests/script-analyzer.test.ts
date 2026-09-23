@@ -37,8 +37,6 @@ const scored = (media: MediaAsset): ScoredAsset => ({
   scores: { semantic: 1, metadata: 0.25 },
 });
 
-const noRecommendation = async () => ({ results: [] as ScoredAsset[] });
-
 describe("script analyzer", () => {
   it("preserves exact offsets across sentences and newlines", () => {
     const text = "  Plato seeks truth.\nSociety decays; renewal follows.";
@@ -88,7 +86,6 @@ describe("script analyzer", () => {
           searches.push({ query, channel });
           return { results: [school, school] };
         },
-        recommendForScript: noRecommendation,
       },
       "artwork",
     );
@@ -102,59 +99,9 @@ describe("script analyzer", () => {
     });
   });
 
-  it.skip("legacy whole-script artwork recommendation behavior", async () => {
-    const searches: string[] = [];
-    const recommended: string[][] = [];
-    const artwork = scored({
-      ...asset("adagio", [], [], []),
-      type: "artwork",
-      libraryCategory: "artwork",
-      semantics: {
-        associations: ["Grief", "Stillness"],
-        concepts: [],
-        moods: [],
-        subjects: [],
-        description: "",
-        narrative: "",
-      },
-    });
-    const analysis = await analyzeScript(
-      "Plato seeks truth. Society decays; renewal follows.",
-      {
-        async search(query) {
-          searches.push(query);
-          return { results: [] };
-        },
-        async recommendForScript(passages) {
-          recommended.push(passages);
-          return { results: [artwork] };
-        },
-      },
-      "artwork",
-    );
-
-    // No per-passage searches; exactly one whole-script recommendation.
-    expect(searches).toEqual([]);
-    expect(recommended).toEqual([
-      ["Plato seeks truth.", "Society decays;", "renewal follows."],
-    ]);
-    expect(analysis.channel).toBe("artwork");
-    expect(analysis.passages.map((passage) => passage.results)).toEqual([
-      [],
-      [],
-      [],
-    ]);
-    expect(analysis.recommendation).toEqual({
-      results: [artwork],
-      associations: ["Grief", "Stillness", "Fixture", "19th century"],
-      passageCount: 3,
-    });
-  });
-
   it("rejects empty and oversized scripts", async () => {
     const retrieval = {
       search: async () => ({ results: [] }),
-      recommendForScript: noRecommendation,
     };
     await expect(analyzeScript("   ", retrieval)).rejects.toThrow(
       "Paste a script",

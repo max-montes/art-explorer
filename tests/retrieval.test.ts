@@ -166,29 +166,4 @@ describe("association-based retrieval", () => {
     expect(ids(similar)).toEqual([]);
   });
 
-  it.skip("legacy whole-script artwork recommendation behavior", async () => {
-    const service = createService();
-
-    const grieving = await service.recommendForScript(
-      [
-        "Everything he built is gone.",
-        "The house is silent now.",
-        "Grief settles in like winter.",
-      ],
-      "artwork",
-    );
-    expect(grieving.results[0].asset.id).toBe("curated-moonlight-sonata");
-    // A artwork recommendation is chosen on associations alone.
-    expect(grieving.weights).toEqual({ semantic: 1, metadata: 0 });
-
-    const triumphant = await service.recommendForScript(
-      ["Hopeful crowds fill the square.", "A celebration of renewal and triumph."],
-      "artwork",
-    );
-    expect(triumphant.results[0].asset.id).toBe("curated-ode-to-joy");
-    // Only artwork come back, never artwork or footage.
-    expect(
-      triumphant.results.every(({ asset }) => asset.type === "artwork"),
-    ).toBe(true);
-  });
 });

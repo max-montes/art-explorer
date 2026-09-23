@@ -37,29 +37,6 @@ const STRUCTURED_SEARCH_WEIGHTS: SearchWeights = {
 const PILL_SOURCE_FLOOR = 0;
 const PILL_SOURCE_RELATIVE = 0.5;
 
-const normalize = (vector: number[]) => {
-  const magnitude = Math.sqrt(vector.reduce((sum, c) => sum + c * c, 0));
-  return magnitude === 0 ? vector : vector.map((c) => c / magnitude);
-};
-
-/**
- * Mean-pool one vector per channel across many passages. This represents the
- * tone of a whole script without hitting the embedding model's input limit.
- */
-const averageVectors = (vectors: number[][]): number[] => {
-  const mean = () => {
-    const dimensions = vectors[0].length;
-    const sum = new Array<number>(dimensions).fill(0);
-    for (const vector of vectors) {
-      vector.forEach((value, index) => {
-        sum[index] += value;
-      });
-    }
-    return normalize(sum.map((value) => value / vectors.length));
-  };
-  return mean();
-};
-
 export class RetrievalService {
   private readonly lexicons = new Map<Channel, Promise<CatalogLexicon>>();
 
@@ -229,39 +206,6 @@ export class RetrievalService {
       results,
       pills: await this.pillsFor(query, results),
     };
-  }
-
-  /**
-   * One recommendation for a whole script: every passage is embedded, the
-   * vectors are averaged, and the channel is searched once on associations
-   * alone. Used for artwork recommendations, where per-passage picks make no sense.
-   */
-  async recommendForScript(
-    passages: string[],
-    channel: Channel,
-    limit = 3,
-  ): Promise<{ results: ScoredAsset[]; weights: SearchWeights }> {
-    const texts = passages.map((text) => text.trim()).filter(Boolean);
-    if (texts.length === 0) {
-      throw new Error("A script is required.");
-    }
-    const imageVector = averageVectors(
-      await this.provider.embedImageText(texts),
-    );
-    const vectors = {
-      semantic: imageVector,
-      metadata: imageVector,
-      image: imageVector,
-    };
-    const weights = IMAGE_SEARCH_WEIGHTS;
-    const results = await this.repository.search({
-      vectors,
-      weights,
-      limit,
-      channel,
-      imageVector,
-    });
-    return { results, weights };
   }
 
   /** Similar items are always drawn from the source asset's own channel. */
