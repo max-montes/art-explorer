@@ -51,11 +51,22 @@ class ToEntryTest(unittest.TestCase):
         lehman = row(department="Robert Lehman Collection")
         self.assertIsNotNone(importer.to_entry(lehman))
 
+    def test_american_and_modern_departments_are_allowed(self):
+        for department in ("The American Wing", "Modern and Contemporary Art"):
+            with self.subTest(department):
+                self.assertIsNotNone(importer.to_entry(row(department=department)))
+
+    def test_asian_art_is_excluded(self):
+        self.assertIsNone(importer.to_entry(row(department="Asian Art")))
+
     def test_unlisted_department_is_excluded(self):
         self.assertIsNone(importer.to_entry(row(department="Arms and Armor")))
 
     def test_not_public_domain_is_excluded(self):
         self.assertIsNone(importer.to_entry(row(isPublicDomain="False")))
+
+    def test_department_is_preserved_in_asset_metadata(self):
+        self.assertEqual(importer.to_entry(row())["asset"]["department"], "European Paintings")
 
 
 if __name__ == "__main__":

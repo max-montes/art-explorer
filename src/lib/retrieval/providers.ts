@@ -240,6 +240,116 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   }
 }
 
+interface JinaApiEmbedding {
+  index: number;
+  embedding: number[];
+}
+
+export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
+  readonly name = "jina-api:jina-clip-v2";
+  readonly imageDimensions = 256;
+  private readonly endpoint =
+    process.env.JINA_API_URL ?? "https://api.jina.ai/v1/embeddings";
+  private readonly batchSize = onnxThreadCount("JINA_API_BATCH_SIZE", 16);
+
+  constructor(private readonly apiKey = process.env.JINA_API_KEY) {
+    if (!apiKey) {
+      throw new Error(
+        "JINA_API_KEY is required when EMBEDDING_PROVIDER=jina-api.",
+      );
+    }
+  }
+
+  embedImages(images: string[]): Promise<number[][]> {
+    return this.embed(
+      images.map((image) => ({
+        image: image.replace(/^data:[^;]+;base64,/, ""),
+      })),
+    );
+  }
+
+  embedImageText(texts: string[]): Promise<number[][]> {
+    return this.embed(texts, "retrieval.query");
+  }
+
+  private async embed(
+    input: Array<string | { image: string }>,
+    task?: "retrieval.query",
+  ): Promise<number[][]> {
+    const vectors: number[][] = [];
+    for (let start = 0; start < input.length; start += this.batchSize) {
+      const batch = input.slice(start, start + this.batchSize);
+      const data = await this.request(batch, task);
+      vectors.push(
+        ...data
+          .sort((left, right) => left.index - right.index)
+          .map(({ embedding }) => normalize(embedding)),
+      );
+    }
+    return vectors;
+  }
+
+  private async request(
+    input: Array<string | { image: string }>,
+    task?: "retrieval.query",
+  ): Promise<JinaApiEmbedding[]> {
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const response = await fetch(this.endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "jina-clip-v2",
+          input,
+          dimensions: this.imageDimensions,
+          embedding_type: "float",
+          normalized: true,
+          truncate: true,
+          ...(task ? { task } : {}),
+        }),
+      });
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          data?: JinaApiEmbedding[];
+        };
+        if (
+          !Array.isArray(payload.data) ||
+          payload.data.length !== input.length ||
+          payload.data.some(
+            ({ embedding }) =>
+              !Array.isArray(embedding) ||
+              embedding.length !== this.imageDimensions,
+          )
+        ) {
+          throw new Error("Jina API returned an invalid embedding response.");
+        }
+        return payload.data;
+      }
+      const detail = await response.text();
+      if (
+        attempt === 3 ||
+        (response.status !== 429 && response.status < 500)
+      ) {
+        throw new Error(
+          `Jina API failed (${response.status}): ${detail.slice(0, 500)}`,
+        );
+      }
+      const retryAfter = Number(response.headers.get("retry-after"));
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          Number.isFinite(retryAfter)
+            ? retryAfter * 1000
+            : 1000 * 2 ** attempt,
+        ),
+      );
+    }
+    throw new Error("Jina API retry loop exited unexpectedly.");
+  }
+}
+
 export function createEmbeddingProvider(): EmbeddingProvider {
   const provider = process.env.EMBEDDING_PROVIDER ?? "transformers";
   if (provider === "deterministic") {
@@ -247,6 +357,9 @@ export function createEmbeddingProvider(): EmbeddingProvider {
   }
   if (provider === "transformers") {
     return new TransformersEmbeddingProvider();
+  }
+  if (provider === "jina-api") {
+    return new HostedJinaEmbeddingProvider();
   }
   throw new Error(`Unsupported EMBEDDING_PROVIDER: ${provider}`);
 }

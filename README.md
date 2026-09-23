@@ -8,7 +8,7 @@ or artist.
 
 ## What it does
 
-- Searches roughly 5,500 public-domain paintings from The Met.
+- Searches 3,125 public-domain paintings from The Met.
 - Uses Jina CLIP v2 for visual meaning and Met metadata for hard constraints.
 - Keeps title, artist, date, culture, and medium in a separate metadata channel.
 - Suggests related ideas and visually similar paintings.
@@ -22,8 +22,9 @@ uses PostgreSQL with pgvector for direct cosine ranking. Title, artist, date,
 culture, nationality, and medium are resolved first as deterministic pins or
 hard filters rather than blended into the image score.
 
-The catalog is paintings only. Sculptures, ceramics, vases, and decorative
-objects are excluded.
+The catalog is paintings only, from European Paintings, The American Wing, the
+Robert Lehman Collection, and Modern and Contemporary Art. Sculptures,
+ceramics, vases, decorative objects, and other departments are excluded.
 
 ## Run it
 
@@ -46,7 +47,7 @@ it locally, filters it to paintings, and prints progress as it runs.
 ```bash
 npm run catalog:met:hf -- \
   --output curation/met-paintings.json \
-  --limit 5516
+  --all
 
 IMAGE_EMBEDDING_MODEL=jinaai/jina-clip-v2 \
 EMBEDDING_BATCH_SIZE=4 \
@@ -75,6 +76,18 @@ npm run catalog:reindex:jina
 The reindexer commits each batch, skips completed rows when restarted, and
 reuses vectors from the local image-model evaluation cache when available.
 
+To prune an existing Met catalog to the generated manifest without recomputing
+retained vectors:
+
+```bash
+npm run catalog:prune -- curation/met-paintings.json --apply
+```
+
+Hosted full-precision Jina vectors are stored separately from local vectors.
+Set `EMBEDDING_PROVIDER=jina-api` and `JINA_API_KEY` in `.env.local`, apply
+`db/schema.sql`, then run `npm run catalog:reindex:jina`. Never commit the API
+key.
+
 ## Evaluate search
 
 Open [http://localhost:3000/eval.html](http://localhost:3000/eval.html) to label
@@ -88,7 +101,7 @@ projects, including **Art Guide** and **Semantic B-roll**. That foundation
 includes semantic retrieval, vector indexing, curation and licensing workflows,
 local media handling, drag-to-collect interaction, and script analysis.
 
-Art Explorer adds a paintings-only Met catalog, SigLIP retrieval, resumable bulk
+Art Explorer adds a paintings-only Met catalog, Jina retrieval, resumable bulk
 ingestion, and a human relevance-labeling workflow. All reused project work
 referenced here is my own.
 

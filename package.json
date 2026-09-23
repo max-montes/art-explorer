@@ -13,6 +13,7 @@
     "eval": "tsx scripts/eval.ts",
     "catalog:ingest": "tsx scripts/ingest-manifest.ts",
     "catalog:reindex:jina": "tsx scripts/reindex-jina-images.ts",
+    "catalog:prune": "tsx scripts/prune-catalog.ts",
     "catalog:met": "tsx scripts/import-met.ts",
     "catalog:met:hf": "python3 scripts/import-met-hf.py"
   },

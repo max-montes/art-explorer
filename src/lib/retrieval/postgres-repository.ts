@@ -22,15 +22,22 @@ interface SearchRow {
 }
 
 export class PostgresCatalogRepository implements CatalogRepository {
-  private readonly imageColumn: "image_embedding" | "jina_image_embedding";
+  private readonly imageColumn:
+    | "image_embedding"
+    | "jina_image_embedding"
+    | "jina_hosted_image_embedding";
 
   constructor(
     private readonly pool: Pool,
     imageModel = process.env.IMAGE_EMBEDDING_MODEL ?? "jinaai/jina-clip-v2",
+    embeddingProvider = process.env.EMBEDDING_PROVIDER ?? "transformers",
   ) {
-    this.imageColumn = /jina-clip-v2/i.test(imageModel)
-      ? "jina_image_embedding"
-      : "image_embedding";
+    this.imageColumn =
+      embeddingProvider === "jina-api"
+        ? "jina_hosted_image_embedding"
+        : /jina-clip-v2/i.test(imageModel)
+          ? "jina_image_embedding"
+          : "image_embedding";
   }
 
   async prepare(): Promise<void> {

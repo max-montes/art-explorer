@@ -115,6 +115,7 @@ export interface MediaAsset {
   title: string;
   creator: string;
   year: string;
+  department?: string;
   culture?: string;
   medium?: string;
   artistNationality?: string;

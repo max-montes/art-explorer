@@ -19,20 +19,13 @@ DATASET_URL = (
     "resolve/main/openaccess.csv.gz"
 )
 DEFAULT_CACHE = Path.home() / ".cache/art-explorer/met-openaccess.csv.gz"
-ART_DEPARTMENTS = (
-    "african",
-    "american",
-    "ancient near eastern",
-    "asian",
-    "brazilian",
-    "british",
-    "drawings and prints",
-    "european",
-    "islamic",
-    "modern",
-    "photographs",
-    "american decorative",
-    "robert lehman",
+ART_DEPARTMENTS = frozenset(
+    {
+        "European Paintings",
+        "The American Wing",
+        "Robert Lehman Collection",
+        "Modern and Contemporary Art",
+    }
 )
 # Museum-classified as paintings, but these are pages of text with small
 # illustrations rather than standalone paintings.
@@ -134,7 +127,7 @@ def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
     if not is_painting(row):
         return None
     department = text(row, "department")
-    if not any(name in department.lower() for name in ART_DEPARTMENTS):
+    if department not in ART_DEPARTMENTS:
         return None
     image_url = text(row, "primaryImage") or text(row, "primaryImageSmall")
     object_url = text(row, "objectURL")
@@ -157,6 +150,7 @@ def to_entry(row: dict[str, str]) -> dict[str, Any] | None:
         "title": title,
         "creator": creator,
         "year": year,
+        "department": department,
         "culture": culture or None,
         "medium": medium or None,
         "artistNationality": artist_nationality or None,

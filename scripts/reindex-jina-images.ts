@@ -58,7 +58,13 @@ async function embedWithFailureIsolation(
 }
 
 async function main() {
-  process.env.IMAGE_EMBEDDING_MODEL = "jinaai/jina-clip-v2";
+  const hosted = process.env.EMBEDDING_PROVIDER === "jina-api";
+  if (!hosted) {
+    process.env.IMAGE_EMBEDDING_MODEL = "jinaai/jina-clip-v2";
+  }
+  const imageColumn = hosted
+    ? "jina_hosted_image_embedding"
+    : "jina_image_embedding";
   const provider = createEmbeddingProvider();
   if (!("embedImages" in provider)) {
     throw new Error("The configured provider cannot embed images.");
@@ -75,7 +81,10 @@ async function main() {
       process.env.DATABASE_URL ??
       "******localhost:5432/art_explorer",
   });
-  const batchSize = Math.max(1, Number(process.env.EMBEDDING_BATCH_SIZE ?? 4));
+  const batchSize = Math.max(
+    1,
+    Number(process.env.EMBEDDING_BATCH_SIZE ?? (hosted ? 16 : 4)),
+  );
   const limit = Math.max(0, Number(process.env.REINDEX_LIMIT ?? 0));
   const cachePath = path.resolve(
     process.env.JINA_PILOT_CACHE ??
@@ -88,7 +97,7 @@ async function main() {
         `SELECT asset.id, asset.media_url
            FROM media_assets asset
            JOIN media_embeddings embedding ON embedding.asset_id = asset.id
-          WHERE embedding.jina_image_embedding IS NULL
+          WHERE embedding.${imageColumn} IS NULL
             AND asset.media_url ~ '^(https?:|data:)'
           ORDER BY asset.id`,
       )
@@ -102,7 +111,7 @@ async function main() {
     }
 
     let seeded = 0;
-    if (cache?.model === "jinaai/jina-clip-v2:q4") {
+    if (!hosted && cache?.model === "jinaai/jina-clip-v2:q4") {
       for (const row of allRows) {
         const cached = cache.assets[row.id];
         if (
@@ -112,7 +121,7 @@ async function main() {
           const vector = normalize(cached.vector.slice(0, 256));
           await pool.query(
             `UPDATE media_embeddings
-                SET jina_image_embedding = $2::vector, embedded_at = now()
+                SET ${imageColumn} = $2::vector, embedded_at = now()
               WHERE asset_id = $1`,
             [row.id, toVector(vector)],
           );
@@ -129,7 +138,7 @@ async function main() {
         `SELECT asset.id, asset.media_url
            FROM media_assets asset
            JOIN media_embeddings embedding ON embedding.asset_id = asset.id
-          WHERE embedding.jina_image_embedding IS NULL
+          WHERE embedding.${imageColumn} IS NULL
             AND asset.media_url ~ '^(https?:|data:)'
           ORDER BY asset.id`,
       )
@@ -148,9 +157,11 @@ async function main() {
         for (const { row, vector } of embedded) {
           await client.query(
             `UPDATE media_embeddings
-                SET jina_image_embedding = $2::vector, embedded_at = now()
+                SET model_name = $3,
+                    ${imageColumn} = $2::vector,
+                    embedded_at = now()
               WHERE asset_id = $1`,
-            [row.id, toVector(vector)],
+            [row.id, toVector(vector), provider.name],
           );
         }
         await client.query("COMMIT");
