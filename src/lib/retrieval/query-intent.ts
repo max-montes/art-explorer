@@ -99,7 +99,13 @@ export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
       aliases.set(alias, creators);
     }
     const title = normalizeCatalogText(asset.title);
-    if (title) titles.set(title, [...(titles.get(title) ?? []), asset.id]);
+    const titleAliases = new Set([
+      title,
+      normalizeCatalogText(asset.title.replace(/\s*\([^)]*\)/g, "")),
+    ]);
+    for (const alias of titleAliases) {
+      if (alias) titles.set(alias, [...(titles.get(alias) ?? []), asset.id]);
+    }
     if (asset.culture) {
       const full = normalizeCatalogText(asset.culture);
       const base = normalizeCatalogText(asset.culture.split(/[,(]/, 1)[0]);
@@ -207,6 +213,7 @@ export const analyzeCatalogQuery = (
     ? []
     : lexicon.creatorAliases
         .filter(({ alias }) => containsPhrase(normalized, alias))
+        .filter(({ alias }) => alias !== originMatch?.alias)
         .filter(
           (entry) =>
             entry.alias.split(" ").length > 1 ||

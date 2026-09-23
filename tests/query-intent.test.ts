@@ -36,6 +36,21 @@ const catalog = [
     artistNationality: "Dutch",
     medium: "Oil on canvas",
   }),
+  curatedAsset(
+    "ambiguous-french-creator",
+    "Workshop Study",
+    "Netherlandish or French",
+    ["Study"],
+  ),
+  curatedAsset("french", "French Landscape", "Artist Six", ["Landscape"], {
+    artistNationality: "French",
+  }),
+  curatedAsset(
+    "madame-x",
+    "Madame X (Virginie Amélie Avegno Gautreau)",
+    "John Singer Sargent",
+    ["Portraits"],
+  ),
   curatedAsset("watercolor", "Study of Clouds", "Artist Five", ["Clouds"], {
     medium: "Graphite and watercolor on paper",
   }),
@@ -103,6 +118,21 @@ describe("catalog query intent", () => {
       cultures: [],
       artistNationalities: ["Dutch"],
       residualQuery: "landscape",
+    });
+  });
+
+  it("prefers an origin facet over an identical creator alias", () => {
+    expect(analyzeCatalogQuery("French", lexicon)).toMatchObject({
+      creatorNames: [],
+      artistNationalities: ["French"],
+      residualQuery: "",
+    });
+  });
+
+  it("matches a distinctive title without its parenthetical subtitle", () => {
+    expect(analyzeCatalogQuery("Madame X", lexicon)).toMatchObject({
+      titleAssetIds: ["curated-madame-x"],
+      residualQuery: "madame x",
     });
   });
 
