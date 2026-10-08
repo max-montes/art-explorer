@@ -21,6 +21,7 @@
     "catalog:met": "tsx scripts/import-met.ts",
     "catalog:aic": "tsx scripts/import-aic.ts",
     "catalog:cma": "tsx scripts/import-cma.ts",
+    "catalog:smk": "tsx scripts/import-smk.ts",
     "catalog:met:hf": "python3 scripts/import-met-hf.py"
   },
   "dependencies": {
