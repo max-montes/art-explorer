@@ -332,7 +332,8 @@ transcendence</textarea>
             render();
             const unlabeled = state.results.filter(result => !state.labels[key(query, result)]).length;
             updateNextButton();
-            setStatus(`${state.results.length} blinded candidates. ${unlabeled} remain for this query.`);
+            const datasetKind = state.dataset.blinded ? "blinded" : "seeded";
+            setStatus(`${state.results.length} ${datasetKind} candidates. ${unlabeled} remain for this query.`);
             return;
           }
           state.ranking = $("ranking").value;
