@@ -16,16 +16,17 @@ have been reproduced where they fit the current catalog.
 - PostgreSQL search is exact at the current query shape: `EXPLAIN` confirms a
   sequential scan and full sort rather than an HNSW index scan. This matches
   Semantic Art Search's full-recall Qdrant setting and is inexpensive for
-  3,125 paintings.
-- The catalog is restricted to European Paintings, The American Wing, Robert
-  Lehman Collection, and Modern and Contemporary Art. Existing SigLIP and
-  local Jina vectors were preserved.
+  17,384 paintings.
+- The Met catalog is restricted to European Paintings, The American Wing,
+  Robert Lehman Collection, and Modern and Contemporary Art. Existing SigLIP
+  and local Jina vectors were preserved.
 - Equivalent painting-only, public-domain filters now include 1,252 works from
   the Art Institute of Chicago, 864 from the Cleveland Museum of Art, and
-  4,614 from Statens Museum for Kunst, and 2,914 from the National Gallery of
-  Art. The resulting 12,769-work catalog covers European, American, and Modern
-  painting departments with matched local Jina and SigLIP vector coverage for
-  every work whose source image is still available.
+  4,614 from Statens Museum for Kunst, 2,914 from the National Gallery of Art,
+  and 4,615 from the Rijksmuseum's Western paintings collection. The resulting
+  17,384-work catalog covers European, American, and Modern painting
+  departments with matched local Jina and SigLIP vector coverage for every
+  work whose source image is still available.
 - Query-prompt experiments are reproducible with
   `npm run eval:query-prompts -- <label exports...>`.
 - Hosted Jina image ingestion now resizes source images locally, encodes them
@@ -42,7 +43,8 @@ have been reproduced where they fit the current catalog.
   Paintings classification as the same kind of work.
 - Measure hubness correction or corpus-level similarity normalization for
   paintings that recur across unrelated abstract queries.
-- Evaluate additional museums after the Met-only retrieval baseline is stable.
+- Evaluate further museums only when they add distinct open-access Western
+  painting coverage.
 
 ## Evidence to preserve
 
