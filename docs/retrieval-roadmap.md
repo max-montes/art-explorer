@@ -22,13 +22,16 @@ have been reproduced where they fit the current catalog.
   local Jina vectors were preserved.
 - Query-prompt experiments are reproducible with
   `npm run eval:query-prompts -- <label exports...>`.
+- Hosted Jina image ingestion now resizes source images locally, encodes them
+  as JPEG quality 85, sends base64 rather than full-size Met URLs, respects the
+  free account's observed 100k image-token/minute limit, and stops globally on
+  quota exhaustion instead of retrying every remaining asset.
+- Hosted/local comparisons are reproducible with
+  `npm run eval:hosted-jina -- <label exports...>`. Results are cached after
+  each batch so interrupted comparisons do not spend tokens twice.
 
 ## Deferred experiments
 
-- Compare local Q4 Jina embeddings with Jina's hosted full-precision API on the
-  same judged images.
-- Compare the local 512-pixel processor with Jina API image tiling, which keeps
-  more detail from larger source images.
 - Add explicit work-type filters rather than treating every Met object in the
   Paintings classification as the same kind of work.
 - Measure hubness correction or corpus-level similarity normalization for
@@ -46,6 +49,13 @@ have been reproduced where they fit the current catalog.
   vector; it does not combine lexical, metadata, and image rankings.
 - Its larger, multi-museum collection and pre-search filters can improve the
   candidate set independently of embedding-model quality.
+- Hosted full-precision Jina did not explain its advantage. On the 82 retained
+  paintings with prior judgments, local Q4 scored 39.7% strict P@5, 55.2%
+  lenient P@5, 69.6% strict nDCG@5, and 81.3% lenient nDCG@5. Hosted Jina at
+  512px scored 41.4%, 56.9%, 65.1%, and 81.9%; at the benchmark's 800px size it
+  scored 39.7%, 54.3%, 62.2%, and 79.0%. The small precision movement does not
+  justify a paid full-catalog reindex, and larger inputs made ranking quality
+  worse on this judged set.
 - On the pruned catalog, the official local Jina retrieval instruction replaced
   41 of 60 abstract-query top-five candidates. Existing judgments cover too few of
   those new candidates for a defensible automatic win claim, so it should be

@@ -6,6 +6,7 @@ import {
   type EmbeddingProvider,
   type ImageEmbeddingProvider,
 } from "../src/lib/retrieval/providers";
+import { prepareHostedJinaImage } from "./hosted-jina-image";
 
 interface AssetRow {
   id: string;
@@ -25,13 +26,26 @@ const normalize = (values: number[]) => {
   return magnitude === 0 ? values : values.map((value) => value / magnitude);
 };
 
+const sleep = (milliseconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const isGlobalHostedFailure = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("Jina API failed (429)") ||
+    message.includes("Jina API failed (403)") ||
+    message.includes("AUTHZ_INSUFFICIENT_BALANCE")
+  );
+};
+
 async function embedWithFailureIsolation(
   rows: AssetRow[],
   provider: EmbeddingProvider & ImageEmbeddingProvider,
+  inputFor: (row: AssetRow) => Promise<string>,
 ): Promise<Array<{ row: AssetRow; vector: number[] }>> {
   try {
     const vectors = await provider.embedImages(
-      rows.map(({ media_url }) => media_url),
+      await Promise.all(rows.map(inputFor)),
     );
     if (vectors.length !== rows.length) {
       throw new Error(
@@ -40,6 +54,7 @@ async function embedWithFailureIsolation(
     }
     return rows.map((row, index) => ({ row, vector: vectors[index] }));
   } catch (error) {
+    if (isGlobalHostedFailure(error)) throw error;
     if (rows.length === 1) {
       console.warn(
         `[Jina reindex] skipped ${rows[0].id}: ${
@@ -50,8 +65,12 @@ async function embedWithFailureIsolation(
     }
     const middle = Math.ceil(rows.length / 2);
     const [left, right] = await Promise.all([
-      embedWithFailureIsolation(rows.slice(0, middle), provider),
-      embedWithFailureIsolation(rows.slice(middle), provider),
+      embedWithFailureIsolation(
+        rows.slice(0, middle),
+        provider,
+        inputFor,
+      ),
+      embedWithFailureIsolation(rows.slice(middle), provider, inputFor),
     ]);
     return [...left, ...right];
   }
@@ -85,6 +104,26 @@ async function main() {
     1,
     Number(process.env.EMBEDDING_BATCH_SIZE ?? (hosted ? 16 : 4)),
   );
+  const hostedImageMaxPixels = Math.max(
+    64,
+    Number(process.env.JINA_IMAGE_MAX_PIXELS ?? 512),
+  );
+  const hostedBatchDelayMs = Math.max(
+    0,
+    Number(process.env.JINA_API_BATCH_DELAY_MS ?? (hosted ? 61_000 : 0)),
+  );
+  const preparedInputs = new Map<string, Promise<string>>();
+  const inputFor = (row: AssetRow) => {
+    if (!hosted) return Promise.resolve(row.media_url);
+    const existing = preparedInputs.get(row.media_url);
+    if (existing) return existing;
+    const pending = prepareHostedJinaImage(
+      row.media_url,
+      hostedImageMaxPixels,
+    );
+    preparedInputs.set(row.media_url, pending);
+    return pending;
+  };
   const limit = Math.max(0, Number(process.env.REINDEX_LIMIT ?? 0));
   const cachePath = path.resolve(
     process.env.JINA_PILOT_CACHE ??
@@ -144,12 +183,18 @@ async function main() {
       )
     ).rows.slice(0, limit || undefined);
     const startedAt = Date.now();
-    console.log(`[Jina reindex] ${pending.length} images remaining`);
+    console.log(
+      `[Jina reindex] ${pending.length} images remaining` +
+        (hosted
+          ? ` (${hostedImageMaxPixels}px JPEG, ${hostedBatchDelayMs}ms batch delay)`
+          : ""),
+    );
 
     for (let start = 0; start < pending.length; start += batchSize) {
       const embedded = await embedWithFailureIsolation(
         pending.slice(start, start + batchSize),
         imageProvider,
+        inputFor,
       );
       const client = await pool.connect();
       try {
@@ -176,6 +221,9 @@ async function main() {
       console.log(
         `[Jina reindex] ${completed}/${pending.length} processed (${rate.toFixed(2)} images/s)`,
       );
+      if (completed < pending.length && hostedBatchDelayMs > 0) {
+        await sleep(hostedBatchDelayMs);
+      }
     }
   } finally {
     await pool.end();
