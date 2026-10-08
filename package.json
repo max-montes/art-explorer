@@ -13,12 +13,14 @@
     "eval": "tsx scripts/eval.ts",
     "catalog:ingest": "tsx scripts/ingest-manifest.ts",
     "catalog:reindex:jina": "tsx scripts/reindex-jina-images.ts",
+    "catalog:reindex:images": "tsx scripts/reindex-jina-images.ts",
     "catalog:prune": "tsx scripts/prune-catalog.ts",
     "eval:query-prompts": "tsx scripts/evaluate-query-prompts.ts",
     "eval:prepare-current": "tsx scripts/prepare-search-eval.ts",
     "eval:hosted-jina": "tsx scripts/compare-hosted-jina.ts",
     "catalog:met": "tsx scripts/import-met.ts",
     "catalog:aic": "tsx scripts/import-aic.ts",
+    "catalog:cma": "tsx scripts/import-cma.ts",
     "catalog:met:hf": "python3 scripts/import-met-hf.py"
   },
   "dependencies": {

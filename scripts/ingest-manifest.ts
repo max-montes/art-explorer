@@ -95,6 +95,7 @@ async function main() {
           ).rows.map(row => row.asset_id),
         )
       : new Set<string>();
+    const indexedAssetIds = new Set(existingIds);
     const pendingApproved = approved.filter(
       entry => !existingIds.has(entry.asset.id),
     );
@@ -113,25 +114,36 @@ async function main() {
         .slice(start, start + embeddingBatchSize)
         .map((entry) => entry.asset);
       const embedded = await embedAssets(assets, provider);
-      if (
-        embedded.some(
-          ({ vectors }) =>
-            vectors.image?.length !== provider.imageDimensions,
-        )
-      ) {
+      const invalid = embedded.filter(
+        ({ vectors }) =>
+          vectors.image?.length &&
+          vectors.image.length !== provider.imageDimensions,
+      );
+      if (invalid.length) {
         throw new Error(
           `The image index requires ${provider.imageDimensions}-dimensional embeddings.`,
         );
       }
-      await repository.upsertIndexedAssets(
-        embedded.map(({ documents, vectors }, index) => ({
+      const indexable = embedded
+        .map(({ documents, vectors }, index) => ({
           asset: assets[index],
           documents,
           vectors,
           provider: provider.name,
           documentVersion: 2,
-        })),
+        }))
+        .filter(({ vectors }) => vectors.image?.length);
+      await repository.upsertIndexedAssets(
+        indexable,
       );
+      for (const { asset } of indexable) indexedAssetIds.add(asset.id);
+      const skipped = assets.length - indexable.length;
+      if (skipped) {
+        console.warn(
+          `[Catalog] skipped ${skipped} inaccessible image` +
+            `${skipped === 1 ? "" : "s"} in this batch`,
+        );
+      }
       console.log(
         `[Catalog] embedded and persisted ${Math.min(
           start + embeddingBatchSize,
@@ -144,11 +156,19 @@ async function main() {
     }
     for (const entry of manifest.entries) {
       const asset = approvedByEntryId.get(entry.id);
-      await recordDecision(client, entry, asset?.id ?? null);
+      await recordDecision(
+        client,
+        entry,
+        asset && indexedAssetIds.has(asset.id) ? asset.id : null,
+      );
     }
     await client.query("COMMIT");
+    const importedCount = approved.filter(({ asset }) =>
+      indexedAssetIds.has(asset.id),
+    ).length;
     console.log(
-      `Recorded ${manifest.entries.length} decisions; imported ${approved.length} approved assets.`,
+      `Recorded ${manifest.entries.length} decisions; imported ` +
+        `${importedCount}/${approved.length} approved assets.`,
     );
   } catch (error) {
     await client.query("ROLLBACK");

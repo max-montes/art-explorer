@@ -57,7 +57,7 @@ async function embedWithFailureIsolation(
     if (isGlobalHostedFailure(error)) throw error;
     if (rows.length === 1) {
       console.warn(
-        `[Jina reindex] skipped ${rows[0].id}: ${
+        `[Image reindex] skipped ${rows[0].id}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -78,20 +78,26 @@ async function embedWithFailureIsolation(
 
 async function main() {
   const hosted = process.env.EMBEDDING_PROVIDER === "jina-api";
-  if (!hosted) {
+  if (!hosted && !process.env.IMAGE_EMBEDDING_MODEL) {
     process.env.IMAGE_EMBEDDING_MODEL = "jinaai/jina-clip-v2";
   }
+  const imageModel =
+    process.env.IMAGE_EMBEDDING_MODEL ?? "jinaai/jina-clip-v2";
   const imageColumn = hosted
     ? "jina_hosted_image_embedding"
-    : "jina_image_embedding";
+    : /siglip/i.test(imageModel)
+      ? "image_embedding"
+      : "jina_image_embedding";
   const provider = createEmbeddingProvider();
   if (!("embedImages" in provider)) {
     throw new Error("The configured provider cannot embed images.");
   }
   const imageProvider = provider as EmbeddingProvider & ImageEmbeddingProvider;
-  if (imageProvider.imageDimensions !== 256) {
+  const expectedDimensions = imageColumn === "image_embedding" ? 768 : 256;
+  if (imageProvider.imageDimensions !== expectedDimensions) {
     throw new Error(
-      `The Jina index requires 256 dimensions, got ${imageProvider.imageDimensions}.`,
+      `${imageColumn} requires ${expectedDimensions} dimensions, got ` +
+        `${imageProvider.imageDimensions}.`,
     );
   }
 
@@ -150,7 +156,10 @@ async function main() {
     }
 
     let seeded = 0;
-    if (!hosted && cache?.model === "jinaai/jina-clip-v2:q4") {
+    if (
+      imageColumn === "jina_image_embedding" &&
+      cache?.model === "jinaai/jina-clip-v2:q4"
+    ) {
       for (const row of allRows) {
         const cached = cache.assets[row.id];
         if (
@@ -169,7 +178,7 @@ async function main() {
       }
     }
     if (seeded) {
-      console.log(`[Jina reindex] restored ${seeded} vectors from cache`);
+      console.log(`[Image reindex] restored ${seeded} vectors from cache`);
     }
 
     const pending = (
@@ -184,7 +193,7 @@ async function main() {
     ).rows.slice(0, limit || undefined);
     const startedAt = Date.now();
     console.log(
-      `[Jina reindex] ${pending.length} images remaining` +
+      `[Image reindex] ${pending.length} images remaining` +
         (hosted
           ? ` (${hostedImageMaxPixels}px JPEG, ${hostedBatchDelayMs}ms batch delay)`
           : ""),
@@ -219,7 +228,7 @@ async function main() {
       const completed = Math.min(start + batchSize, pending.length);
       const rate = completed / Math.max(0.001, (Date.now() - startedAt) / 1000);
       console.log(
-        `[Jina reindex] ${completed}/${pending.length} processed (${rate.toFixed(2)} images/s)`,
+        `[Image reindex] ${completed}/${pending.length} processed (${rate.toFixed(2)} images/s)`,
       );
       if (completed < pending.length && hostedBatchDelayMs > 0) {
         await sleep(hostedBatchDelayMs);

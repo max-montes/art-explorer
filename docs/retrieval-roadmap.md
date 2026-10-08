@@ -20,6 +20,10 @@ have been reproduced where they fit the current catalog.
 - The catalog is restricted to European Paintings, The American Wing, Robert
   Lehman Collection, and Modern and Contemporary Art. Existing SigLIP and
   local Jina vectors were preserved.
+- Equivalent painting-only, public-domain filters now include 1,252 works from
+  the Art Institute of Chicago and 864 from the Cleveland Museum of Art. The
+  resulting 5,241-work catalog covers European, American, and Modern painting
+  departments with matched local Jina and SigLIP vector coverage.
 - Query-prompt experiments are reproducible with
   `npm run eval:query-prompts -- <label exports...>`.
 - Hosted Jina image ingestion now resizes source images locally, encodes them
