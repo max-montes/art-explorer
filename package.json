@@ -18,6 +18,7 @@
     "eval:prepare-current": "tsx scripts/prepare-search-eval.ts",
     "eval:hosted-jina": "tsx scripts/compare-hosted-jina.ts",
     "catalog:met": "tsx scripts/import-met.ts",
+    "catalog:aic": "tsx scripts/import-aic.ts",
     "catalog:met:hf": "python3 scripts/import-met-hf.py"
   },
   "dependencies": {
