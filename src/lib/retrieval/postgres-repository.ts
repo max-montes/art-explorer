@@ -12,6 +12,7 @@ import type {
   TextQuery,
   VectorQuery,
 } from "./repository";
+import type { ImageEmbeddingSpace } from "./providers";
 
 const toVector = (values: number[]) => `[${values.join(",")}]`;
 
@@ -22,22 +23,51 @@ interface SearchRow {
 }
 
 export class PostgresCatalogRepository implements CatalogRepository {
-  private readonly imageColumn:
-    | "image_embedding"
-    | "jina_image_embedding"
-    | "jina_hosted_image_embedding";
+  private readonly defaultImageSpace: ImageEmbeddingSpace;
 
   constructor(
     private readonly pool: Pool,
     imageModel = process.env.IMAGE_EMBEDDING_MODEL ?? "jinaai/jina-clip-v2",
     embeddingProvider = process.env.EMBEDDING_PROVIDER ?? "transformers",
   ) {
-    this.imageColumn =
+    this.defaultImageSpace =
       embeddingProvider === "jina-api"
-        ? "jina_hosted_image_embedding"
+        ? "jina-hosted"
         : /jina-clip-v2/i.test(imageModel)
-          ? "jina_image_embedding"
-          : "image_embedding";
+          ? "jina-local"
+          : /siglip/i.test(imageModel)
+            ? "siglip"
+            : "deterministic";
+  }
+
+  private imageColumn(space = this.defaultImageSpace) {
+    if (space === "jina-hosted") return "jina_hosted_image_embedding";
+    if (space === "jina-local") return "jina_image_embedding";
+    if (space === "siglip") return "image_embedding";
+    throw new Error(
+      "The deterministic embedding space is not stored in PostgreSQL.",
+    );
+  }
+
+  async supportsImageSpace(space: ImageEmbeddingSpace): Promise<boolean> {
+    const targetColumn = this.imageColumn(space);
+    const defaultColumn = this.imageColumn();
+    const result = await this.pool.query<{
+      default_count: string;
+      missing_count: string;
+    }>(
+      `SELECT count(*) FILTER (WHERE ${defaultColumn} IS NOT NULL) AS default_count,
+              count(*) FILTER (
+                WHERE ${defaultColumn} IS NOT NULL
+                  AND ${targetColumn} IS NULL
+              ) AS missing_count
+         FROM media_embeddings`,
+    );
+    const row = result.rows[0];
+    return (
+      Number(row?.default_count ?? 0) > 0 &&
+      Number(row?.missing_count ?? 0) === 0
+    );
   }
 
   async prepare(): Promise<void> {
@@ -52,12 +82,13 @@ export class PostgresCatalogRepository implements CatalogRepository {
   }
 
   async catalogAssets(channel: "artwork"): Promise<MediaAsset[]> {
+    const imageColumn = this.imageColumn();
     const result = await this.pool.query<{ catalog_payload: MediaAsset }>(
       `SELECT asset.catalog_payload
          FROM media_assets asset
          JOIN media_embeddings embedding ON embedding.asset_id = asset.id
         WHERE asset.library_category = $1
-          AND embedding.${this.imageColumn} IS NOT NULL`,
+          AND embedding.${imageColumn} IS NOT NULL`,
       [channel],
     );
     return result.rows.map((row) => row.catalog_payload);
@@ -71,9 +102,13 @@ export class PostgresCatalogRepository implements CatalogRepository {
     return result.rows[0]?.catalog_payload ?? null;
   }
 
-  async findAssetVectors(id: string): Promise<AssetVectors | null> {
+  async findAssetVectors(
+    id: string,
+    imageSpace = this.defaultImageSpace,
+  ): Promise<AssetVectors | null> {
+    const imageColumn = this.imageColumn(imageSpace);
     const embedding = await this.pool.query<{ image: string | null }>(
-      `SELECT ${this.imageColumn}::text AS image
+      `SELECT ${imageColumn}::text AS image
          FROM media_embeddings
         WHERE asset_id = $1`,
       [id],
@@ -89,21 +124,22 @@ export class PostgresCatalogRepository implements CatalogRepository {
   }
 
   async search(query: VectorQuery): Promise<ScoredAsset[]> {
+    const imageColumn = this.imageColumn(query.imageSpace);
     const result = await this.pool.query<SearchRow>(
       `SELECT asset.catalog_payload,
-              CASE WHEN $1::vector IS NULL OR embedding.${this.imageColumn} IS NULL
+              CASE WHEN $1::vector IS NULL OR embedding.${imageColumn} IS NULL
                        THEN 0
-                       ELSE 1 - (embedding.${this.imageColumn} <=> $1::vector)
+                       ELSE 1 - (embedding.${imageColumn} <=> $1::vector)
                   END AS image_score,
-              CASE WHEN $1::vector IS NULL OR embedding.${this.imageColumn} IS NULL
+              CASE WHEN $1::vector IS NULL OR embedding.${imageColumn} IS NULL
                        THEN 0
-                       ELSE (1 - (embedding.${this.imageColumn} <=> $1::vector)) * $2
+                       ELSE (1 - (embedding.${imageColumn} <=> $1::vector)) * $2
                   END AS score
          FROM media_embeddings embedding
          JOIN media_assets asset ON asset.id = embedding.asset_id
         WHERE ($3::text IS NULL OR asset.id <> $3)
           AND asset.library_category = $5
-          AND embedding.${this.imageColumn} IS NOT NULL
+          AND embedding.${imageColumn} IS NOT NULL
           AND ($6::text[] IS NULL OR asset.creator = ANY($6))
           AND ($7::text[] IS NULL OR asset.id = ANY($7))
           AND (($8::text[] IS NULL AND $9::text[] IS NULL)
@@ -153,6 +189,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
 
   async textSearch(query: TextQuery): Promise<ScoredAsset[]> {
     if (!query.text.trim()) return [];
+    const imageColumn = this.imageColumn();
     const result = await this.pool.query<{
       catalog_payload: MediaAsset;
       score: number;
@@ -169,7 +206,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
            FROM media_assets asset
            JOIN media_embeddings embedding ON embedding.asset_id = asset.id
           WHERE asset.library_category = $2
-            AND embedding.${this.imageColumn} IS NOT NULL
+            AND embedding.${imageColumn} IS NOT NULL
             AND ($4::text[] IS NULL OR asset.creator = ANY($4))
             AND ($5::text[] IS NULL OR asset.id = ANY($5))
             AND (($6::text[] IS NULL AND $7::text[] IS NULL)
@@ -244,6 +281,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
 
   async upsertIndexedAssets(entries: CatalogIndexEntry[]): Promise<void> {
     if (!entries.length) return;
+    const imageColumn = this.imageColumn();
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -314,13 +352,13 @@ export class PostgresCatalogRepository implements CatalogRepository {
         }
         await client.query(
         `INSERT INTO media_embeddings (
-           asset_id, model_name, ${this.imageColumn}
+           asset_id, model_name, ${imageColumn}
          ) VALUES ($1, $2, $3)
          ON CONFLICT (asset_id) DO UPDATE SET
            model_name = EXCLUDED.model_name,
-           ${this.imageColumn} = COALESCE(
-             EXCLUDED.${this.imageColumn},
-             media_embeddings.${this.imageColumn}
+           ${imageColumn} = COALESCE(
+             EXCLUDED.${imageColumn},
+             media_embeddings.${imageColumn}
            ),
            embedded_at = now()`,
         [

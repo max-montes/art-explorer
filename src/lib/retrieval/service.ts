@@ -11,6 +11,7 @@ import {
   type SearchWeights,
 } from "@/lib/catalog/types";
 import type { EmbeddingProvider } from "./providers";
+import type { QueryProviderSelector } from "./model-router";
 import {
   analyzeCatalogQuery,
   buildCatalogLexicon,
@@ -43,6 +44,7 @@ export class RetrievalService {
   constructor(
     private readonly repository: CatalogRepository,
     private readonly provider: EmbeddingProvider,
+    private readonly selectQueryProvider?: QueryProviderSelector,
   ) {}
 
   async search(
@@ -66,10 +68,13 @@ export class RetrievalService {
       if (exactTitleResult) return exactTitleResult;
     }
     const embeddingQuery = intent.residualQuery;
-    let imageVector = new Array<number>(this.provider.imageDimensions).fill(0);
+    const queryProvider = embeddingQuery
+      ? (this.selectQueryProvider?.(embeddingQuery) ?? this.provider)
+      : this.provider;
+    let imageVector = new Array<number>(queryProvider.imageDimensions).fill(0);
     if (embeddingQuery) {
       try {
-        imageVector = (await this.provider.embedImageText([embeddingQuery]))[0];
+        imageVector = (await queryProvider.embedImageText([embeddingQuery]))[0];
       } catch (error) {
         throw new Error(
           `The image channel failed to embed the query: ${
@@ -110,6 +115,7 @@ export class RetrievalService {
       limit: baseLimit,
       channel,
       imageVector: searchImageVector,
+      imageSpace: queryProvider.imageSpace,
       ...facetFilters,
     });
     const pinWeights = IMAGE_SEARCH_WEIGHTS;
@@ -120,6 +126,7 @@ export class RetrievalService {
           limit: Math.min(limit, intent.titleAssetIds.length),
           channel,
           imageVector: searchImageVector,
+          imageSpace: queryProvider.imageSpace,
           assetIds: intent.titleAssetIds,
         })
       : [];
@@ -137,6 +144,7 @@ export class RetrievalService {
       query: normalized,
       channel,
       ranking,
+      embeddingModel: queryProvider.name,
       weights: activeWeights,
       results,
       pills,
@@ -161,7 +169,7 @@ export class RetrievalService {
   ): Promise<SearchResult | null> {
     const [asset, vectors] = await Promise.all([
       this.repository.findAsset(assetId),
-      this.repository.findAssetVectors(assetId),
+      this.repository.findAssetVectors(assetId, this.provider.imageSpace),
     ]);
     if (!asset || !vectors) return null;
 
@@ -186,6 +194,7 @@ export class RetrievalService {
             excludeAssetId: asset.id,
             mode: "whole",
             imageVector,
+            imageSpace: this.provider.imageSpace,
           });
     const pinned: ScoredAsset = {
       asset,
@@ -202,6 +211,7 @@ export class RetrievalService {
       query,
       channel,
       ranking,
+      embeddingModel: this.provider.name,
       weights,
       results,
       pills: await this.pillsFor(query, results),
@@ -212,7 +222,7 @@ export class RetrievalService {
   async similar(assetId: string, limit = 12): Promise<SearchResult> {
     const [asset, vectors] = await Promise.all([
       this.repository.findAsset(assetId),
-      this.repository.findAssetVectors(assetId),
+      this.repository.findAssetVectors(assetId, this.provider.imageSpace),
     ]);
     if (!asset || !vectors) {
       throw new Error(`Asset not found: ${assetId}`);
@@ -231,6 +241,7 @@ export class RetrievalService {
       // The source's whole character is the signal, not any single label.
       mode: "whole",
       imageVector: vectors.image,
+      imageSpace: this.provider.imageSpace,
     });
     // Suggest from the source asset's own associations, then its neighbours.
     const pills = await this.pillsFor(asset.title, [
@@ -241,6 +252,7 @@ export class RetrievalService {
       query: `Similar to ${asset.title}`,
       channel,
       ranking: "image",
+      embeddingModel: this.provider.name,
       weights,
       results,
       pills,

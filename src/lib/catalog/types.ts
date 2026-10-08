@@ -193,6 +193,7 @@ export interface SearchResult {
   query: string;
   channel: Channel;
   ranking: SearchRanking;
+  embeddingModel?: string;
   weights: SearchWeights;
   results: ScoredAsset[];
   pills: ConceptPill[];

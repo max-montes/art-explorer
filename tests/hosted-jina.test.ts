@@ -41,7 +41,7 @@ describe("hosted Jina provider", () => {
     const body = JSON.parse(request.mock.calls[0][1].body);
     expect(body).toMatchObject({
       model: "jina-clip-v2",
-      input: ["joy", "tension"],
+      input: [{ text: "joy" }, { text: "tension" }],
       task: "retrieval.query",
       dimensions: 256,
       normalized: true,
@@ -77,5 +77,42 @@ describe("hosted Jina provider", () => {
       { image: "aGVsbG8=" },
     ]);
     expect(body).not.toHaveProperty("task");
+  });
+
+  it("retries rate limits without changing input order", async () => {
+    const vector = Array.from({ length: 256 }, (_, index) =>
+      index === 0 ? 1 : 0,
+    );
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response("slow down", {
+          status: 429,
+          headers: { "retry-after": "0" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ data: [{ index: 0, embedding: vector }] }),
+          { status: 200 },
+        ),
+      );
+    vi.stubGlobal("fetch", request);
+
+    const provider = new HostedJinaEmbeddingProvider("test-key");
+    await expect(provider.embedImageText(["joy"])).resolves.toEqual([vector]);
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("surfaces permanent API failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("invalid input", { status: 400 })),
+    );
+
+    const provider = new HostedJinaEmbeddingProvider("test-key");
+    await expect(provider.embedImageText(["joy"])).rejects.toThrow(
+      "Jina API failed (400): invalid input",
+    );
   });
 });

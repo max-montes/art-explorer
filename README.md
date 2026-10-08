@@ -22,6 +22,11 @@ uses PostgreSQL with pgvector for direct cosine ranking. Title, artist, date,
 culture, nationality, and medium are resolved first as deterministic pins or
 hard filters rather than blended into the image score.
 
+Jina queries use the model's retrieval-query instruction. Named art movements
+and style phrases are automatically routed to the retained SigLIP index, while
+general natural-language and image-similarity searches stay on Jina. The API
+response reports the embedding model used for each search.
+
 The catalog is paintings only, from European Paintings, The American Wing, the
 Robert Lehman Collection, and Modern and Contemporary Art. Sculptures,
 ceramics, vases, decorative objects, and other departments are excluded.
@@ -93,6 +98,16 @@ key.
 Open [http://localhost:3000/eval.html](http://localhost:3000/eval.html) to label
 direct Jina candidates as relevant, unsure, or not relevant. Judgments are
 saved in the browser and can be exported as JSON.
+
+After a retrieval change, generate a five-result set while reusing previous
+judgments. Seeded evaluations are intentionally marked non-blinded:
+
+```bash
+npm run eval:prepare-current -- /path/to/older-labels.json
+```
+
+Then open
+[the current-search evaluator](http://localhost:3000/eval.html?dataset=/current-search-eval-data.json).
 
 ## Provenance
 

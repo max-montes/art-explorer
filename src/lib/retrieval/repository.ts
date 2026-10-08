@@ -8,6 +8,7 @@ import type {
   ScoredAsset,
   SearchWeights,
 } from "@/lib/catalog/types";
+import type { ImageEmbeddingSpace } from "./providers";
 
 export interface VectorQuery {
   vectors: AssetVectors;
@@ -23,6 +24,7 @@ export interface VectorQuery {
    */
   mode?: "labels" | "whole";
   imageVector?: number[];
+  imageSpace?: ImageEmbeddingSpace;
   creatorNames?: string[];
   assetIds?: string[];
   cultures?: string[];
@@ -55,7 +57,10 @@ export interface CatalogRepository {
   prepare(): Promise<void>;
   catalogAssets(channel: Channel): Promise<MediaAsset[]>;
   findAsset(id: string): Promise<MediaAsset | null>;
-  findAssetVectors(id: string): Promise<AssetVectors | null>;
+  findAssetVectors(
+    id: string,
+    imageSpace?: ImageEmbeddingSpace,
+  ): Promise<AssetVectors | null>;
   search(query: VectorQuery): Promise<ScoredAsset[]>;
   textSearch(query: TextQuery): Promise<ScoredAsset[]>;
   concepts(): Promise<Concept[]>;

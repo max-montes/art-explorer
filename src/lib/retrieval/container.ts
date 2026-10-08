@@ -8,6 +8,7 @@ import { curatorDraftToMediaAsset } from "@/lib/curation/service";
 import type { CuratorIndexRecord } from "@/lib/curation/types";
 import { embedAsset } from "./documents";
 import { MemoryCatalogRepository } from "./memory-repository";
+import { createQueryProviderSelector } from "./model-router";
 import { PostgresCatalogRepository } from "./postgres-repository";
 import {
   createEmbeddingProvider,
@@ -28,8 +29,10 @@ const globalServices = globalThis as typeof globalThis & {
 
 async function createRuntime(): Promise<CatalogRuntime> {
   const provider = createEmbeddingProvider();
+  const usePostgres =
+    (process.env.CATALOG_REPOSITORY ?? "memory") === "postgres";
   const repository =
-    (process.env.CATALOG_REPOSITORY ?? "memory") === "postgres"
+    usePostgres
       ? new PostgresCatalogRepository(
           new Pool({
             connectionString:
@@ -45,10 +48,31 @@ async function createRuntime(): Promise<CatalogRuntime> {
     provider,
     persist: (record) => curatorIndex.upsert(record),
   });
+  const routeByQuery =
+    usePostgres &&
+    (process.env.QUERY_MODEL_ROUTING ?? "auto") === "auto" &&
+    (await (repository as PostgresCatalogRepository).supportsImageSpace(
+      "siglip",
+    ));
+  if (
+    usePostgres &&
+    (process.env.QUERY_MODEL_ROUTING ?? "auto") === "auto" &&
+    !routeByQuery
+  ) {
+    console.warn(
+      "[Retrieval] style routing disabled because SigLIP coverage is incomplete.",
+    );
+  }
   return {
     provider,
     repository,
-    service: new RetrievalService(repository, provider),
+    service: new RetrievalService(
+      repository,
+      provider,
+      routeByQuery
+        ? createQueryProviderSelector(provider)
+        : undefined,
+    ),
   };
 }
 

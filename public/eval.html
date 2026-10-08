@@ -407,10 +407,31 @@ transcendence</textarea>
             state.queries = dataset.queries.map(entry => entry.query);
             state.queryIndex = 0;
             state.completed = false;
+            state.ranking = `${dataset.blinded ? "blind" : "seeded"}:${dataset.id}`;
+            for (const seed of dataset.seedLabels || []) {
+              const queryData = dataset.queries.find(entry => entry.query === seed.query);
+              const asset = queryData?.candidates.find(candidate => candidate.id === seed.assetId);
+              if (!queryData || !asset) continue;
+              const labelKey = key(
+                seed.query,
+                { asset },
+                state.ranking,
+                queryData.candidates.length,
+              );
+              state.labels[labelKey] ??= {
+                ...seed,
+                rankingMethod: state.ranking,
+                resultLimit: queryData.candidates.length,
+                timestamp: new Date().toISOString(),
+              };
+            }
+            save();
             $("queries").value = state.queries.join("\n");
             $("queries").readOnly = true;
             $("limit").disabled = true;
-            document.querySelector(".fixed-value").textContent = "Blinded model comparison";
+            document.querySelector(".fixed-value").textContent = dataset.blinded
+              ? "Blinded model comparison"
+              : "Seeded retrieval evaluation";
             loadQuery();
           })
           .catch(error => setStatus(error.message));

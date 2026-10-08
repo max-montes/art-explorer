@@ -1,10 +1,16 @@
 export interface EmbeddingProvider {
   readonly name: string;
   readonly imageDimensions: number;
+  readonly imageSpace: ImageEmbeddingSpace;
   embedImages(images: string[]): Promise<number[][]>;
   embedImageText(texts: string[]): Promise<number[][]>;
 }
 export type ImageEmbeddingProvider = EmbeddingProvider;
+export type ImageEmbeddingSpace =
+  | "deterministic"
+  | "siglip"
+  | "jina-local"
+  | "jina-hosted";
 
 const SEMANTIC_EXPANSIONS: Record<string, string[]> = {
   plato: ["classical philosophy", "reason", "philosopher"],
@@ -47,9 +53,15 @@ const normalize = (vector: number[]) => {
     : vector.map((component) => component / magnitude);
 };
 
+export const JINA_RETRIEVAL_QUERY_PREFIX =
+  "Represent the query for retrieving evidence documents: ";
+export const jinaRetrievalQueries = (texts: string[]) =>
+  texts.map((text) => `${JINA_RETRIEVAL_QUERY_PREFIX}${text}`);
+
 export class DeterministicEmbeddingProvider implements EmbeddingProvider {
   readonly name = "deterministic-image-hash";
   readonly imageDimensions = 384;
+  readonly imageSpace = "deterministic" as const;
 
   async embedImageText(documents: string[]): Promise<number[][]> {
     return documents.map((document) => {
@@ -104,6 +116,7 @@ const onnxSessionOptions = () => ({
 export class TransformersEmbeddingProvider implements EmbeddingProvider {
   readonly name: string;
   readonly imageDimensions: number;
+  readonly imageSpace: ImageEmbeddingSpace;
   private readonly imageModel: string;
   private imageExtractor?: Promise<(input: string | string[]) => Promise<unknown>>;
   private imageText?: Promise<{
@@ -115,15 +128,21 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     embedText: (input: string[]) => Promise<unknown>;
   }>;
 
-  constructor() {
-    this.imageModel =
-      process.env.IMAGE_EMBEDDING_MODEL ??
-      "jinaai/jina-clip-v2";
+  constructor(
+    imageModel = process.env.IMAGE_EMBEDDING_MODEL ?? "jinaai/jina-clip-v2",
+    private readonly jinaRetrievalTask = true,
+  ) {
+    this.imageModel = imageModel;
     this.imageDimensions = /jina-clip-v2/i.test(this.imageModel)
       ? 256
       : /siglip/i.test(this.imageModel)
         ? 768
         : 512;
+    this.imageSpace = /jina-clip-v2/i.test(this.imageModel)
+      ? "jina-local"
+      : /siglip/i.test(this.imageModel)
+        ? "siglip"
+        : "deterministic";
     this.name = `transformers:${this.imageModel}`;
   }
 
@@ -209,10 +228,14 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       },
       embedText: async (input: string[]) =>
         model(
-          await processor(input, null, {
+          await processor(
+            this.jinaRetrievalTask ? jinaRetrievalQueries(input) : input,
+            null,
+            {
             padding: true,
             truncation: true,
-          }),
+            },
+          ),
         ),
     };
   }
@@ -244,10 +267,12 @@ interface JinaApiEmbedding {
   index: number;
   embedding: number[];
 }
+type JinaApiInput = string | { image: string } | { text: string };
 
 export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
   readonly name = "jina-api:jina-clip-v2";
   readonly imageDimensions = 256;
+  readonly imageSpace = "jina-hosted" as const;
   private readonly endpoint =
     process.env.JINA_API_URL ?? "https://api.jina.ai/v1/embeddings";
   private readonly batchSize = onnxThreadCount("JINA_API_BATCH_SIZE", 16);
@@ -269,11 +294,14 @@ export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
   }
 
   embedImageText(texts: string[]): Promise<number[][]> {
-    return this.embed(texts, "retrieval.query");
+    return this.embed(
+      texts.map((text) => ({ text })),
+      "retrieval.query",
+    );
   }
 
   private async embed(
-    input: Array<string | { image: string }>,
+    input: JinaApiInput[],
     task?: "retrieval.query",
   ): Promise<number[][]> {
     const vectors: number[][] = [];
@@ -290,7 +318,7 @@ export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
   }
 
   private async request(
-    input: Array<string | { image: string }>,
+    input: JinaApiInput[],
     task?: "retrieval.query",
   ): Promise<JinaApiEmbedding[]> {
     for (let attempt = 0; attempt < 4; attempt += 1) {
@@ -356,7 +384,10 @@ export function createEmbeddingProvider(): EmbeddingProvider {
     return new DeterministicEmbeddingProvider();
   }
   if (provider === "transformers") {
-    return new TransformersEmbeddingProvider();
+    return new TransformersEmbeddingProvider(
+      undefined,
+      (process.env.JINA_QUERY_TASK ?? "on") !== "off",
+    );
   }
   if (provider === "jina-api") {
     return new HostedJinaEmbeddingProvider();
