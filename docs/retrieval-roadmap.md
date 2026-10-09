@@ -13,15 +13,16 @@ have been reproduced where they fit the current catalog.
 - Named movements and style phrases automatically route to the retained
   SigLIP image index. General natural-language and image-similarity searches
   remain on Jina, and every API response identifies the model that served it.
-- General Jina text searches fuse exact image and title-vector rankings with
-  reciprocal rank fusion (`k=20`), matching Semantic Art Search's current
-  default architecture. Exact-title similarity searches remain image-only,
-  and SigLIP-routed style queries remain isolated from the Jina title space.
+- General semantic searches rank only the artwork image embedding. Title-vector
+  fusion remains available as evaluation tooling, but is intentionally not
+  used in production because titles can leak the answer instead of measuring
+  visual or conceptual relevance. Exact-title lookup remains a deterministic
+  navigation feature before image-only neighbor search.
 - Jina title vectors can be backfilled resumably with
   `npm run catalog:reindex:titles`. Automated weak-supervision checks are
   reproducible with `npm run eval:catalog-ground-truth`. New local-Jina
   manifest ingestion writes the matching title vector in the same batch, so
-  incremental imports cannot silently disable hybrid coverage.
+  incremental imports keep the experimental title-vector corpus current.
 - Single-token artist aliases now scale with catalog evidence: prolific names
   such as `Homer`, `Monet`, and `Rembrandt` remain deterministic creator
   filters even when they appear in several unrelated titles, while common
@@ -91,7 +92,8 @@ have been reproduced where they fit the current catalog.
   7.8% to 15.6%, description P@5 from 5.0% to 13.3%, description hit@20 from
   38.3% to 81.7%, title nDCG@10 from 15.3% to 61.8%, and creator P@5 from 4.0%
   to 6.0%. These are noisy catalog-derived labels rather than human relevance
-  judgments, but the gains are broad enough to support the production hybrid.
+  judgments. The result is retained as experimental evidence, but title
+  leakage makes it unsuitable for the image-only production objective.
 - On the existing 12-query human-labeled abstract pool, the same RRF setting
   improved strict P@5 from 40.6% to 43.9%, lenient P@5 from 57.2% to 60.6%,
   strict nDCG@5 from 82.4% to 83.3%, and lenient nDCG@5 from 84.7% to 91.7%.

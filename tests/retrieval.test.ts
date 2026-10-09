@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { MemoryCatalogRepository } from "@/lib/retrieval/memory-repository";
 import {
   DeterministicEmbeddingProvider,
-  type EmbeddingProvider,
 } from "@/lib/retrieval/providers";
 import type { VectorQuery } from "@/lib/retrieval/repository";
 import { RetrievalService } from "@/lib/retrieval/service";
@@ -33,17 +32,10 @@ describe("association-based retrieval", () => {
     });
   });
 
-  it("enables title-image fusion only when the repository supports it", async () => {
+  it("uses only image embeddings even when title vectors are available", async () => {
     const deterministic = new DeterministicEmbeddingProvider();
-    const provider: EmbeddingProvider = {
-      name: "test-jina",
-      imageDimensions: deterministic.imageDimensions,
-      imageSpace: "jina-local",
-      embedImages: (images) => deterministic.embedImages(images),
-      embedImageText: (texts) => deterministic.embedImageText(texts),
-    };
     const repository = Object.assign(
-      new MemoryCatalogRepository(curatedFixtures, [], [], provider),
+      new MemoryCatalogRepository(curatedFixtures, [], [], deterministic),
       { supportsTitleSearch: async () => true },
     );
     let observedQuery: VectorQuery | undefined;
@@ -53,13 +45,15 @@ describe("association-based retrieval", () => {
       return search(query);
     };
 
-    const response = await new RetrievalService(repository, provider).search(
-      "melancholy",
-    );
+    const response = await new RetrievalService(
+      repository,
+      deterministic,
+    ).search("melancholy");
 
-    expect(response.ranking).toBe("hybrid");
-    expect(observedQuery?.titleVector).toEqual(observedQuery?.imageVector);
-    expect(observedQuery?.rrfK).toBe(20);
+    expect(response.ranking).toBe("image");
+    expect(observedQuery?.imageVector).toBeDefined();
+    expect(observedQuery?.titleVector).toBeUndefined();
+    expect(observedQuery?.rrfK).toBeUndefined();
   });
 
   it("resolves a creator name through metadata, not subject associations", async () => {
