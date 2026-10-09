@@ -60,12 +60,17 @@
                 </small>
               </td>
               <td>
-                Scales to zero: no app CPU/RAM charges at zero replicas.
-                Running at 2 vCPUs and 4 GiB costs approximately $47/month at
-                idle rates or $158/month if actively billed continuously,
-                before free grants. With the full subscription grants
-                available: approximately $46 or $152 respectively.
-                <small>Actual cost depends on running time and idle eligibility.</small>
+                <strong>Our scale-to-zero setup: $0 compute while asleep.</strong>
+                At 2 vCPUs and 4 GiB, actively running compute costs about
+                $0.22/hour before free grants. For example, 10 active hours
+                per month cost about $2.16 before grants, plus any billable
+                idle time before scaling down.
+                <small>
+                  The roughly $47/month idle figure applies only if one
+                  replica is kept running all month instead of scaling to
+                  zero. It is not a minimum charge for our setup.
+                  Subscription free grants can reduce compute costs.
+                </small>
               </td>
             </tr>
             <tr>
@@ -141,10 +146,15 @@
                 2026-10-08. Monthly running estimates use 730 hours.
               </td>
               <td>
-                Sleeping floor: about $21/month plus model storage and logging.
-                With one warm replica: roughly $65-$85/month at light traffic,
-                or about $175/month if continuously active. Scale-to-zero
-                reduces app cost according to actual running hours.
+                <strong>Our scale-to-zero setup:</strong> about $21/month
+                fixed baseline, plus model storage, logging and app running
+                time. At 10 active hours per month, baseline plus active app
+                compute is about $23 before free grants and those extras.
+                <small>
+                  Optional always-on comparison, not our default:
+                  roughly $65-$85/month at light traffic with one warm
+                  replica, or about $175/month if continuously active.
+                </small>
                 <small>
                   Your $150/month Azure credit and Container Apps free grants
                   are shared with Art Guide and other subscription resources.

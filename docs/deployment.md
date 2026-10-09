@@ -204,6 +204,13 @@ for faster first visits. The $65-$85 allowance above assumes one warm replica;
 scale-to-zero instead depends on active running hours, plus the database,
 registry, and persistent storage charges.
 
+For the default scale-to-zero setup, zero replicas means $0 application
+compute. Active compute at 2 vCPUs and 4 GiB is about $0.216/hour before free
+grants. Ten active hours would cost about $2.16, plus any idle time before
+scaling down. The baseline is about $21/month for PostgreSQL and ACR, plus
+model storage, logging and runtime charges. The $47/month idle estimate
+describes a replica kept running for the whole month, not a minimum bill.
+
 The first visit after scale-to-zero starts a container; the first search then
 initializes ONNX. A fresh-process test on the development Mac with cached Jina
 files took 2.94 seconds for initialization plus the first query, versus 0.13
