@@ -47,94 +47,78 @@
             <tr>
               <th scope="row">Container App</th>
               <td>
-                Serves the website and API and runs local Jina/SigLIP query
-                inference. Starts on incoming traffic.
-                <small>
-                  Estimated cached cold visit: 20-60 seconds to first results,
-                  potentially longer. First-ever model downloads can take
-                  several minutes. These are planning estimates, not Azure
-                  measurements. Cached Jina initialization on the development
-                  Mac measured 2.94 seconds, versus 0.13 seconds for the next
-                  query. Azure scheduling, image pulls and model-file reads add
-                  time. The wake-up UI appears only after the frontend loads.
-                </small>
+                Runs the website and search models.
+                <small>Consumption plan, 2 CPUs / 4 GiB RAM: pay-as-you-go, not the smallest size.</small>
               </td>
               <td>
-                <strong>Our scale-to-zero setup: $0 compute while asleep.</strong>
-                At 2 vCPUs and 4 GiB, actively running compute costs about
-                $0.22/hour before free grants. For example, 10 active hours
-                per month cost about $2.16 before grants, plus any billable
-                idle time before scaling down.
-                <small>
-                  The roughly $47/month idle figure applies only if one
-                  replica is kept running all month instead of scaling to
-                  zero. It is not a minimum charge for our setup.
-                  Subscription free grants can reduce compute costs.
-                </small>
+                <strong>$0 compute at zero replicas.</strong> About $0.22 per active hour.
+                <small>Estimated wake-up: 20-60 seconds with cached models; first download can take minutes. Not yet measured on Azure.</small>
               </td>
             </tr>
             <tr>
               <th scope="row">Container Apps environment</th>
-              <td>Provides networking and runtime infrastructure for the app.</td>
               <td>
-                No separate base compute fee for our basic Consumption setup.
-                Dedicated profiles and optional networking features can add fees.
+                Hosts the app's runtime and networking.
+                <small>Basic Consumption setup: no dedicated compute.</small>
+              </td>
+              <td>
+                No separate base compute fee.
               </td>
             </tr>
             <tr>
               <th scope="row">PostgreSQL B1ms</th>
               <td>
-                Stores artwork metadata and embeddings and ranks image vectors.
-                Provides 1 vCore, 2 GiB RAM and 32 GiB provisioned storage.
+                Stores artworks and embeddings; finds matching images.
+                <small>B1ms Burstable: smallest compute size. 32 GiB: minimum storage.</small>
               </td>
               <td>
-                Approximately $16/month: $12.41 compute plus $3.68 storage.
-                No automatic scale-to-zero; kept running while the app sleeps.
-                Manual stopping suspends compute charges, but searches cannot
-                automatically wake the database. Storage charges continue.
-                <small>
-                  No high availability or replicas. Backups within the
-                  included allowance incur no additional storage charge.
-                </small>
+                <strong>About $16/month.</strong> Stays on; no automatic scale-to-zero.
               </td>
             </tr>
             <tr>
               <th scope="row">Azure Files and storage account</th>
               <td>
-                Keeps downloaded model files across container restarts, avoiding
-                repeated model downloads.
+                Keeps model files so wake-ups do not require downloading them again.
+                <small>Standard LRS: basic, locally redundant storage.</small>
               </td>
               <td>
-                Does not scale to zero. Stored-data charges continue while the
-                app sleeps; transactions are charged when files are accessed.
-                Depends on actual stored bytes and file activity.
+                Small usage-based storage and access charges, including while asleep.
               </td>
             </tr>
             <tr>
               <th scope="row">Container Registry, Basic</th>
-              <td>Stores the application image used to start containers.</td>
               <td>
-                Approximately $5/month even while the app sleeps, plus
-                applicable extra storage and transfer charges.
+                Stores the packaged application.
+                <small>Basic: lowest paid registry tier.</small>
+              </td>
+              <td>
+                <strong>About $5/month.</strong> Charged even while the app sleeps.
               </td>
             </tr>
             <tr>
               <th scope="row">Log Analytics</th>
-              <td>Collects application logs for troubleshooting.</td>
               <td>
-                Usage-based. Little or no new ingestion while asleep.
-                Billable ingestion and retention depend on usage; the template
-                sets a 0.1 GB daily ingestion cap and 30-day retention.
+                Saves logs for troubleshooting.
+                <small>Pay-as-you-go: no fixed tier. Daily ingestion cap configured.</small>
+              </td>
+              <td>
+                Usage-based; depends on log volume.
               </td>
             </tr>
             <tr>
               <th scope="row">Managed identity and role assignment</th>
-              <td>Lets the app pull its image without registry passwords.</td>
+              <td>
+                Gives the app permission to download its package.
+                <small>No paid tier.</small>
+              </td>
               <td>No separate charge.</td>
             </tr>
             <tr>
               <th scope="row">Resource group</th>
-              <td>Organizes Art Explorer's Azure resources.</td>
+              <td>
+                Groups the resources together.
+                <small>No paid tier.</small>
+              </td>
               <td>Free.</td>
             </tr>
           </tbody>
@@ -142,24 +126,12 @@
             <tr>
               <th scope="row">Total estimate</th>
               <td>
-                West US 3 public USD pay-as-you-go estimates, checked
-                2026-10-08. Monthly running estimates use 730 hours.
+                Our scale-to-zero setup.
+                <small>West US 3 estimates, October 2026, before free grants.</small>
               </td>
               <td>
-                <strong>Our scale-to-zero setup:</strong> about $21/month
-                fixed baseline, plus model storage, logging and app running
-                time. At 10 active hours per month, baseline plus active app
-                compute is about $23 before free grants and those extras.
-                <small>
-                  Optional always-on comparison, not our default:
-                  roughly $65-$85/month at light traffic with one warm
-                  replica, or about $175/month if continuously active.
-                </small>
-                <small>
-                  Your $150/month Azure credit and Container Apps free grants
-                  are shared with Art Guide and other subscription resources.
-                  Estimates are not spending caps or guaranteed bills.
-                </small>
+                <strong>About $21/month baseline</strong> + app runtime, storage and logs.
+                <small>Your $150 credit is shared with other Azure projects.</small>
               </td>
             </tr>
           </tfoot>
