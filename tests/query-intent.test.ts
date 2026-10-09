@@ -14,9 +14,27 @@ const catalog = [
     "Rembrandt (Rembrandt van Rijn)",
     ["Self-portraits"],
   ),
+  curatedAsset("rembrandt-peale", "George Washington", "Rembrandt Peale", [
+    "Portraits",
+  ]),
   curatedAsset("homer-1", "The Gulf Stream", "Winslow Homer", ["Ships"]),
+  curatedAsset("homer-2", "Northeaster", "Winslow Homer", ["Sea"]),
+  curatedAsset("homer-3", "The Herring Net", "Winslow Homer", ["Fishing"]),
+  curatedAsset("homer-4", "Breezing Up", "Winslow Homer", ["Sailing"]),
+  curatedAsset("homer-5", "The Fog Warning", "Winslow Homer", ["Sea"]),
+  curatedAsset("homer-6", "The Life Line", "Winslow Homer", ["Rescue"]),
+  curatedAsset("homer-7", "Undertow", "Winslow Homer", ["Sea"]),
+  curatedAsset("homer-8", "The Blue Boat", "Winslow Homer", ["Sailing"]),
+  curatedAsset("homer-9", "Sunlight on the Coast", "Winslow Homer", ["Coast"]),
+  curatedAsset("homer-10", "Watching the Breakers", "Winslow Homer", ["Sea"]),
   curatedAsset("other-homer", "Aristotle with a Bust of Homer", "Rembrandt", [
     "Philosophers",
+  ]),
+  curatedAsset("other-homer-2", "Homer Reciting Poetry", "Another Artist", [
+    "Poetry",
+  ]),
+  curatedAsset("other-homer-3", "The Apotheosis of Homer", "Another Artist", [
+    "Poetry",
   ]),
   curatedAsset("church-artist", "The Heart of the Andes", "Frederic Edwin Church", [
     "Landscapes",
@@ -81,7 +99,7 @@ describe("catalog query intent", () => {
     );
   });
 
-  it("allows a surname with at most two outside mentions", () => {
+  it("allows a prolific artist surname despite several outside mentions", () => {
     expect(analyzeCatalogQuery("Homer stormy sea", lexicon)).toMatchObject({
       creatorNames: ["Winslow Homer"],
       residualQuery: "stormy sea",

@@ -20,6 +20,10 @@ have been reproduced where they fit the current catalog.
 - Jina title vectors can be backfilled resumably with
   `npm run catalog:reindex:titles`. Automated weak-supervision checks are
   reproducible with `npm run eval:catalog-ground-truth`.
+- Single-token artist aliases now scale with catalog evidence: prolific names
+  such as `Homer`, `Monet`, and `Rembrandt` remain deterministic creator
+  filters even when they appear in several unrelated titles, while common
+  visual terms such as `church` remain embedding queries.
 - PostgreSQL search is exact at the current query shape: `EXPLAIN` confirms a
   sequential scan and full sort rather than an HNSW index scan. This matches
   Semantic Art Search's full-recall Qdrant setting and is inexpensive for

@@ -42,6 +42,7 @@ const containsPhrase = (text: string, phrase: string) =>
 interface CreatorAlias {
   alias: string;
   creators: string[];
+  workCount: number;
 }
 
 interface OriginAlias {
@@ -92,7 +93,14 @@ export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
   const nationalityAliases = new Map<string, Set<string>>();
   const mediumAliases = new Set<string>();
   const titles = new Map<string, string[]>();
+  const creatorCounts = new Map<string, number>();
   for (const asset of assets) {
+    if (!UNHELPFUL_CREATOR.test(asset.creator)) {
+      creatorCounts.set(
+        asset.creator,
+        (creatorCounts.get(asset.creator) ?? 0) + 1,
+      );
+    }
     for (const alias of creatorPhrases(asset.creator)) {
       const creators = aliases.get(alias) ?? new Set<string>();
       creators.add(asset.creator);
@@ -143,11 +151,37 @@ export const buildCatalogLexicon = (assets: MediaAsset[]): CatalogLexicon => {
     ...cultureAliases.keys(),
     ...nationalityAliases.keys(),
   ]);
+  const aliasesByFirstToken = new Map<
+    string,
+    Array<[string, Set<string>]>
+  >();
+  for (const entry of aliases) {
+    const [first, ...remaining] = entry[0].split(" ");
+    if (!first || !remaining.length) continue;
+    const related = aliasesByFirstToken.get(first) ?? [];
+    related.push(entry);
+    aliasesByFirstToken.set(first, related);
+  }
+  for (const [alias, creators] of aliases) {
+    if (alias.split(" ").length !== 1) continue;
+    for (const [, relatedCreators] of aliasesByFirstToken.get(alias) ?? []) {
+      if (![...relatedCreators].some((creator) => creators.has(creator))) {
+        continue;
+      }
+      for (const creator of relatedCreators) {
+        creators.add(creator);
+      }
+    }
+  }
   return {
     assets,
     creatorAliases: [...aliases].map(([alias, creators]) => ({
       alias,
       creators: [...creators],
+      workCount: [...creators].reduce(
+        (sum, creator) => sum + (creatorCounts.get(creator) ?? 0),
+        0,
+      ),
     })),
     originAliases: [...originAliases].map((alias) => ({
       alias,
@@ -172,6 +206,18 @@ const outsideMentions = (
           containsPhrase(normalizeCatalogText(label), alias.alias),
         )),
   ).length;
+};
+
+const isDistinctiveCreatorAlias = (
+  lexicon: CatalogLexicon,
+  entry: CreatorAlias,
+) => {
+  if (entry.alias.split(" ").length > 1) return true;
+  const outside = outsideMentions(lexicon, entry);
+  return (
+    outside <= 2 ||
+    (entry.workCount >= 5 && entry.workCount >= outside * 3)
+  );
 };
 
 export const analyzeCatalogQuery = (
@@ -214,11 +260,7 @@ export const analyzeCatalogQuery = (
     : lexicon.creatorAliases
         .filter(({ alias }) => containsPhrase(normalized, alias))
         .filter(({ alias }) => alias !== originMatch?.alias)
-        .filter(
-          (entry) =>
-            entry.alias.split(" ").length > 1 ||
-            outsideMentions(lexicon, entry) <= 2,
-        )
+        .filter((entry) => isDistinctiveCreatorAlias(lexicon, entry))
         .sort(
           (left, right) =>
             right.alias.split(" ").length - left.alias.split(" ").length,
