@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GlobalMediaDrop } from "@/components/global-media-drop";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -15,10 +14,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <GlobalMediaDrop>
-          <SiteHeader />
-          {children}
-        </GlobalMediaDrop>
+        <SiteHeader />
+        {children}
       </body>
     </html>
   );

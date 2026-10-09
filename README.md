@@ -15,6 +15,8 @@ open-access paintings from six museum collections.
   medium remain deterministic filters; titles do not influence general
   semantic ranking.
 - Suggests related ideas and visually similar paintings.
+- Includes Passage Explorer at `/passages` for artwork related to passages of
+  poetry and prose. The previous `/assistant` address redirects there.
 - Includes a small human-evaluation tool for tuning search quality.
 
 ## How it works
@@ -33,6 +35,10 @@ response reports the embedding model used for each search.
 The catalog is paintings only, restricted to open-access Western painting
 collections. Sculptures, ceramics, vases, decorative objects, and unrelated
 departments are excluded.
+
+This is a closed, curated collection: public navigation and browsing do not
+offer artwork uploads. Maintainers can access `/admin/curation` locally for
+catalog maintenance; drag-and-drop uploads are confined to that workbench.
 
 ## Run it
 

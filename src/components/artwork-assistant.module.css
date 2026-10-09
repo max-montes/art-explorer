@@ -200,6 +200,7 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(20px, 2.1vw, 29px);
   line-height: 1.4;
+  position: relative;
 }
 
 .annotatedText button {

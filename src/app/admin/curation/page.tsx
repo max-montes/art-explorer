@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CuratorWorkbench } from "@/components/curator-workbench";
+import { GlobalMediaDrop } from "@/components/global-media-drop";
 
 export const metadata: Metadata = {
   title: "Add artwork — Art Explorer",
@@ -16,5 +17,5 @@ export default function CurationPage() {
   ) {
     notFound();
   }
-  return <CuratorWorkbench />;
+  return <GlobalMediaDrop><CuratorWorkbench /></GlobalMediaDrop>;
 }

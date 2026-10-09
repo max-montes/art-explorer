@@ -26,16 +26,10 @@ export function SiteHeader() {
           Collection
         </Link>
         <Link
-          href="/assistant"
-          aria-current={pathname === "/assistant" ? "page" : undefined}
+          href="/passages"
+          aria-current={pathname === "/passages" ? "page" : undefined}
         >
-          Explore by idea
-        </Link>
-        <Link
-          href="/admin/curation"
-          aria-current={pathname.startsWith("/admin/curation") ? "page" : undefined}
-        >
-          Add artwork
+          Passage Explorer
         </Link>
       </nav>
     </header>

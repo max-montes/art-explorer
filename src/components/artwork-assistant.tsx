@@ -39,14 +39,18 @@ export function ArtworkAssistant() {
   const [activeOffset, setActiveOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const submit = async (event: FormEvent) => { event.preventDefault(); setLoading(true); setError(null); try { const result = await analyze(text); setAnalysis(result); setActiveId(result.passages[0]?.id ?? ""); } catch (e) { setError(e instanceof Error ? e.message : "Script analysis failed."); } finally { setLoading(false); } };
+  const submit = async (event: FormEvent) => { event.preventDefault(); setLoading(true); setError(null); try { const result = await analyze(text); setAnalysis(result); setActiveId(result.passages[0]?.id ?? ""); setActiveOffset(0); } catch (e) { setError(e instanceof Error ? e.message : "Script analysis failed."); } finally { setLoading(false); } };
+  const activatePassage = (id: string, button: HTMLButtonElement) => {
+    setActiveId(id);
+    setActiveOffset(button.offsetTop);
+  };
   const active = analysis?.passages.find((p) => p.id === activeId) ?? analysis?.passages[0];
   return <main className={styles.shell}>
-    <section className={styles.hero}><p>Artwork idea explorer</p><h1>Find the visual rhythm inside your words.</h1></section>
-    <form className={styles.composer} onSubmit={submit}><label htmlFor="script">Writing or idea list</label><textarea id="script" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste writing, a scene outline, or a set of concepts..." rows={7} /><div><span>{text.length.toLocaleString()} / 12,000 characters</span><button type="submit" disabled={loading || !text.trim()}>{loading ? "Mapping ideas..." : "Explore ideas"}</button></div></form>
+    <section className={styles.hero}><p>Passage Explorer</p><h1>Find the visual rhythm inside your words.</h1></section>
+    <form className={styles.composer} onSubmit={submit}><label htmlFor="script">Your writing</label><textarea id="script" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste poetry, prose, or a passage of writing..." rows={7} /><div><span>{text.length.toLocaleString()} / 12,000 characters</span><button type="submit" disabled={loading || !text.trim()}>{loading ? "Finding artwork..." : "Explore passages"}</button></div></form>
     {error && <div className={styles.error}>{error}</div>}
     {!analysis && !loading && !error && <section className={styles.empty}><span>01</span><h2>Your writing becomes a path through related artwork.</h2><p>Explore each passage to inspect its associations and related artwork.</p></section>}
     {loading && <section className={styles.loading}><div /><div /><div /></section>}
-    {analysis && !loading && analysis.passages.length > 0 && <section className={styles.workspace}><div className={styles.scriptPanel}><div className={styles.panelHeading}><span>Annotated writing</span><small>{analysis.passages.length} passages</small></div><div className={styles.annotatedText}>{analysis.passages.map((passage) => <button type="button" key={passage.id} className={passage.id === activeId ? styles.activePassage : ""} onPointerEnter={(e) => { setActiveId(passage.id); setActiveOffset(e.currentTarget.offsetTop); }} onFocus={() => setActiveId(passage.id)}>{passage.text}</button>)}</div></div><aside className={styles.mediaPanel}><div className={styles.panelHeading}><span>Related artwork</span><small>Hover text · drag artwork</small></div>{active && <PassageSuggestions passage={active} offset={activeOffset} />}</aside></section>}
+    {analysis && !loading && analysis.passages.length > 0 && <section className={styles.workspace}><div className={styles.scriptPanel}><div className={styles.panelHeading}><span>Annotated writing</span><small>{analysis.passages.length} passages</small></div><div className={styles.annotatedText}>{analysis.passages.map((passage) => <button type="button" key={passage.id} className={passage.id === activeId ? styles.activePassage : ""} onPointerEnter={(e) => activatePassage(passage.id, e.currentTarget)} onFocus={(e) => activatePassage(passage.id, e.currentTarget)}>{passage.text}</button>)}</div></div><aside className={styles.mediaPanel}><div className={styles.panelHeading}><span>Related artwork</span><small>Hover text · drag artwork</small></div>{active && <PassageSuggestions passage={active} offset={activeOffset} />}</aside></section>}
   </main>;
 }
