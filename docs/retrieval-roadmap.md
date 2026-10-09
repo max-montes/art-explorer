@@ -41,8 +41,6 @@ have been reproduced where they fit the current catalog.
 
 - Add explicit work-type filters rather than treating every Met object in the
   Paintings classification as the same kind of work.
-- Measure hubness correction or corpus-level similarity normalization for
-  paintings that recur across unrelated abstract queries.
 - Evaluate further museums only when they add distinct open-access Western
   painting coverage.
 
@@ -68,3 +66,9 @@ have been reproduced where they fit the current catalog.
   41 of 60 abstract-query top-five candidates. Existing judgments cover too few of
   those new candidates for a defensible automatic win claim, so it should be
   evaluated as a new ranking rather than scored only against old labels.
+- On the 17,384-work catalog, mean-similarity hubness correction reduced
+  repeated top-five slots across 41 prior queries from 42 to 19 and increased
+  unique results from 163 to 186. Only four corrected top-five results retained
+  applicable old judgments, so the correction remains a blinded experiment
+  rather than a production ranking change. Reproduce it with
+  `HUBNESS_VARIANT=mean-0.75 npm run eval:hubness -- <label export>`.

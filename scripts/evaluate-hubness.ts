@@ -223,19 +223,25 @@ async function main() {
       2,
     )}\n`,
   );
-  const selected = results.find(({ name }) => name === "mean-0.25");
-  if (!selected) throw new Error("The selected hubness variant is missing.");
+  const selectedVariant = process.env.HUBNESS_VARIANT ?? "mean-0.25";
+  const selected = results.find(({ name }) => name === selectedVariant);
+  if (!selected) {
+    throw new Error(
+      `Unknown HUBNESS_VARIANT "${selectedVariant}". Choose one of: ` +
+        results.map(({ name }) => name).join(", "),
+    );
+  }
   const assetsById = new Map(assets.map(({ id, asset }) => [id, asset]));
   await writeFile(
     "public/hubness-eval-data.json",
     `${JSON.stringify(
       {
         version: 1,
-        id: "jina-mean-025-full-catalog",
+        id: `jina-${selectedVariant.replaceAll(".", "")}-full-catalog`,
         generatedAt: new Date().toISOString(),
         blinded: true,
         candidateSource:
-          "Full-catalog Jina cosine minus 0.25 times each image's mean similarity to 50 independent reference queries",
+          `Full-catalog Jina hubness experiment using ${selectedVariant}`,
         seedLabels: selected.rankings.flatMap(({ query, ranked }) =>
           ranked.flatMap(({ id, title }, index) => {
             const label = labelMap.get(`${query}::${id}`);
