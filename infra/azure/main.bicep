@@ -17,7 +17,7 @@ param deployApp bool = false
 param appImage string = ''
 
 @allowed([0, 1])
-param minReplicas int = 1
+param minReplicas int = 0
 
 param restoreClientIp string = ''
 

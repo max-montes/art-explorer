@@ -17,6 +17,7 @@ import {
 } from "@/lib/catalog/types";
 import { setMediaDragData } from "@/lib/media/drag-export";
 import { mediaPreviewUrl } from "@/lib/media/preview-url";
+import { fetchSearchResult } from "@/lib/retrieval/client-request";
 import { FullscreenButton, Lightbox } from "./lightbox";
 import { Masonry } from "./masonry";
 
@@ -35,22 +36,6 @@ const DEFAULT_COLUMNS = 3;
 const COLUMNS_KEY = "commonplace:columns";
 /** Narrowest a column may get before the masonry refuses to add more. */
 const MIN_TILE_WIDTH = 160;
-
-async function getJson(url: string): Promise<SearchResult> {
-  const response = await fetch(url);
-  const payload: unknown = await response.json();
-  if (!response.ok) {
-    const message =
-      typeof payload === "object" &&
-      payload !== null &&
-      "error" in payload &&
-      typeof payload.error === "string"
-        ? payload.error
-        : "Search failed.";
-    throw new Error(message);
-  }
-  return payload as SearchResult;
-}
 
 function ResultCard({
   result,
@@ -202,6 +187,7 @@ export function SearchExperience() {
   const dataRef = useRef<SearchResult | null>(null);
   dataRef.current = data;
   const [loading, setLoading] = useState(true);
+  const [wakingUp, setWakingUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MediaAsset | null>(null);
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
@@ -245,7 +231,10 @@ export function SearchExperience() {
         if (value === null) url.searchParams.delete(key);
         else url.searchParams.set(key, value);
       }
-      if (url.href === window.location.href) return;
+      if (url.href === window.location.href) {
+        window.dispatchEvent(new PopStateEvent("popstate"));
+        return;
+      }
       if (mode === "push") window.history.pushState(null, "", url);
       else window.history.replaceState(null, "", url);
       window.dispatchEvent(new PopStateEvent("popstate"));
@@ -273,26 +262,38 @@ export function SearchExperience() {
     // Each load gets a ticket; only the newest may touch state, so a slow
     // response from a search you have already navigated away from is dropped.
     let latest = 0;
+    let activeRequest: AbortController | undefined;
+    let wakeTimer: ReturnType<typeof setTimeout> | undefined;
     const load = async () => {
       const ticket = ++latest;
+      activeRequest?.abort();
+      clearTimeout(wakeTimer);
+      const controller = new AbortController();
+      activeRequest = controller;
       const params = new URLSearchParams(window.location.search);
       const similarId = params.get("similar");
       const query = params.get("q")?.trim() || STARTING_QUERY;
 
       setLoading(true);
+      setWakingUp(false);
       setError(null);
+      wakeTimer = setTimeout(() => {
+        if (ticket === latest) setWakingUp(true);
+      }, 5000);
       try {
         if (similarId) {
-          const result = await getJson(
+          const result = await fetchSearchResult(
             `/api/assets/${encodeURIComponent(similarId)}/similar`,
+            controller.signal,
           );
           if (ticket !== latest) return;
           setInput(result.query);
           setData(result);
         } else {
           setInput(query);
-          const result = await getJson(
+          const result = await fetchSearchResult(
             `/api/search?q=${encodeURIComponent(query)}`,
+            controller.signal,
           );
           if (ticket !== latest) return;
           setData(result);
@@ -305,7 +306,11 @@ export function SearchExperience() {
             : "Semantic search failed.",
         );
       } finally {
-        if (ticket === latest) setLoading(false);
+        if (ticket === latest) {
+          clearTimeout(wakeTimer);
+          setLoading(false);
+          setWakingUp(false);
+        }
       }
     };
 
@@ -314,6 +319,8 @@ export function SearchExperience() {
     window.addEventListener("popstate", onPopState);
     return () => {
       latest++;
+      activeRequest?.abort();
+      clearTimeout(wakeTimer);
       window.removeEventListener("popstate", onPopState);
     };
   }, []);
@@ -437,7 +444,7 @@ export function SearchExperience() {
                 autoComplete="off"
               />
               <button type="submit" disabled={loading || !input.trim()}>
-                {loading ? "Searching" : "Search"}
+                {loading ? (wakingUp ? "Waking up" : "Searching") : "Search"}
               </button>
             </div>
           </div>
@@ -484,7 +491,22 @@ export function SearchExperience() {
           </div>
         )}
 
-        {loading && <LoadingGrid />}
+        {loading && (
+          <>
+            <div className="search-loading-status" role="status">
+              <strong>
+                {wakingUp ? "Waking up Art Explorer..." : "Exploring the collection..."}
+              </strong>
+              {wakingUp && (
+                <p>
+                  The explorer may be waking up or preparing its search models.
+                  Keep this tab open; your results will appear automatically.
+                </p>
+              )}
+            </div>
+            <LoadingGrid />
+          </>
+        )}
 
         {!loading && error && (
           <div className="state-panel error-panel">

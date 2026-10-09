@@ -374,6 +374,15 @@ a {
   column-width: var(--tile-width, 360px);
 }
 
+.search-loading-status {
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.search-loading-status p {
+  margin-top: 8px;
+}
+
 .result-card {
   width: 100%;
 }

@@ -197,10 +197,33 @@ logs all affect usage. Set subscription budget notifications in Azure Cost
 Management before applying; alerts do not stop resources or cap spending.
 Other projects on the subscription also consume the credit.
 
-`minReplicas` defaults to one to avoid frequent cold model downloads/loading.
-Set it to zero in `parameters.prod.json` to save idle cost at the expense of
-slow first searches. First-use model initialization also happens with one
-replica: `/api/health` verifies the database, not loaded-model readiness.
+`minReplicas` defaults to zero to stop application compute billing while idle.
+PostgreSQL does not automatically scale to zero and remains about $16/month.
+Set `minReplicas` to one in `parameters.prod.json` to trade idle compute cost
+for faster first visits. The $65-$85 allowance above assumes one warm replica;
+scale-to-zero instead depends on active running hours, plus the database,
+registry, and persistent storage charges.
+
+The first visit after scale-to-zero starts a container; the first search then
+initializes ONNX. A fresh-process test on the development Mac with cached Jina
+files took 2.94 seconds for initialization plus the first query, versus 0.13
+seconds for the next query. This is not an Azure benchmark: CPU, Azure Files
+throughput, image pull, scheduling and network overhead change the result.
+Allow approximately 20-60 seconds for a cached cold visit as a provisional
+planning range, potentially longer; first-ever model downloads can take
+minutes. Measure the real deployment before promising a latency target.
+
+The UI shows "Waking up Art Explorer..." after five seconds of waiting.
+Search and similarity requests retry 502/503/504 twice, stop waiting after two
+minutes, and show a retry action on failure. New navigation cancels the old
+request. This message does not claim a known cold start: a slow search can
+also trigger it. `/api/health` verifies the database, not loaded-model readiness.
+
+The same container serves the frontend, so a first visitor cannot see the
+message until the initial HTML and JavaScript load. An instant wake-up screen
+while the web container itself starts requires a separately hosted static
+frontend. Existing open tabs can display the message immediately when a later
+search wakes the backend.
 
 Before publishing the URL, verify `/api/health`, then `ships`, `flags`,
 `battle`, and a style query such as `impressionism`. Confirm remote curation
