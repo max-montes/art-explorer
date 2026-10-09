@@ -19,10 +19,7 @@ async function main() {
     Number(process.env.EMBEDDING_BATCH_SIZE ?? 128),
   );
   const limit = Math.max(0, Number(process.env.REINDEX_LIMIT ?? 0));
-  const provider = new TransformersEmbeddingProvider(
-    "jinaai/jina-clip-v2",
-    false,
-  );
+  const provider = new TransformersEmbeddingProvider("jinaai/jina-clip-v2");
 
   try {
     await pool.query(
@@ -44,7 +41,7 @@ async function main() {
 
     for (let start = 0; start < pending.length; start += batchSize) {
       const batch = pending.slice(start, start + batchSize);
-      const vectors = await provider.embedImageText(
+      const vectors = await provider.embedImageDocuments(
         batch.map(({ title }) => title),
       );
       if (vectors.length !== batch.length) {

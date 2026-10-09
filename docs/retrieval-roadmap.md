@@ -19,7 +19,9 @@ have been reproduced where they fit the current catalog.
   and SigLIP-routed style queries remain isolated from the Jina title space.
 - Jina title vectors can be backfilled resumably with
   `npm run catalog:reindex:titles`. Automated weak-supervision checks are
-  reproducible with `npm run eval:catalog-ground-truth`.
+  reproducible with `npm run eval:catalog-ground-truth`. New local-Jina
+  manifest ingestion writes the matching title vector in the same batch, so
+  incremental imports cannot silently disable hybrid coverage.
 - Single-token artist aliases now scale with catalog evidence: prolific names
   such as `Homer`, `Monet`, and `Rembrandt` remain deterministic creator
   filters even when they appear in several unrelated titles, while common

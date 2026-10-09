@@ -79,6 +79,28 @@ describe("hosted Jina provider", () => {
     expect(body).not.toHaveProperty("task");
   });
 
+  it("embeds title documents with the retrieval passage task", async () => {
+    const vector = Array.from({ length: 256 }, (_, index) =>
+      index === 0 ? 1 : 0,
+    );
+    const request = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ data: [{ index: 0, embedding: vector }] }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", request);
+
+    const provider = new HostedJinaEmbeddingProvider("test-key");
+    await provider.embedImageDocuments(["Misty Sea"]);
+
+    const body = JSON.parse(request.mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      input: [{ text: "Misty Sea" }],
+      task: "retrieval.passage",
+    });
+  });
+
   it("retries rate limits without changing input order", async () => {
     const vector = Array.from({ length: 256 }, (_, index) =>
       index === 0 ? 1 : 0,

@@ -4,6 +4,7 @@ export interface EmbeddingProvider {
   readonly imageSpace: ImageEmbeddingSpace;
   embedImages(images: string[]): Promise<number[][]>;
   embedImageText(texts: string[]): Promise<number[][]>;
+  embedImageDocuments?(texts: string[]): Promise<number[][]>;
 }
 export type ImageEmbeddingProvider = EmbeddingProvider;
 export type ImageEmbeddingSpace =
@@ -76,6 +77,10 @@ export class DeterministicEmbeddingProvider implements EmbeddingProvider {
     });
   }
 
+  embedImageDocuments(documents: string[]): Promise<number[][]> {
+    return this.embedImageText(documents);
+  }
+
   embedImages(images: string[]): Promise<number[][]> {
     return this.embedImageText(images);
   }
@@ -125,7 +130,7 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   }>;
   private jina?: Promise<{
     embedImages: (input: string[]) => Promise<unknown>;
-    embedText: (input: string[]) => Promise<unknown>;
+    embedText: (input: string[], retrievalTask?: boolean) => Promise<unknown>;
   }>;
 
   constructor(
@@ -172,6 +177,15 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
       (output as { pooler_output?: unknown }).pooler_output ??
       output;
     return this.tensorRows(values, "text").map(normalize);
+  }
+
+  async embedImageDocuments(texts: string[]): Promise<number[][]> {
+    if (!/jina-clip-v2/i.test(this.imageModel)) {
+      return this.embedImageText(texts);
+    }
+    if (!this.jina) this.jina = this.createJina();
+    const output = await (await this.jina).embedText(texts, false);
+    return this.jinaRows(output, "text");
   }
 
   private async createImageExtractor() {
@@ -226,10 +240,13 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
         );
         return model(await processor(null, images));
       },
-      embedText: async (input: string[]) =>
+      embedText: async (
+        input: string[],
+        retrievalTask = this.jinaRetrievalTask,
+      ) =>
         model(
           await processor(
-            this.jinaRetrievalTask ? jinaRetrievalQueries(input) : input,
+            retrievalTask ? jinaRetrievalQueries(input) : input,
             null,
             {
             padding: true,
@@ -268,6 +285,7 @@ interface JinaApiEmbedding {
   embedding: number[];
 }
 type JinaApiInput = string | { image: string } | { text: string };
+type JinaApiTask = "retrieval.passage" | "retrieval.query";
 
 export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
   readonly name = "jina-api:jina-clip-v2";
@@ -300,9 +318,16 @@ export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
     );
   }
 
+  embedImageDocuments(texts: string[]): Promise<number[][]> {
+    return this.embed(
+      texts.map((text) => ({ text })),
+      "retrieval.passage",
+    );
+  }
+
   private async embed(
     input: JinaApiInput[],
-    task?: "retrieval.query",
+    task?: JinaApiTask,
   ): Promise<number[][]> {
     const vectors: number[][] = [];
     for (let start = 0; start < input.length; start += this.batchSize) {
@@ -319,7 +344,7 @@ export class HostedJinaEmbeddingProvider implements EmbeddingProvider {
 
   private async request(
     input: JinaApiInput[],
-    task?: "retrieval.query",
+    task?: JinaApiTask,
   ): Promise<JinaApiEmbedding[]> {
     for (let attempt = 0; attempt < 4; attempt += 1) {
       const response = await fetch(this.endpoint, {

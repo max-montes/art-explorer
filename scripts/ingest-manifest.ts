@@ -124,7 +124,7 @@ async function main() {
           `The image index requires ${provider.imageDimensions}-dimensional embeddings.`,
         );
       }
-      const indexable = embedded
+      const imageEntries = embedded
         .map(({ documents, vectors }, index) => ({
           asset: assets[index],
           documents,
@@ -133,6 +133,26 @@ async function main() {
           documentVersion: 2,
         }))
         .filter(({ vectors }) => vectors.image?.length);
+      const titleVectors =
+        provider.imageSpace === "jina-local" &&
+        provider.embedImageDocuments &&
+        imageEntries.length
+          ? await provider.embedImageDocuments(
+              imageEntries.map(({ asset }) => asset.title),
+            )
+          : [];
+      if (titleVectors.length && titleVectors.length !== imageEntries.length) {
+        throw new Error(
+          `Jina returned ${titleVectors.length} title vectors for ` +
+            `${imageEntries.length} assets.`,
+        );
+      }
+      const indexable = imageEntries.map((entry, index) => ({
+        ...entry,
+        ...(titleVectors[index]
+          ? { titleVector: titleVectors[index] }
+          : {}),
+      }));
       await repository.upsertIndexedAssets(
         indexable,
       );

@@ -50,6 +50,7 @@ export interface TextQuery {
 export interface CatalogIndexEntry {
   asset: MediaAsset;
   vectors: AssetVectors;
+  titleVector?: number[];
   documents: EmbeddingDocuments;
   provider: string;
   documentVersion: number;

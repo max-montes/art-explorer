@@ -423,7 +423,7 @@ export class PostgresCatalogRepository implements CatalogRepository {
     try {
       await client.query("BEGIN");
       for (const entry of entries) {
-        const { asset, vectors } = entry;
+        const { asset, vectors, titleVector } = entry;
         await client.query(
         `INSERT INTO media_assets (
           id, media_type, library_category, title, creator, year_display, description, narrative,
@@ -489,19 +489,24 @@ export class PostgresCatalogRepository implements CatalogRepository {
         }
         await client.query(
         `INSERT INTO media_embeddings (
-           asset_id, model_name, ${imageColumn}
-         ) VALUES ($1, $2, $3)
+           asset_id, model_name, ${imageColumn}, jina_title_embedding
+         ) VALUES ($1, $2, $3, $4)
          ON CONFLICT (asset_id) DO UPDATE SET
            model_name = EXCLUDED.model_name,
            ${imageColumn} = COALESCE(
              EXCLUDED.${imageColumn},
              media_embeddings.${imageColumn}
            ),
+           jina_title_embedding = COALESCE(
+             EXCLUDED.jina_title_embedding,
+             media_embeddings.jina_title_embedding
+           ),
            embedded_at = now()`,
         [
           asset.id,
           entry.provider,
           vectors.image ? toVector(vectors.image) : null,
+          titleVector ? toVector(titleVector) : null,
         ],
         );
       }
