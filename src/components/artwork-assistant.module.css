@@ -171,6 +171,8 @@
 
 .mediaPanel {
   background: var(--panel);
+  display: flex;
+  flex-direction: column;
 }
 
 .panelHeading {
