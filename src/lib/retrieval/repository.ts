@@ -24,6 +24,8 @@ export interface VectorQuery {
    */
   mode?: "labels" | "whole";
   imageVector?: number[];
+  titleVector?: number[];
+  rrfK?: number;
   imageSpace?: ImageEmbeddingSpace;
   creatorNames?: string[];
   assetIds?: string[];
@@ -61,6 +63,7 @@ export interface CatalogRepository {
     id: string,
     imageSpace?: ImageEmbeddingSpace,
   ): Promise<AssetVectors | null>;
+  supportsTitleSearch?(): Promise<boolean>;
   search(query: VectorQuery): Promise<ScoredAsset[]>;
   textSearch(query: TextQuery): Promise<ScoredAsset[]>;
   concepts(): Promise<Concept[]>;

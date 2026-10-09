@@ -174,7 +174,7 @@ export interface SearchWeights {
   image?: number;
 }
 
-export type SearchRanking = "image" | "structured";
+export type SearchRanking = "hybrid" | "image" | "structured";
 
 export interface ScoredAsset {
   asset: MediaAsset;

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { MemoryCatalogRepository } from "@/lib/retrieval/memory-repository";
-import { DeterministicEmbeddingProvider } from "@/lib/retrieval/providers";
+import {
+  DeterministicEmbeddingProvider,
+  type EmbeddingProvider,
+} from "@/lib/retrieval/providers";
+import type { VectorQuery } from "@/lib/retrieval/repository";
 import { RetrievalService } from "@/lib/retrieval/service";
 import { curatedAsset, curatedFixtures } from "./fixtures/curated-catalog";
 
@@ -27,6 +31,35 @@ describe("association-based retrieval", () => {
       semantic: 0,
       metadata: 0,
     });
+  });
+
+  it("enables title-image fusion only when the repository supports it", async () => {
+    const deterministic = new DeterministicEmbeddingProvider();
+    const provider: EmbeddingProvider = {
+      name: "test-jina",
+      imageDimensions: deterministic.imageDimensions,
+      imageSpace: "jina-local",
+      embedImages: (images) => deterministic.embedImages(images),
+      embedImageText: (texts) => deterministic.embedImageText(texts),
+    };
+    const repository = Object.assign(
+      new MemoryCatalogRepository(curatedFixtures, [], [], provider),
+      { supportsTitleSearch: async () => true },
+    );
+    let observedQuery: VectorQuery | undefined;
+    const search = repository.search.bind(repository);
+    repository.search = async (query) => {
+      observedQuery = query;
+      return search(query);
+    };
+
+    const response = await new RetrievalService(repository, provider).search(
+      "melancholy",
+    );
+
+    expect(response.ranking).toBe("hybrid");
+    expect(observedQuery?.titleVector).toEqual(observedQuery?.imageVector);
+    expect(observedQuery?.rrfK).toBe(20);
   });
 
   it("resolves a creator name through metadata, not subject associations", async () => {

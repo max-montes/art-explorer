@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS media_embeddings (
   model_name text NOT NULL,
   image_embedding vector(768),
   jina_image_embedding vector(256),
+  jina_title_embedding vector(256),
   jina_hosted_image_embedding vector(256),
   embedded_at timestamptz NOT NULL DEFAULT now()
 );
@@ -115,6 +116,8 @@ ALTER TABLE media_embeddings
 ALTER TABLE media_embeddings
   ADD COLUMN IF NOT EXISTS jina_image_embedding vector(256);
 ALTER TABLE media_embeddings
+  ADD COLUMN IF NOT EXISTS jina_title_embedding vector(256);
+ALTER TABLE media_embeddings
   ADD COLUMN IF NOT EXISTS jina_hosted_image_embedding vector(256);
 
 DROP TABLE IF EXISTS asset_label_embeddings;
@@ -136,6 +139,8 @@ CREATE INDEX IF NOT EXISTS media_embeddings_image_hnsw_idx
   ON media_embeddings USING hnsw (image_embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS media_embeddings_jina_image_hnsw_idx
   ON media_embeddings USING hnsw (jina_image_embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS media_embeddings_jina_title_hnsw_idx
+  ON media_embeddings USING hnsw (jina_title_embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS media_embeddings_jina_hosted_image_hnsw_idx
   ON media_embeddings USING hnsw (jina_hosted_image_embedding vector_cosine_ops);
 

@@ -47,4 +47,51 @@ describe("PostgreSQL model routing", () => {
     await expect(repository.supportsImageSpace("siglip")).resolves.toBe(true);
     await expect(repository.supportsImageSpace("siglip")).resolves.toBe(false);
   });
+
+  it("uses reciprocal-rank fusion when a Jina title vector is provided", async () => {
+    const execute = vi.fn().mockResolvedValue({ rows: [] });
+    const repository = new PostgresCatalogRepository({
+      query: execute,
+    } as unknown as Pool);
+
+    await repository.search({
+      ...query,
+      imageSpace: "jina-local",
+      titleVector: [1, 0],
+      rrfK: 20,
+    });
+
+    expect(execute.mock.calls[0][0]).toContain("jina_title_embedding");
+    expect(execute.mock.calls[0][0]).toContain("FULL OUTER JOIN");
+    expect(execute.mock.calls[0][1][12]).toBe(20);
+  });
+
+  it("disables title search when an existing database lacks the column", async () => {
+    const execute = vi.fn().mockRejectedValue({ code: "42703" });
+    const repository = new PostgresCatalogRepository({
+      query: execute,
+    } as unknown as Pool);
+
+    await expect(repository.supportsTitleSearch()).resolves.toBe(false);
+  });
+
+  it("enables title search only after the backfill is complete", async () => {
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [{ expected_count: "17380", missing_count: "1" }],
+      })
+      .mockResolvedValueOnce({
+        rows: [{ expected_count: "17380", missing_count: "0" }],
+      });
+    const first = new PostgresCatalogRepository({
+      query: execute,
+    } as unknown as Pool);
+    const second = new PostgresCatalogRepository({
+      query: execute,
+    } as unknown as Pool);
+
+    await expect(first.supportsTitleSearch()).resolves.toBe(false);
+    await expect(second.supportsTitleSearch()).resolves.toBe(true);
+  });
 });

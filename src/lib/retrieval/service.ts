@@ -89,12 +89,20 @@ export class RetrievalService {
       image: imageVector,
     };
     const searchImageVector = embeddingQuery ? imageVector : undefined;
+    const useTitleSearch =
+      Boolean(embeddingQuery) &&
+      queryProvider.imageSpace === "jina-local" &&
+      Boolean(await this.repository.supportsTitleSearch?.());
     const activeWeights = imageVector
       ? embeddingQuery
         ? IMAGE_SEARCH_WEIGHTS
         : STRUCTURED_SEARCH_WEIGHTS
       : STRUCTURED_SEARCH_WEIGHTS;
-    const ranking: SearchRanking = embeddingQuery ? "image" : "structured";
+    const ranking: SearchRanking = embeddingQuery
+      ? useTitleSearch
+        ? "hybrid"
+        : "image"
+      : "structured";
     const baseLimit = limit * 2;
     const facetFilters = {
       ...(intent.creatorNames.length
@@ -115,6 +123,7 @@ export class RetrievalService {
       limit: baseLimit,
       channel,
       imageVector: searchImageVector,
+      ...(useTitleSearch ? { titleVector: imageVector, rrfK: 20 } : {}),
       imageSpace: queryProvider.imageSpace,
       ...facetFilters,
     });

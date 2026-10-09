@@ -24,6 +24,7 @@ interface SearchRow {
 
 export class PostgresCatalogRepository implements CatalogRepository {
   private readonly defaultImageSpace: ImageEmbeddingSpace;
+  private titleSearchSupport?: Promise<boolean>;
 
   constructor(
     private readonly pool: Pool,
@@ -68,6 +69,44 @@ export class PostgresCatalogRepository implements CatalogRepository {
       Number(row?.default_count ?? 0) > 0 &&
       Number(row?.missing_count ?? 0) === 0
     );
+  }
+
+  supportsTitleSearch(): Promise<boolean> {
+    if (!this.titleSearchSupport) {
+      this.titleSearchSupport = this.pool
+        .query<{ expected_count: string; missing_count: string }>(
+          `SELECT count(*) FILTER (
+                    WHERE embedding.jina_image_embedding IS NOT NULL
+                      AND lower(trim(asset.title)) NOT IN ('', 'untitled')
+                  ) AS expected_count,
+                  count(*) FILTER (
+                    WHERE embedding.jina_image_embedding IS NOT NULL
+                      AND lower(trim(asset.title)) NOT IN ('', 'untitled')
+                      AND embedding.jina_title_embedding IS NULL
+                  ) AS missing_count
+             FROM media_embeddings embedding
+             JOIN media_assets asset ON asset.id = embedding.asset_id`,
+        )
+        .then(({ rows }) => {
+          const row = rows[0];
+          return (
+            Number(row?.expected_count ?? 0) > 0 &&
+            Number(row?.missing_count ?? 0) === 0
+          );
+        })
+        .catch((error: unknown) => {
+          if (
+            error &&
+            typeof error === "object" &&
+            "code" in error &&
+            error.code === "42703"
+          ) {
+            return false;
+          }
+          throw error;
+        });
+    }
+    return this.titleSearchSupport;
   }
 
   async prepare(): Promise<void> {
@@ -125,6 +164,9 @@ export class PostgresCatalogRepository implements CatalogRepository {
 
   async search(query: VectorQuery): Promise<ScoredAsset[]> {
     const imageColumn = this.imageColumn(query.imageSpace);
+    if (query.titleVector && imageColumn === "jina_image_embedding") {
+      return this.searchHybrid(query);
+    }
     const result = await this.pool.query<SearchRow>(
       `SELECT asset.catalog_payload,
               CASE WHEN $1::vector IS NULL OR embedding.${imageColumn} IS NULL
@@ -174,6 +216,101 @@ export class PostgresCatalogRepository implements CatalogRepository {
         query.yearRange?.start ?? null,
         query.yearRange?.end ?? null,
         query.mediumTerms?.length ? query.mediumTerms : null,
+      ],
+    );
+    return result.rows.map((row) => ({
+      asset: row.catalog_payload,
+      score: Number(row.score),
+      scores: {
+        semantic: 0,
+        metadata: 0,
+        ...(row.image_score !== null ? { image: Number(row.image_score) } : {}),
+      },
+    }));
+  }
+
+  private async searchHybrid(query: VectorQuery): Promise<ScoredAsset[]> {
+    const result = await this.pool.query<SearchRow>(
+      `WITH filtered AS MATERIALIZED (
+         SELECT asset.id,
+                asset.catalog_payload,
+                embedding.jina_image_embedding,
+                embedding.jina_title_embedding
+           FROM media_embeddings embedding
+           JOIN media_assets asset ON asset.id = embedding.asset_id
+          WHERE ($3::text IS NULL OR asset.id <> $3)
+            AND asset.library_category = $5
+            AND embedding.jina_image_embedding IS NOT NULL
+            AND ($6::text[] IS NULL OR asset.creator = ANY($6))
+            AND ($7::text[] IS NULL OR asset.id = ANY($7))
+            AND (($8::text[] IS NULL AND $9::text[] IS NULL)
+              OR asset.catalog_payload->>'culture' = ANY($8)
+              OR asset.catalog_payload->>'artistNationality' = ANY($9))
+            AND ($10::integer IS NULL OR (
+                  (asset.catalog_payload->>'objectBeginDate')::integer <= $11
+              AND (asset.catalog_payload->>'objectEndDate')::integer >= $10
+              AND (asset.catalog_payload->>'objectEndDate')::integer
+                  - (asset.catalog_payload->>'objectBeginDate')::integer <= 100
+            ))
+            AND ($12::text[] IS NULL OR EXISTS (
+                  SELECT 1
+                    FROM unnest($12::text[]) AS term
+                   WHERE lower(asset.catalog_payload->>'medium')
+                         LIKE '%' || term || '%'
+            ))
+       ),
+       image_ranked AS (
+         SELECT id,
+                row_number() OVER (
+                  ORDER BY jina_image_embedding <=> $1::vector, id
+                ) AS rank,
+                1 - (jina_image_embedding <=> $1::vector) AS image_score
+           FROM filtered
+          ORDER BY jina_image_embedding <=> $1::vector, id
+          LIMIT $14
+       ),
+       title_ranked AS (
+         SELECT id,
+                row_number() OVER (
+                  ORDER BY jina_title_embedding <=> $2::vector, id
+                ) AS rank
+           FROM filtered
+          WHERE jina_title_embedding IS NOT NULL
+          ORDER BY jina_title_embedding <=> $2::vector, id
+          LIMIT $14
+       ),
+       fused AS (
+         SELECT COALESCE(image_ranked.id, title_ranked.id) AS id,
+                COALESCE(1.0 / ($13 + image_ranked.rank), 0)
+                  + COALESCE(1.0 / ($13 + title_ranked.rank), 0) AS score,
+                image_ranked.image_score
+           FROM image_ranked
+           FULL OUTER JOIN title_ranked USING (id)
+       )
+       SELECT filtered.catalog_payload,
+              fused.score,
+              fused.image_score
+         FROM fused
+         JOIN filtered USING (id)
+        ORDER BY fused.score DESC, fused.id
+        LIMIT $4`,
+      [
+        query.imageVector ? toVector(query.imageVector) : null,
+        toVector(query.titleVector ?? []),
+        query.excludeAssetId ?? null,
+        query.limit,
+        query.channel,
+        query.creatorNames?.length ? query.creatorNames : null,
+        query.assetIds?.length ? query.assetIds : null,
+        query.cultures?.length ? query.cultures : null,
+        query.artistNationalities?.length
+          ? query.artistNationalities
+          : null,
+        query.yearRange?.start ?? null,
+        query.yearRange?.end ?? null,
+        query.mediumTerms?.length ? query.mediumTerms : null,
+        query.rrfK ?? 20,
+        Math.max(100, query.limit * 5),
       ],
     );
     return result.rows.map((row) => ({
