@@ -7,4 +7,5 @@ curation/*.local.json
 .local-data/
 .cache/
 *.tsbuildinfo
+*.dump
 .DS_Store

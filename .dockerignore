@@ -1,0 +1,10 @@
+.cache
+.env
+.env.*
+.git
+.github
+.local-data
+.next
+node_modules
+npm-debug.log*
+public/*eval-data.json

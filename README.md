@@ -3,14 +3,17 @@
 **Search paintings in your own words.**
 
 Describe a subject, mood, color, scene, or idea, and Art Explorer finds related
-paintings from The Met's public-domain collection. You can also search by title
-or artist.
+open-access paintings from six museum collections.
 
 ## What it does
 
-- Searches 3,125 public-domain paintings from The Met.
+- Searches 17,384 open-access paintings from The Met, Art Institute of Chicago,
+  Cleveland Museum of Art, Statens Museum for Kunst, National Gallery of Art,
+  and Rijksmuseum.
 - Uses Jina CLIP v2 for visual meaning and Met metadata for hard constraints.
-- Keeps title, artist, date, culture, and medium in a separate metadata channel.
+- Uses only image embeddings for semantic ranking. Artist, date, culture, and
+  medium remain deterministic filters; titles do not influence general
+  semantic ranking.
 - Suggests related ideas and visually similar paintings.
 - Includes a small human-evaluation tool for tuning search quality.
 
@@ -18,18 +21,18 @@ or artist.
 
 Art Explorer embeds each painting and each residual natural-language query with
 `jinaai/jina-clip-v2`, truncates the normalized vectors to 256 dimensions, and
-uses PostgreSQL with pgvector for direct cosine ranking. Title, artist, date,
-culture, nationality, and medium are resolved first as deterministic pins or
-hard filters rather than blended into the image score.
+uses PostgreSQL with pgvector for direct cosine ranking. Artist, date, culture,
+nationality, and medium are resolved as deterministic filters rather than
+blended into the image score.
 
 Jina queries use the model's retrieval-query instruction. Named art movements
 and style phrases are automatically routed to the retained SigLIP index, while
 general natural-language and image-similarity searches stay on Jina. The API
 response reports the embedding model used for each search.
 
-The catalog is paintings only, from European Paintings, The American Wing, the
-Robert Lehman Collection, and Modern and Contemporary Art. Sculptures,
-ceramics, vases, decorative objects, and other departments are excluded.
+The catalog is paintings only, restricted to open-access Western painting
+collections. Sculptures, ceramics, vases, decorative objects, and unrelated
+departments are excluded.
 
 ## Run it
 
@@ -43,6 +46,22 @@ CATALOG_REPOSITORY=postgres npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Deploy it
+
+The repository includes a production `Dockerfile` and `/api/health` endpoint.
+The container needs:
+
+- `DATABASE_URL` pointing to PostgreSQL with the `vector` extension and the
+  populated catalog.
+- A persistent volume mounted at `/data/models` so the local Jina and SigLIP
+  model files survive redeploys.
+- At least 4 GiB RAM for local ONNX inference: the production Linux smoke test
+  reached about 3.15 GiB after initializing Jina.
+
+See [the deployment guide](docs/deployment.md) for database migration,
+container settings, Azure Bicep templates adapted from Art Guide, and a
+no-platform-fee self-hosting option.
 
 ## Build the painting catalog
 

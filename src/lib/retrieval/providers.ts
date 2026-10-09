@@ -118,6 +118,14 @@ const onnxSessionOptions = () => ({
   executionMode: "sequential" as const,
 });
 
+function configureTransformersCache(
+  transformers: typeof import("@huggingface/transformers"),
+) {
+  const cacheDir = process.env.TRANSFORMERS_CACHE_DIR?.trim();
+  if (cacheDir) transformers.env.cacheDir = cacheDir;
+  return transformers;
+}
+
 export class TransformersEmbeddingProvider implements EmbeddingProvider {
   readonly name: string;
   readonly imageDimensions: number;
@@ -189,7 +197,9 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   }
 
   private async createImageExtractor() {
-    const { pipeline } = await import("@huggingface/transformers");
+    const { pipeline } = configureTransformersCache(
+      await import("@huggingface/transformers"),
+    );
     const extractor = await pipeline(
       "image-feature-extraction",
       this.imageModel,
@@ -202,7 +212,9 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   }
 
   private async createImageText() {
-    const transformers = await import("@huggingface/transformers");
+    const transformers = configureTransformersCache(
+      await import("@huggingface/transformers"),
+    );
     const tokenizer = await transformers.AutoTokenizer.from_pretrained(
       this.imageModel,
     );
@@ -225,7 +237,9 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
   }
 
   private async createJina() {
-    const transformers = await import("@huggingface/transformers");
+    const transformers = configureTransformersCache(
+      await import("@huggingface/transformers"),
+    );
     const [processor, model] = await Promise.all([
       transformers.AutoProcessor.from_pretrained(this.imageModel),
       transformers.AutoModel.from_pretrained(this.imageModel, {
