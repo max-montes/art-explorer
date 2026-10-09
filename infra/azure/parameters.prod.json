@@ -4,6 +4,7 @@
   "parameters": {
     "location": { "value": "westus3" },
     "prefix": { "value": "art-explorer-prod" },
+    "appName": { "value": "art-explorer" },
     "minReplicas": { "value": 0 }
   }
 }

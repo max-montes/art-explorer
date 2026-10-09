@@ -88,10 +88,14 @@ modified.
 ### Current deployment
 
 The public app is
-[Art Explorer](https://art-explorer-prod-web.thankfulforest-eee49b89.westus3.azurecontainerapps.io/),
+[Art Explorer](https://art-explorer.thankfulforest-eee49b89.westus3.azurecontainerapps.io/),
 deployed on 2026-10-09 in `art-explorer-prod-rg`, using the Visual Studio
 Enterprise subscription. The web app has zero minimum replicas and one maximum
 replica; PostgreSQL remains running on B1ms.
+
+The web app is named `art-explorer`; the other resources retain the
+`art-explorer-prod` prefix. Passage Explorer is available at `/passages`, and
+`/assistant` redirects there.
 
 The live catalog contains 17,384 artworks and 17,380 vectors for each image
 model. General image search and SigLIP style routing work, and remote curator

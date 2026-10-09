@@ -7,6 +7,8 @@ param location string = resourceGroup().location
 @maxLength(20)
 param prefix string = 'art-explorer-prod'
 
+param appName string = 'art-explorer'
+
 param pgAdminUser string = 'artexploreradmin'
 
 @secure()
@@ -189,7 +191,7 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-0
 }
 
 resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
-  name: '${prefix}-web'
+  name: appName
   location: location
   tags: tags
   identity: {
