@@ -85,6 +85,25 @@ No Azure OpenAI resource or API key is needed. Search stays on the evaluated
 local Jina/SigLIP models. No Art Guide production resources are reused or
 modified.
 
+### Current deployment
+
+The public app is
+[Art Explorer](https://art-explorer-prod-web.thankfulforest-eee49b89.westus3.azurecontainerapps.io/),
+deployed on 2026-10-09 in `art-explorer-prod-rg`, using the Visual Studio
+Enterprise subscription. The web app has zero minimum replicas and one maximum
+replica; PostgreSQL remains running on B1ms.
+
+The live catalog contains 17,384 artworks and 17,380 vectors for each image
+model. General image search and SigLIP style routing work, and remote curator
+requests return 403. The top five `ships` results match the local deployment.
+
+With the uploaded model cache, the first Azure Jina search took 23.46 seconds;
+subsequent `flags` and `battle` searches took 0.46 and 0.34 seconds. First SigLIP
+initialization and search took 7.10 seconds. These are individual API request
+times, not complete scale-from-zero measurements. The initial wake-up health
+request exceeded 30 seconds; Azure reported a 13.86-second image pull. Keep the
+20-60-second cold-visit range provisional until measuring a full cold visit.
+
 ### Preview and deploy
 
 Requires Azure CLI with Bicep, Node.js, and an authenticated subscription.
@@ -117,7 +136,8 @@ The deployment outputs include `registryName`, `registryServer`, and
 Build the image for Azure's Linux architecture in ACR:
 
 ```bash
-az acr build --registry "<registryName>" \
+az acr build --subscription "$AZURE_SUBSCRIPTION_ID" \
+  --registry "<registryName>" \
   --image art-explorer:v1 --platform linux/amd64 .
 export AZURE_APP_IMAGE="<registryServer>/art-explorer:v1"
 ```
@@ -148,6 +168,7 @@ Remove the temporary restore firewall rule afterward:
 
 ```bash
 az postgres flexible-server firewall-rule delete \
+  --subscription "$AZURE_SUBSCRIPTION_ID" \
   --resource-group art-explorer-prod-rg \
   --name "<postgresName>" --rule-name RestoreClient --yes
 unset RESTORE_CLIENT_IP PG_ADMIN_PASSWORD
@@ -157,6 +178,9 @@ The template's `AllowAzureServices` firewall rule permits Azure-origin IPs
 across subscriptions, not just your application. TLS and database credentials
 are still required. For a stricter deployment, replace this with private
 networking. Do not open `0.0.0.0` through `255.255.255.255`.
+
+PostgreSQL child-resource changes are serialized in the template because
+Flexible Server rejects overlapping management operations with `ServerIsBusy`.
 
 ### Costs and launch checks
 

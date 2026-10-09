@@ -152,6 +152,8 @@ resource azureFirewall 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@
     startIpAddress: '0.0.0.0'
     endIpAddress: '0.0.0.0'
   }
+  // Flexible Server rejects overlapping management operations.
+  dependsOn: [database]
 }
 
 resource restoreFirewall 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRules@2024-08-01' = if (!empty(restoreClientIp)) {
@@ -161,6 +163,7 @@ resource restoreFirewall 'Microsoft.DBforPostgreSQL/flexibleServers/firewallRule
     startIpAddress: restoreClientIp
     endIpAddress: restoreClientIp
   }
+  dependsOn: [azureFirewall]
 }
 
 resource extensions 'Microsoft.DBforPostgreSQL/flexibleServers/configurations@2024-08-01' = {
@@ -170,6 +173,10 @@ resource extensions 'Microsoft.DBforPostgreSQL/flexibleServers/configurations@20
     value: 'vector'
     source: 'user-override'
   }
+  dependsOn: [
+    azureFirewall
+    restoreFirewall
+  ]
 }
 
 resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2024-08-01' = {
