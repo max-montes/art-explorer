@@ -16,7 +16,8 @@ have been reproduced where they fit the current catalog.
 - General semantic searches rank only the artwork image embedding. Title-vector
   fusion remains available as evaluation tooling, but is intentionally not
   used in production because titles can leak the answer instead of measuring
-  visual or conceptual relevance. Exact-title lookup remains a deterministic
+  visual or conceptual relevance. General queries also never pin catalog title
+  matches ahead of image results. Exact-title lookup remains a deterministic
   navigation feature before image-only neighbor search.
 - Jina title vectors can be backfilled resumably with
   `npm run catalog:reindex:titles`. Automated weak-supervision checks are

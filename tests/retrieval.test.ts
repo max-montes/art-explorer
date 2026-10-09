@@ -81,6 +81,36 @@ describe("association-based retrieval", () => {
     ).toBe(response.results.length);
   });
 
+  it("does not pin multiple title matches in semantic search", async () => {
+    const provider = new DeterministicEmbeddingProvider();
+    const repository = new MemoryCatalogRepository(
+      [
+        curatedAsset("liberty-one", "Liberty", "Artist One", ["Allegory"]),
+        curatedAsset("liberty-two", "Liberty", "Artist Two", ["Allegory"]),
+        curatedAsset("open-landscape", "Landscape", "Artist Three", [
+          "Freedom",
+        ]),
+      ],
+      [],
+      [],
+      provider,
+    );
+    const observedQueries: VectorQuery[] = [];
+    const search = repository.search.bind(repository);
+    repository.search = async (query) => {
+      observedQueries.push(query);
+      return search(query);
+    };
+
+    const response = await new RetrievalService(repository, provider).search(
+      "Liberty",
+    );
+
+    expect(response.ranking).toBe("image");
+    expect(observedQueries).toHaveLength(1);
+    expect(observedQueries[0].assetIds).toBeUndefined();
+  });
+
   it("hard-filters structured nationality and medium queries", async () => {
     const provider = new DeterministicEmbeddingProvider();
     const assets = [

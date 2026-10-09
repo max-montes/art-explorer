@@ -75,10 +75,10 @@
       <h1>Search evaluation</h1>
       <p class="intro">Label the ranked results for a small, fixed query set. Labels are saved in this browser and can be exported as JSON for evaluation.</p>
       <div class="rubric" aria-label="Labeling directions">
-        <div><strong>Relevant:</strong> The painting is a direct match or is meaningfully similar in subject, appearance, style, title, artist, or other semantic connection.</div>
-        <div><strong>Unsure:</strong> The painting may be similar, but the connection is weak, ambiguous, or depends heavily on interpretation.</div>
+        <div><strong>Relevant:</strong> The visible painting is a direct match or is meaningfully similar in subject, appearance, style, mood, or concept.</div>
+        <div><strong>Unsure:</strong> The visible painting may be similar, but the connection is weak, ambiguous, or depends heavily on interpretation.</div>
         <div><strong>Not relevant:</strong> The painting is a clear miss and would not be useful for that search.</div>
-        <div class="note">* For exact title-queries: mark the exact painting, paintings with similar titles, and visually or semantically similar paintings as relevant.</div>
+        <div class="note">Judge only the image. Titles, creators, dates, scores, and source links are hidden so metadata cannot influence the label.</div>
       </div>
 
       <section class="panel">
@@ -177,11 +177,10 @@ transcendence</textarea>
         const asset = result.asset;
         state.lightboxIndex = index;
         $("lightbox-image").src = asset.source.mediaUrl || "";
-        $("lightbox-image").alt = `${asset.title} by ${asset.creator}`;
-        $("lightbox-title").textContent = asset.title;
-        $("lightbox-meta").textContent = `${asset.creator} · ${asset.year}`;
-        $("lightbox-source").href = asset.source.sourceUrl;
-        $("lightbox-source").hidden = !asset.source.sourceUrl;
+        $("lightbox-image").alt = `Candidate ${index + 1}`;
+        $("lightbox-title").textContent = `Candidate ${index + 1}`;
+        $("lightbox-meta").textContent = "Artwork details hidden for blind evaluation";
+        $("lightbox-source").hidden = true;
         $("lightbox-previous").disabled = index === 0;
         $("lightbox-next").disabled = index >= state.results.length - 1;
         const labelValue = state.labels[key(currentQuery(), result)]?.label;
@@ -241,7 +240,7 @@ transcendence</textarea>
           imageWrap.className = "image-wrap";
           const image = document.createElement("img");
           image.src = previewUrl(asset.source.mediaUrl);
-          image.alt = asset.title;
+          image.alt = `Candidate ${index + 1}`;
           image.loading = "lazy";
           image.onclick = () => openLightbox(index);
           image.onerror = () => {
@@ -265,19 +264,9 @@ transcendence</textarea>
           const body = document.createElement("div");
           body.className = "card-body";
           body.innerHTML = `<div class="rank">${state.ranking === "pooled" ? "CANDIDATE" : "RANK"} ${index + 1}</div><div class="title"></div><div class="meta"></div><div class="source-row"></div><div class="score"></div><div class="label-prompt">Rate this result</div><div class="labels"></div>`;
-          body.querySelector(".title").textContent = asset.title;
-          body.querySelector(".meta").textContent = `${asset.creator} · ${asset.year}`;
-          body.querySelector(".score").textContent =
-            state.ranking === "pooled" ? "" : `score ${Number(result.score).toFixed(3)}`;
-          if (asset.source.sourceUrl) {
-            const source = document.createElement("a");
-            source.className = "source-link";
-            source.href = asset.source.sourceUrl;
-            source.target = "_blank";
-            source.rel = "noreferrer";
-            source.textContent = "View source ↗";
-            body.querySelector(".source-row").appendChild(source);
-          }
+          body.querySelector(".title").textContent = `Candidate ${index + 1}`;
+          body.querySelector(".meta").textContent = "Artwork details hidden";
+          body.querySelector(".score").textContent = "";
           const labelKey = key(currentQuery(), result);
           choices.forEach(([value, text]) => {
             const button = document.createElement("button");

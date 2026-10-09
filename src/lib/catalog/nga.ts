@@ -77,7 +77,7 @@ export function mapNgaPainting(
     objectEndDate: integer(object.endyear),
     source: {
       provider: "National Gallery of Art",
-      sourceUrl: `https://www.nga.gov/artworks/${object.objectid}`,
+      sourceUrl: `https://www.nga.gov/collection/art-object-page.${object.objectid}.html`,
       mediaUrl: `${image.iiifurl}/full/!843,843/0/default.jpg`,
       license: "CC0",
       licenseUrl: "https://www.nga.gov/notices/open-access-policy.html",

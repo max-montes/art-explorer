@@ -120,26 +120,7 @@ export class RetrievalService {
       imageSpace: queryProvider.imageSpace,
       ...facetFilters,
     });
-    const pinWeights = IMAGE_SEARCH_WEIGHTS;
-    const titlePins = intent.titleAssetIds.length
-      ? await this.repository.search({
-          vectors,
-          weights: pinWeights,
-          limit: Math.min(limit, intent.titleAssetIds.length),
-          channel,
-          imageVector: searchImageVector,
-          imageSpace: queryProvider.imageSpace,
-          assetIds: intent.titleAssetIds,
-        })
-      : [];
-    const results = [
-      ...new Map(
-        [...titlePins, ...baseResults].map((result) => [
-          result.asset.id,
-          result,
-        ]),
-      ).values(),
-    ].slice(0, limit);
+    const results = baseResults.slice(0, limit);
     const pills = await this.pillsFor(normalized, results);
 
     return {

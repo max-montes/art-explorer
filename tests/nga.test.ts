@@ -55,7 +55,8 @@ describe("National Gallery catalog mapping", () => {
       height: 1800,
       source: {
         provider: "National Gallery of Art",
-        sourceUrl: "https://www.nga.gov/artworks/12345",
+        sourceUrl:
+          "https://www.nga.gov/collection/art-object-page.12345.html",
         mediaUrl:
           "https://api.nga.gov/iiif/image-1/full/!843,843/0/default.jpg",
         license: "CC0",
