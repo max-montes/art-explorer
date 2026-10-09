@@ -18,7 +18,7 @@ for tool in az node; do
   command -v "$tool" >/dev/null || { echo "Missing required tool: $tool" >&2; exit 1; }
 done
 
-CURRENT_SUB="$(az account show --query id -o tsv)"
+CURRENT_SUB="$(az account show --subscription "$AZURE_SUBSCRIPTION_ID" --query id -o tsv)"
 if [[ "$CURRENT_SUB" != "$AZURE_SUBSCRIPTION_ID" ]]; then
   echo "Active Azure subscription does not match AZURE_SUBSCRIPTION_ID." >&2
   exit 1
@@ -44,13 +44,13 @@ NODE
 
 az bicep build --file "$SCRIPT_DIR/main.bicep" --stdout >/dev/null
 
-if [[ "$(az group exists --name "$RG_NAME" -o tsv)" != "true" ]]; then
+if [[ "$(az group exists --subscription "$AZURE_SUBSCRIPTION_ID" --name "$RG_NAME" -o tsv)" != "true" ]]; then
   if [[ "$MODE" == "preview" ]]; then
     echo "Resource group does not exist. Template compilation succeeded."
     echo "Apply will create $RG_NAME in $LOCATION, then show the resource what-if."
     exit 0
   fi
-  az group create --name "$RG_NAME" --location "$LOCATION" \
+  az group create --subscription "$AZURE_SUBSCRIPTION_ID" --name "$RG_NAME" --location "$LOCATION" \
     --tags project=art-explorer managedBy=bicep --output none
 fi
 
@@ -65,6 +65,7 @@ if [[ -n "$APP_IMAGE" ]]; then
 fi
 
 az deployment group what-if \
+  --subscription "$AZURE_SUBSCRIPTION_ID" \
   --resource-group "$RG_NAME" \
   --template-file "$SCRIPT_DIR/main.bicep" \
   --parameters "$PARAM_FILE" \
@@ -76,6 +77,7 @@ if [[ "$MODE" == "preview" ]]; then
 fi
 
 az deployment group create \
+  --subscription "$AZURE_SUBSCRIPTION_ID" \
   --resource-group "$RG_NAME" \
   --template-file "$SCRIPT_DIR/main.bicep" \
   --parameters "$PARAM_FILE" \
