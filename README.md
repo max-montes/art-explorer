@@ -1,4 +1,11 @@
-# Art Explorer
+# [Time to explore art.](https://art-explorer.thankfulforest-eee49b89.westus3.azurecontainerapps.io/)
+
+> The gallery occasionally takes a nap. This hosted demo may not always be
+> available; after a quiet spell, give it a little time to turn on the lights.
+> The app and search models need to wake up from a cold start, while the
+> database stays running. If the doors stay closed, please try again later.
+
+## Art Explorer
 
 **Search paintings in your own words.**
 
