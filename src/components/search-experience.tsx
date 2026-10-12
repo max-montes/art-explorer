@@ -24,16 +24,15 @@ import { Masonry } from "./masonry";
 const STARTING_QUERY = "fire";
 const UNDO_WINDOW_MS = 6000;
 
-/**
- * Images per row. Stepping the count directly means every click visibly
- * changes the grid (a minimum-width scheme could need two clicks to drop a
- * column). Browser zoom still works independently because the masonry
- * converts the count to a width and caps it by what actually fits.
- */
 const MIN_COLUMNS = 1;
 const MAX_COLUMNS = 8;
 const DEFAULT_COLUMNS = 3;
 const COLUMNS_KEY = "commonplace:columns";
+const VIEW_PRESETS = [
+  { label: "Large", columns: 2 },
+  { label: "Balanced", columns: 3 },
+  { label: "Compact", columns: 5 },
+];
 /** Narrowest a column may get before the masonry refuses to add more. */
 const MIN_TILE_WIDTH = 160;
 
@@ -191,30 +190,27 @@ export function SearchExperience() {
   const [error, setError] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MediaAsset | null>(null);
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
-  // How many columns the grid can actually show at the current width/zoom.
-  const [fits, setFits] = useState(MAX_COLUMNS);
 
   useEffect(() => {
     const raw = localStorage.getItem(COLUMNS_KEY);
     if (raw === null) return;
     const saved = Number(raw);
     if (Number.isInteger(saved) && saved >= MIN_COLUMNS && saved <= MAX_COLUMNS) {
-      setColumns(saved);
+      setColumns(
+        VIEW_PRESETS.reduce((closest, preset) =>
+          Math.abs(preset.columns - saved) < Math.abs(closest.columns - saved)
+            ? preset : closest,
+        ).columns,
+      );
     }
   }, []);
 
   const changeColumns = useCallback(
-    (delta: number) => {
-      setColumns((current) => {
-        // Step from what is shown, not a stale larger request, so "−" after
-        // hitting the width cap shrinks immediately.
-        const shown = Math.min(current, fits);
-        const next = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, shown + delta));
-        localStorage.setItem(COLUMNS_KEY, String(next));
-        return next;
-      });
+    (next: number) => {
+      localStorage.setItem(COLUMNS_KEY, String(next));
+      setColumns(next);
     },
-    [fits],
+    [],
   );
 
   /**
@@ -453,10 +449,11 @@ export function SearchExperience() {
 
       <section className="collection" aria-live="polite">
         {data && !loading && !error && (
+          <>
           <div className="result-heading">
             <h2>{data.query}</h2>
             <div className="result-heading-tools">
-              <div className="pills" aria-label="Related concepts">
+              <div className="pills" aria-label="Explore museum tags">
                 {data.pills.map((pill) => (
                   <button
                     key={pill.id}
@@ -467,28 +464,25 @@ export function SearchExperience() {
                   </button>
                 ))}
               </div>
-              <div className="tile-size" role="group" aria-label="Images per row">
-                <button
-                  type="button"
-                  aria-label="Larger images (fewer per row)"
-                  title="Larger images"
-                  onClick={() => changeColumns(-1)}
-                  disabled={columns <= MIN_COLUMNS}
-                >
-                  −
-                </button>
-                <button
-                  type="button"
-                  aria-label="Smaller images (more per row)"
-                  title="Smaller images"
-                  onClick={() => changeColumns(1)}
-                  disabled={columns >= Math.min(MAX_COLUMNS, fits)}
-                >
-                  +
-                </button>
-              </div>
             </div>
           </div>
+          <div className="gallery-toolbar">
+            <span>{data.results.length} artworks</span>
+            <div className="gallery-view" role="group" aria-label="Gallery image size">
+              <span>View</span>
+              {VIEW_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  aria-pressed={columns === preset.columns}
+                  onClick={() => changeColumns(preset.columns)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          </>
         )}
 
         {loading && (
@@ -540,7 +534,6 @@ export function SearchExperience() {
             aspectRatioOf={(result) => result.asset.aspectRatio ?? 1.2}
             columns={columns}
             minColumnWidth={MIN_TILE_WIDTH}
-            onFitsChange={setFits}
             render={(result) => (
               <ResultCard
                 result={result}

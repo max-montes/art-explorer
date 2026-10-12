@@ -22,6 +22,8 @@ open-access paintings from six museum collections.
   medium remain deterministic filters; titles do not influence general
   semantic ranking.
 - Suggests related ideas and visually similar paintings.
+- Offers Large, Balanced, and Compact gallery views in a dedicated results
+  toolbar; the selected view is remembered and adapts to the screen width.
 - Includes Passage Explorer at `/passages` for artwork related to passages of
   poetry and prose. The previous `/assistant` address redirects there.
 - Includes a small human-evaluation tool for tuning search quality.

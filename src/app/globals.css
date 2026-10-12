@@ -294,40 +294,54 @@ a {
   gap: 16px;
 }
 
-/* Image size: a quiet − / + pair, sized to sit level with the pills. */
-.tile-size {
+.gallery-toolbar {
   align-items: center;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  display: inline-flex;
-  flex-shrink: 0;
-  height: 38px;
-  padding: 0 5px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 20px 0;
+  padding-top: 12px;
 }
 
-.tile-size button {
+.gallery-view {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gallery-view > span {
+  margin-right: 8px;
+}
+
+.gallery-view button {
   background: transparent;
   border: 0;
-  border-radius: 50%;
+  border-radius: 4px;
   color: var(--ink);
   cursor: pointer;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  height: 28px;
-  line-height: 1;
+  font: inherit;
+  min-height: 44px;
+  padding: 8px 12px;
   transition: background 140ms ease, color 140ms ease;
-  width: 28px;
 }
 
-.tile-size button:hover:not(:disabled) {
+.gallery-view button[aria-pressed="true"] {
   background: var(--ink);
   color: white;
 }
 
-.tile-size button:disabled {
-  cursor: default;
-  opacity: 0.25;
-  margin-bottom: 22px;
+.gallery-view button:hover:not([aria-pressed="true"]) {
+  background: var(--rule);
+}
+
+.gallery-view button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .result-heading h2 {
