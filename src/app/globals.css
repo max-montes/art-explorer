@@ -288,12 +288,6 @@ a {
   justify-content: space-between;
 }
 
-.result-heading-tools {
-  align-items: center;
-  display: flex;
-  gap: 16px;
-}
-
 .gallery-toolbar {
   align-items: center;
   border-top: 1px solid var(--rule);
@@ -350,33 +344,6 @@ a {
   font-weight: 400;
   letter-spacing: -0.04em;
   margin: 0;
-}
-
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  justify-content: flex-end;
-  max-width: 660px;
-}
-
-.pills button {
-  align-items: center;
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  color: var(--ink);
-  cursor: pointer;
-  display: flex;
-  font-family: Georgia, "Times New Roman", serif;
-  gap: 7px;
-  padding: 9px 13px;
-  transition: background 140ms ease, border-color 140ms ease;
-}
-
-.pills button:hover {
-  background: white;
-  border-color: var(--ink);
 }
 
 /*
@@ -866,9 +833,6 @@ footer p {
     flex-direction: column;
   }
 
-  .pills {
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 800px) {

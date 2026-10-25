@@ -1,10 +1,8 @@
 import {
-  assetAssociations,
   channelOf,
   DEFAULT_CHANNEL,
   type AssetVectors,
   type Channel,
-  type ConceptPill,
   type ScoredAsset,
   type SearchRanking,
   type SearchResult,
@@ -18,7 +16,6 @@ import {
   type CatalogLexicon,
 } from "./query-intent";
 import type { CatalogRepository } from "./repository";
-import { stemLabel } from "./stem";
 
 const IMAGE_SEARCH_WEIGHTS: SearchWeights = {
   semantic: 0,
@@ -30,13 +27,6 @@ const STRUCTURED_SEARCH_WEIGHTS: SearchWeights = {
   metadata: 0,
   image: 0,
 };
-
-/**
- * A result contributes follow-up pills only if it matched meaningfully: above
- * an absolute floor and not far behind the best match.
- */
-const PILL_SOURCE_FLOOR = 0;
-const PILL_SOURCE_RELATIVE = 0.5;
 
 export class RetrievalService {
   private readonly lexicons = new Map<Channel, Promise<CatalogLexicon>>();
@@ -121,7 +111,6 @@ export class RetrievalService {
       ...facetFilters,
     });
     const results = baseResults.slice(0, limit);
-    const pills = await this.pillsFor(normalized, results);
 
     return {
       query: normalized,
@@ -130,7 +119,6 @@ export class RetrievalService {
       embeddingModel: queryProvider.name,
       weights: activeWeights,
       results,
-      pills,
     };
   }
 
@@ -197,7 +185,6 @@ export class RetrievalService {
       embeddingModel: this.provider.name,
       weights,
       results,
-      pills: await this.pillsFor(query, results),
     };
   }
 
@@ -226,11 +213,6 @@ export class RetrievalService {
       imageVector: vectors.image,
       imageSpace: this.provider.imageSpace,
     });
-    // Suggest from the source asset's own associations, then its neighbours.
-    const pills = await this.pillsFor(asset.title, [
-      { asset, score: 1, scores: weights },
-      ...results,
-    ]);
     return {
       query: `Similar to ${asset.title}`,
       channel,
@@ -238,52 +220,6 @@ export class RetrievalService {
       embeddingModel: this.provider.name,
       weights,
       results,
-      pills,
     };
-  }
-
-  /**
-   * Follow-up searches drawn from the top matches' associations, interleaved
-   * round-robin so every strong match contributes rather than the first
-   * result's list crowding out the rest. The query itself, and inflectional
-   * variants of it, are never offered.
-   */
-  private async pillsFor(
-    query: string,
-    results: ScoredAsset[],
-  ): Promise<ConceptPill[]> {
-    const queryStem = stemLabel(query);
-    const pills = new Map<string, ConceptPill>();
-    // Only results that genuinely matched should shape follow-ups. With few
-    // curated works, the top 3 by position may include near-zero scores.
-    const best = results[0]?.score ?? 0;
-    const lists = results
-      .slice(0, 3)
-      .filter(
-        (result) =>
-          result.score >= PILL_SOURCE_FLOOR &&
-          result.score >= best * PILL_SOURCE_RELATIVE,
-      )
-      .map((result) => {
-      const labels = assetAssociations(result.asset);
-      // Lead with the label that matched, then the rest in curator order.
-      if (result.matchedLabel) {
-        const i = labels.indexOf(result.matchedLabel);
-        if (i > 0) labels.unshift(...labels.splice(i, 1));
-      }
-      return labels;
-    });
-    const longest = Math.max(0, ...lists.map((list) => list.length));
-    for (let i = 0; i < longest && pills.size < 6; i++) {
-      for (const list of lists) {
-        const label = list[i];
-        if (!label) continue;
-        const stem = stemLabel(label);
-        if (!stem || stem === queryStem || pills.has(stem)) continue;
-        pills.set(stem, { id: label, label });
-        if (pills.size >= 6) break;
-      }
-    }
-    return [...pills.values()];
   }
 }

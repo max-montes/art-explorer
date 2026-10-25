@@ -452,19 +452,6 @@ export function SearchExperience() {
           <>
           <div className="result-heading">
             <h2>{data.query}</h2>
-            <div className="result-heading-tools">
-              <div className="pills" aria-label="Explore museum tags">
-                {data.pills.map((pill) => (
-                  <button
-                    key={pill.id}
-                    type="button"
-                    onClick={() => void runSearch(pill.label)}
-                  >
-                    {pill.label}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
           <div className="gallery-toolbar">
             <span>{data.results.length} artworks</span>

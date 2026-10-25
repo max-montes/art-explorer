@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchSearchResult } from "@/lib/retrieval/client-request";
 
-const result = { query: "ships", ranking: "image", results: [], pills: [] };
+const result = { query: "ships", ranking: "image", results: [] };
 const success = () => Response.json(result);
 
 describe("cold-start search requests", () => {

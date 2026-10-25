@@ -184,11 +184,6 @@ export interface ScoredAsset {
   matchedLabel?: string;
 }
 
-export interface ConceptPill {
-  id: string;
-  label: string;
-}
-
 export interface SearchResult {
   query: string;
   channel: Channel;
@@ -196,7 +191,6 @@ export interface SearchResult {
   embeddingModel?: string;
   weights: SearchWeights;
   results: ScoredAsset[];
-  pills: ConceptPill[];
 }
 
 export interface ScriptPassage {
