@@ -234,14 +234,6 @@
   outline-offset: 2px;
 }
 
-.mediaPanel blockquote {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 24px;
-  line-height: 1.35;
-  margin: 0 0 24px;
-  min-height: 98px;
-}
-
 .passageSuggestions {
   margin-top: var(--passage-offset, 0);
 }
@@ -275,12 +267,6 @@
   max-width: 420px;
 }
 
-.artwork recommendation .labels {
-  grid-template-columns: 1fr;
-  margin-bottom: 0;
-  min-height: 0;
-}
-
 .noPick {
   border-top: 1px solid rgba(23, 24, 20, 0.15);
   color: #7a7a72;
@@ -296,40 +282,6 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: 16px;
   font-weight: 400;
-}
-
-.labels {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-bottom: 30px;
-  min-height: 108px;
-}
-
-.labels div {
-  align-content: flex-start;
-  border-top: 1px solid rgba(23, 24, 20, 0.15);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding-top: 8px;
-}
-
-.labels small {
-  color: var(--accent);
-  display: block;
-  flex-basis: 100%;
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-}
-
-.labels span {
-  background: #e5e1d7;
-  border-radius: 99px;
-  font-size: 9px;
-  padding: 5px 7px;
 }
 
 .mediaGrid {
@@ -432,7 +384,6 @@
     margin-right: 18px;
   }
 
-  .labels,
   .mediaGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

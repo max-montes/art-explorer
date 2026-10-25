@@ -1,6 +1,6 @@
 "use client";
 import { CSSProperties, FormEvent, useState } from "react";
-import { displayLabel, type MediaAsset, type ScriptAnalysis, type ScriptPassage } from "@/lib/catalog/types";
+import { type MediaAsset, type ScriptAnalysis, type ScriptPassage } from "@/lib/catalog/types";
 import { setMediaDragData } from "@/lib/media/drag-export";
 import { mediaPreviewUrl } from "@/lib/media/preview-url";
 import styles from "./artwork-assistant.module.css";
@@ -27,8 +27,6 @@ function MediaTile({ asset }: { asset: MediaAsset }) {
 }
 function PassageSuggestions({ passage, offset }: { passage: ScriptPassage; offset: number }) {
   return <div className={styles.passageSuggestions} style={{ "--passage-offset": `${offset}px` } as CSSProperties}>
-    <blockquote>{passage.text}</blockquote>
-    <div className={styles.labels}><div><small>Associations</small>{passage.associations.map((label) => <span key={label}>{displayLabel(label)}</span>)}</div></div>
     <div className={styles.mediaGrid}>{passage.results.map(({ asset }) => <MediaTile key={asset.id} asset={asset} />)}</div>
   </div>;
 }

@@ -198,7 +198,6 @@ export interface ScriptPassage {
   start: number;
   end: number;
   text: string;
-  associations: string[];
   results: ScoredAsset[];
 }
 

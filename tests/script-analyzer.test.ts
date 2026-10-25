@@ -69,8 +69,8 @@ describe("script analyzer", () => {
     ]);
   });
 
-  it("attaches deduplicated associations and ranked media in the chosen channel", async () => {
-    const searches: Array<{ query: string; channel: string }> = [];
+  it("requests 18 ranked artworks for each passage in the chosen channel", async () => {
+    const searches: Array<{ query: string; channel: string; limit?: number }> = [];
     const school = scored(
       asset(
         "school",
@@ -82,19 +82,20 @@ describe("script analyzer", () => {
     const analysis = await analyzeScript(
       "Plato seeks truth.",
       {
-        async search(query, channel) {
-          searches.push({ query, channel });
+        async search(query, channel, limit) {
+          searches.push({ query, channel, limit });
           return { results: [school, school] };
         },
       },
       "artwork",
     );
 
-    expect(searches).toEqual([{ query: "Plato seeks truth.", channel: "artwork" }]);
+    expect(searches).toEqual([
+      { query: "Plato seeks truth.", channel: "artwork", limit: 18 },
+    ]);
     expect(analysis.channel).toBe("artwork");
     expect(analysis.passages[0]).toMatchObject({
       text: "Plato seeks truth.",
-      associations: ["reason", "humanism", "harmony", "Plato", "philosophers"],
       results: [school, school],
     });
   });

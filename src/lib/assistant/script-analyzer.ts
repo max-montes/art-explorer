@@ -1,5 +1,4 @@
 import {
-  assetAssociations,
   DEFAULT_CHANNEL,
   type Channel,
   type ScriptAnalysis,
@@ -25,12 +24,6 @@ const MAX_SCRIPT_LENGTH = 12_000;
 const MAX_PASSAGES = 32;
 const MIN_PASSAGE_LENGTH = 3;
 const MAX_PASSAGE_LENGTH = 160;
-
-const unique = (values: string[], limit: number) =>
-  [...new Set(values.map((value) => value.trim()).filter(Boolean))].slice(
-    0,
-    limit,
-  );
 
 export function segmentScript(text: string): TextSpan[] {
   const spans: TextSpan[] = [];
@@ -73,12 +66,6 @@ export function segmentScript(text: string): TextSpan[] {
   return spans;
 }
 
-const associationsFrom = (results: ScoredAsset[]) =>
-  unique(
-    results.slice(0, 3).flatMap((result) => assetAssociations(result.asset)),
-    8,
-  );
-
 export async function analyzeScript(
   text: string,
   retrieval: PassageSearch,
@@ -98,11 +85,10 @@ export async function analyzeScript(
 
   const passages = await Promise.all(
     spans.map(async (span, index): Promise<ScriptPassage> => {
-      const { results } = await retrieval.search(span.text, channel, 6);
+      const { results } = await retrieval.search(span.text, channel, 18);
       return {
         id: `passage-${index + 1}`,
         ...span,
-        associations: associationsFrom(results),
         results,
       };
     }),
