@@ -1,11 +1,57 @@
 "use client";
-import { CSSProperties, FormEvent, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { type MediaAsset, type ScriptAnalysis, type ScriptPassage } from "@/lib/catalog/types";
 import { setMediaDragData } from "@/lib/media/drag-export";
 import { mediaPreviewUrl } from "@/lib/media/preview-url";
 import styles from "./artwork-assistant.module.css";
 
 const SAMPLE_SCRIPT = "A quiet room after a long day. The light is fading, but there is still a sense that something might begin again.";
+const PASSAGE_SNAPSHOT_KEY = "art-explorer:passages:snapshot";
+
+interface PassageSnapshot {
+  text: string;
+  analysis: ScriptAnalysis | null;
+  activeId: string;
+  activeOffset: number;
+  scrollY: number;
+}
+
+function readPassageSnapshot(): PassageSnapshot | null {
+  try {
+    const raw = sessionStorage.getItem(PASSAGE_SNAPSHOT_KEY);
+    if (!raw) return null;
+    const snapshot: unknown = JSON.parse(raw);
+    if (
+      typeof snapshot !== "object" ||
+      snapshot === null ||
+      !("text" in snapshot) ||
+      typeof snapshot.text !== "string" ||
+      !("activeId" in snapshot) ||
+      typeof snapshot.activeId !== "string" ||
+      !("activeOffset" in snapshot) ||
+      typeof snapshot.activeOffset !== "number" ||
+      !("scrollY" in snapshot) ||
+      typeof snapshot.scrollY !== "number" ||
+      !("analysis" in snapshot)
+    ) {
+      console.warn("[Passages] Ignoring an invalid saved page snapshot.");
+      return null;
+    }
+    return snapshot as PassageSnapshot;
+  } catch (error) {
+    console.warn("[Passages] Could not read the saved page snapshot.", error);
+    return null;
+  }
+}
+
+function savePassageSnapshot(snapshot: PassageSnapshot) {
+  try {
+    sessionStorage.setItem(PASSAGE_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  } catch (error) {
+    console.warn("[Passages] Could not save the page snapshot.", error);
+  }
+}
+
 async function analyze(text: string): Promise<ScriptAnalysis> {
   const response = await fetch("/api/assistant/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
   const payload: ScriptAnalysis | { error: string } = await response.json();
@@ -35,8 +81,50 @@ export function ArtworkAssistant() {
   const [analysis, setAnalysis] = useState<ScriptAnalysis | null>(null);
   const [activeId, setActiveId] = useState("");
   const [activeOffset, setActiveOffset] = useState(0);
+  const [restored, setRestored] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const snapshotRef = useRef<PassageSnapshot | null>(null);
+  const textRef = useRef(text);
+  textRef.current = text;
+  useEffect(() => {
+    const snapshot = readPassageSnapshot();
+    if (snapshot) {
+      setText(snapshot.text);
+      setAnalysis(snapshot.analysis);
+      setActiveId(snapshot.activeId);
+      setActiveOffset(snapshot.activeOffset);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => window.scrollTo(0, snapshot.scrollY));
+      });
+    }
+    setRestored(true);
+  }, []);
+  useEffect(() => {
+    if (!restored || loading) return;
+    const snapshot: PassageSnapshot = {
+      text: textRef.current,
+      analysis,
+      activeId,
+      activeOffset,
+      scrollY: window.scrollY,
+    };
+    snapshotRef.current = snapshot;
+    savePassageSnapshot(snapshot);
+  }, [activeId, activeOffset, analysis, loading, restored]);
+  useEffect(
+    () => () => {
+      const snapshot = snapshotRef.current;
+      if (snapshot) {
+        savePassageSnapshot({
+          ...snapshot,
+          text: textRef.current,
+          scrollY: window.scrollY,
+        });
+      }
+    },
+    [],
+  );
   const submit = async (event: FormEvent) => { event.preventDefault(); setLoading(true); setError(null); try { const result = await analyze(text); setAnalysis(result); setActiveId(result.passages[0]?.id ?? ""); setActiveOffset(0); } catch (e) { setError(e instanceof Error ? e.message : "Script analysis failed."); } finally { setLoading(false); } };
   const activatePassage = (id: string, button: HTMLButtonElement) => {
     setActiveId(id);

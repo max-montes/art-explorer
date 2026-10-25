@@ -28,6 +28,7 @@ const MIN_COLUMNS = 1;
 const MAX_COLUMNS = 8;
 const DEFAULT_COLUMNS = 3;
 const COLUMNS_KEY = "commonplace:columns";
+const COLLECTION_SNAPSHOT_PREFIX = "art-explorer:collection:";
 const VIEW_PRESETS = [
   { label: "Large", columns: 2 },
   { label: "Balanced", columns: 3 },
@@ -35,6 +36,54 @@ const VIEW_PRESETS = [
 ];
 /** Narrowest a column may get before the masonry refuses to add more. */
 const MIN_TILE_WIDTH = 160;
+
+interface CollectionSnapshot {
+  input: string;
+  data: SearchResult;
+  columns: number;
+  scrollY: number;
+}
+
+const collectionSnapshotKey = () =>
+  `${COLLECTION_SNAPSHOT_PREFIX}${window.location.pathname}${window.location.search}`;
+
+function readCollectionSnapshot(key: string): CollectionSnapshot | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const snapshot: unknown = JSON.parse(raw);
+    if (
+      typeof snapshot !== "object" ||
+      snapshot === null ||
+      !("input" in snapshot) ||
+      typeof snapshot.input !== "string" ||
+      !("data" in snapshot) ||
+      typeof snapshot.data !== "object" ||
+      snapshot.data === null ||
+      !("results" in snapshot.data) ||
+      !Array.isArray(snapshot.data.results) ||
+      !("columns" in snapshot) ||
+      typeof snapshot.columns !== "number" ||
+      !("scrollY" in snapshot) ||
+      typeof snapshot.scrollY !== "number"
+    ) {
+      console.warn("[Collection] Ignoring an invalid saved page snapshot.");
+      return null;
+    }
+    return snapshot as CollectionSnapshot;
+  } catch (error) {
+    console.warn("[Collection] Could not read the saved page snapshot.", error);
+    return null;
+  }
+}
+
+function saveCollectionSnapshot(key: string, snapshot: CollectionSnapshot) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(snapshot));
+  } catch (error) {
+    console.warn("[Collection] Could not save the page snapshot.", error);
+  }
+}
 
 function ResultCard({
   result,
@@ -190,6 +239,12 @@ export function SearchExperience() {
   const [error, setError] = useState<string | null>(null);
   const [viewing, setViewing] = useState<MediaAsset | null>(null);
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  const snapshotKeyRef = useRef("");
+  const snapshotRef = useRef<CollectionSnapshot | null>(null);
+  const inputRef = useRef(input);
+  const columnsRef = useRef(columns);
+  inputRef.current = input;
+  columnsRef.current = columns;
 
   useEffect(() => {
     const raw = localStorage.getItem(COLUMNS_KEY);
@@ -204,6 +259,37 @@ export function SearchExperience() {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (loading || !data) return;
+    const snapshot: CollectionSnapshot = {
+      input: inputRef.current,
+      data,
+      columns,
+      scrollY: window.scrollY,
+    };
+    snapshotRef.current = snapshot;
+    saveCollectionSnapshot(
+      snapshotKeyRef.current || collectionSnapshotKey(),
+      snapshot,
+    );
+  }, [columns, data, loading]);
+
+  useEffect(
+    () => () => {
+      const snapshot = snapshotRef.current;
+      const key = snapshotKeyRef.current;
+      if (snapshot && key) {
+        saveCollectionSnapshot(key, {
+          ...snapshot,
+          input: inputRef.current,
+          columns: columnsRef.current,
+          scrollY: window.scrollY,
+        });
+      }
+    },
+    [],
+  );
 
   const changeColumns = useCallback(
     (next: number) => {
@@ -266,6 +352,22 @@ export function SearchExperience() {
       clearTimeout(wakeTimer);
       const controller = new AbortController();
       activeRequest = controller;
+      const key = collectionSnapshotKey();
+      snapshotKeyRef.current = key;
+      const snapshot = readCollectionSnapshot(key);
+      if (snapshot) {
+        snapshotRef.current = snapshot;
+        setInput(snapshot.input);
+        setData(snapshot.data);
+        setColumns(snapshot.columns);
+        setError(null);
+        setWakingUp(false);
+        setLoading(false);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => window.scrollTo(0, snapshot.scrollY));
+        });
+        return;
+      }
       const params = new URLSearchParams(window.location.search);
       const similarId = params.get("similar");
       const query = params.get("q")?.trim() || STARTING_QUERY;
@@ -283,6 +385,12 @@ export function SearchExperience() {
             controller.signal,
           );
           if (ticket !== latest) return;
+          snapshotRef.current = {
+            input: result.query,
+            data: result,
+            columns: columnsRef.current,
+            scrollY: window.scrollY,
+          };
           setInput(result.query);
           setData(result);
         } else {
@@ -292,6 +400,12 @@ export function SearchExperience() {
             controller.signal,
           );
           if (ticket !== latest) return;
+          snapshotRef.current = {
+            input: query,
+            data: result,
+            columns: columnsRef.current,
+            scrollY: window.scrollY,
+          };
           setData(result);
         }
       } catch (searchError) {
