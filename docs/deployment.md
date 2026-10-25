@@ -90,7 +90,7 @@ modified.
 The public app is
 [Art Explorer](https://art-explorer.thankfulforest-eee49b89.westus3.azurecontainerapps.io/),
 deployed on 2026-10-09 in `art-explorer-prod-rg`, using the Visual Studio
-Enterprise subscription. The web app has zero minimum replicas and one maximum
+Enterprise subscription. The web app has one minimum and maximum
 replica; PostgreSQL remains running on B1ms.
 
 The web app is named `art-explorer`; the other resources retain the
@@ -225,22 +225,21 @@ logs all affect usage. Set subscription budget notifications in Azure Cost
 Management before applying; alerts do not stop resources or cap spending.
 Other projects on the subscription also consume the credit.
 
-`minReplicas` defaults to zero to stop application compute billing while idle.
-PostgreSQL does not automatically scale to zero and remains about $16/month.
-Set `minReplicas` to one in `parameters.prod.json` to trade idle compute cost
-for faster first visits. The $65-$85 allowance above assumes one warm replica;
-scale-to-zero instead depends on active running hours, plus the database,
-registry, and persistent storage charges.
+Production sets `minReplicas` to one so the app and its loaded search models
+stay warm between visits. At 2 vCPUs and 4 GiB, one continuously idle replica
+is estimated at about $47/month before applicable subscription free grants;
+active compute can cost more. Add about $21/month for PostgreSQL and ACR, plus
+Azure Files, logging and other usage. These are estimates, not a guaranteed
+bill; actual subscription usage includes other projects.
 
-For the default scale-to-zero setup, zero replicas means $0 application
-compute. Active compute at 2 vCPUs and 4 GiB is about $0.216/hour before free
-grants. Ten active hours would cost about $2.16, plus any idle time before
-scaling down. The baseline is about $21/month for PostgreSQL and ACR, plus
-model storage, logging and runtime charges. The $47/month idle estimate
-describes a replica kept running for the whole month, not a minimum bill.
+For comparison, setting `minReplicas` to zero removes application compute
+charges while the app is scaled down, but the first visit must wait for the
+container to start. Active compute at 2 vCPUs and 4 GiB is about $0.216/hour
+before free grants.
 
-The first visit after scale-to-zero starts a container; the first search then
-initializes ONNX. A fresh-process test on the development Mac with cached Jina
+With scale-to-zero disabled in production, the container stays running, but the
+first use of a model in a fresh container can still initialize ONNX. A
+fresh-process test on the development Mac with cached Jina
 files took 2.94 seconds for initialization plus the first query, versus 0.13
 seconds for the next query. This is not an Azure benchmark: CPU, Azure Files
 throughput, image pull, scheduling and network overhead change the result.
@@ -251,8 +250,8 @@ minutes. Measure the real deployment before promising a latency target.
 The UI shows "Waking up Art Explorer..." after five seconds of waiting.
 Search and similarity requests retry 502/503/504 twice, stop waiting after two
 minutes, and show a retry action on failure. New navigation cancels the old
-request. This message does not claim a known cold start: a slow search can
-also trigger it. `/api/health` verifies the database, not loaded-model readiness.
+request. This message can still appear during slow searches or model
+initialization. `/api/health` verifies the database, not loaded-model readiness.
 
 The same container serves the frontend, so a first visitor cannot see the
 message until the initial HTML and JavaScript load. An instant wake-up screen
