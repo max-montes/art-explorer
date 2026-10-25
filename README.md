@@ -154,6 +154,14 @@ Art Explorer adds a paintings-only Met catalog, Jina retrieval, resumable bulk
 ingestion, and a human relevance-labeling workflow. All reused project work
 referenced here is my own.
 
+## Acknowledgments
+
+Thanks to [Kristian Møller Schmidt](https://github.com/KristianMSchmidt) for
+creating [Semantic Art Search](https://semantic-art-search.com). I found it a
+valuable point of comparison while developing Art Explorer, especially when
+evaluating semantic retrieval approaches. Art Explorer is an independent
+project and is not affiliated with Semantic Art Search.
+
 ## Development
 
 ```bash
