@@ -25,10 +25,18 @@ export interface CatalogRuntime {
 
 const globalServices = globalThis as typeof globalThis & {
   artworkRuntime?: Promise<CatalogRuntime>;
+  artworkEmbeddingProvider?: EmbeddingProvider;
 };
 
+function getEmbeddingProvider() {
+  if (!globalServices.artworkEmbeddingProvider) {
+    globalServices.artworkEmbeddingProvider = createEmbeddingProvider();
+  }
+  return globalServices.artworkEmbeddingProvider;
+}
+
 async function createRuntime(): Promise<CatalogRuntime> {
-  const provider = createEmbeddingProvider();
+  const provider = getEmbeddingProvider();
   const usePostgres =
     (process.env.CATALOG_REPOSITORY ?? "memory") === "postgres";
   const repository =
@@ -165,6 +173,10 @@ export function getCatalogRuntime() {
     globalServices.artworkRuntime = createRuntime();
   }
   return globalServices.artworkRuntime;
+}
+
+export async function preloadRetrievalModel() {
+  await getEmbeddingProvider().preload?.();
 }
 
 export async function getRetrievalService() {

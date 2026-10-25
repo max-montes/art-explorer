@@ -5,6 +5,7 @@ export interface EmbeddingProvider {
   embedImages(images: string[]): Promise<number[][]>;
   embedImageText(texts: string[]): Promise<number[][]>;
   embedImageDocuments?(texts: string[]): Promise<number[][]>;
+  preload?(): Promise<void>;
 }
 export type ImageEmbeddingProvider = EmbeddingProvider;
 export type ImageEmbeddingSpace =
@@ -161,8 +162,7 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
 
   async embedImages(images: string[]): Promise<number[][]> {
     if (/jina-clip-v2/i.test(this.imageModel)) {
-      if (!this.jina) this.jina = this.createJina();
-      const output = await (await this.jina).embedImages(images);
+      const output = await (await this.loadJina()).embedImages(images);
       return this.jinaRows(output, "image");
     }
     if (!this.imageExtractor) this.imageExtractor = this.createImageExtractor();
@@ -172,8 +172,7 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
 
   async embedImageText(texts: string[]): Promise<number[][]> {
     if (/jina-clip-v2/i.test(this.imageModel)) {
-      if (!this.jina) this.jina = this.createJina();
-      const output = await (await this.jina).embedText(texts);
+      const output = await (await this.loadJina()).embedText(texts);
       return this.jinaRows(output, "text");
     }
     if (!this.imageText) this.imageText = this.createImageText();
@@ -191,9 +190,22 @@ export class TransformersEmbeddingProvider implements EmbeddingProvider {
     if (!/jina-clip-v2/i.test(this.imageModel)) {
       return this.embedImageText(texts);
     }
-    if (!this.jina) this.jina = this.createJina();
-    const output = await (await this.jina).embedText(texts, false);
+    const output = await (await this.loadJina()).embedText(texts, false);
     return this.jinaRows(output, "text");
+  }
+
+  async preload(): Promise<void> {
+    if (/jina-clip-v2/i.test(this.imageModel)) await this.loadJina();
+  }
+
+  private loadJina() {
+    if (!this.jina) {
+      this.jina = this.createJina().catch((error: unknown) => {
+        this.jina = undefined;
+        throw error;
+      });
+    }
+    return this.jina;
   }
 
   private async createImageExtractor() {
