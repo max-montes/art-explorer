@@ -285,6 +285,7 @@
 }
 
 .mediaGrid {
+  align-items: start;
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -300,21 +301,13 @@
 }
 
 .mediaVisual {
-  aspect-ratio: 1.25;
-  overflow: hidden;
   position: relative;
 }
 
-.mediaVisual img,
-.mediaVisual media {
-  height: 100%;
-  object-fit: cover;
-  transition: transform 220ms ease;
+.mediaVisual img {
+  display: block;
+  height: auto;
   width: 100%;
-}
-
-.mediaTile:hover img {
-  transform: scale(1.025);
 }
 
 .dragCue {
