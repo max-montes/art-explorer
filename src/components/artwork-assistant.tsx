@@ -5,7 +5,10 @@ import { setMediaDragData } from "@/lib/media/drag-export";
 import { mediaPreviewUrl } from "@/lib/media/preview-url";
 import styles from "./artwork-assistant.module.css";
 
-const SAMPLE_SCRIPT = "A quiet room after a long day. The light is fading, but there is still a sense that something might begin again.";
+const SAMPLE_SCRIPT = `To see a World in a Grain of Sand
+And a Heaven in a Wild Flower,
+Hold Infinity in the palm of your hand
+And Eternity in an hour.`;
 const PASSAGE_SNAPSHOT_KEY = "art-explorer:passages:snapshot";
 
 interface PassageSnapshot {
@@ -133,7 +136,7 @@ export function ArtworkAssistant() {
   const active = analysis?.passages.find((p) => p.id === activeId) ?? analysis?.passages[0];
   return <main className={styles.shell}>
     <section className={styles.hero}><p>Passage Explorer</p><h1>Find the visual rhythm inside your words.</h1></section>
-    <form className={styles.composer} onSubmit={submit}><label htmlFor="script">Your writing</label><textarea id="script" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste poetry, prose, or a passage of writing..." rows={7} /><div><span>{text.length.toLocaleString()} / 12,000 characters</span><button type="submit" disabled={loading || !text.trim()}>{loading ? "Finding artwork..." : "Explore passages"}</button></div></form>
+    <form className={styles.composer} onSubmit={submit}><label htmlFor="script">Your writing</label><textarea id="script" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste poetry, prose, or a passage of writing..." rows={7} />{text === SAMPLE_SCRIPT && <p>William Blake, <cite>Auguries of Innocence</cite> (opening lines)</p>}<div><span>{text.length.toLocaleString()} / 12,000 characters</span><button type="submit" disabled={loading || !text.trim()}>{loading ? "Finding artwork..." : "Explore passages"}</button></div></form>
     {error && <div className={styles.error}>{error}</div>}
     {!analysis && !loading && !error && <section className={styles.empty}><span>01</span><h2>Your writing becomes a path through related artwork.</h2><p>Explore each passage to inspect its associations and related artwork.</p></section>}
     {loading && <section className={styles.loading}><div /><div /><div /></section>}
